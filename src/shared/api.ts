@@ -69,6 +69,11 @@ export interface JShellApi {
     close(sessionId: string): Promise<void>
     /** 键盘输入：单向通知，不等回执（每次按键都往返一次会拖慢输入） */
     write(sessionId: string, data: string): void
+    /**
+     * 输出回执：渲染端每解析完一块终端数据就回报字符数。
+     * 主进程按未确认量做背压，渲染端跟得上时它只是记账，不影响功能。
+     */
+    ack(sessionId: string, chars: number): void
     resize(sessionId: string, cols: number, rows: number): Promise<void>
   }
   sftp: {

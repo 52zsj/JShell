@@ -106,6 +106,8 @@ export function createContext(getWindow: () => BrowserWindow | null): AppContext
 
   let tunnels: TunnelManager | null = null
   const sessions = new SessionManager(store, (event) => {
+    // 输出背压：先记账再推送，渲染端跟不上时这里会暂停会话的数据源
+    if (event.type === 'data') sessions.noteOutput(event.sessionId, event.data.length)
     emit(event)
     // 会话断开/出错时停掉挂在其上的本地转发，避免遗留监听端口
     if (event.type === 'status' && (event.status === 'closed' || event.status === 'error')) {
@@ -291,6 +293,11 @@ export function registerIpc(ctx: AppContext, getWindow: () => BrowserWindow | nu
       sessions.openLocal(size, sessionId, shellPath)
   )
   handle(IPC.sessionClose, (sessionId: string) => sessions.close(sessionId))
+  // 输出回执：渲染端解析完一块才回一条，主进程据此做背压
+  ipcMain.on(IPC.sessionAck, (_event, sessionId: string, chars: number) => {
+    sessions.ack(sessionId, Number(chars) || 0)
+  })
+
   // 键盘输入走单向通道：不需要回执，省掉每次按键的 IPC 往返。
   // 会话不在就直接丢弃——标签页刚关时输入还在路上是常态。
   ipcMain.on(IPC.sessionWrite, (_event, sessionId: string, data: string) => {

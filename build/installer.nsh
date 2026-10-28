@@ -1,19 +1,20 @@
-; JShell 安装器自定义片段（由 electron-builder 的 nsis.include 引入）
+; JShell custom NSIS fragment (included via nsis.include)
 ;
-; 背景：0.10.x 及更早的构建没有改 exe 的图标与产品名，那时安装出来的是
-; 「Electron」快捷方式。用户覆盖安装新版本后，旧快捷方式不会自动消失，
-; 开始菜单里就会出现「Electron」和「JShell 终端」两个条目（或只剩旧的那个）。
+; Why: builds up to 0.10.x shipped WITHOUT rewriting exe resources, so the
+; installer created an "Electron" shortcut. Overwriting with a newer version
+; does not remove it, leaving a stale "Electron" entry in the Start Menu.
 ;
-; 这里在安装时顺手清掉遗留项。只删文件名精确等于 Electron.lnk 的快捷方式，
-; 不动其它任何东西 —— 正常软件不会叫这个名字，它是我们早期产物的特征。
+; This removes only shortcuts literally named Electron.lnk - no other product
+; creates that name, it is our own legacy artifact.
+;
+; NOTE: keep this file ASCII-only. makensis reads includes as ANSI and a
+; UTF-8 multibyte comment can break compilation (that is what failed CI once).
 
 !macro customInstall
-  DetailPrint "清理旧版本快捷方式…"
-
-  ; 用户级开始菜单（perMachine=false 时安装位置）
+  DetailPrint "Cleaning up legacy shortcuts..."
+  ; $SMPROGRAMS = Start Menu\Programs for the current shell context
+  Delete "$SMPROGRAMS\Electron.lnk"
+  ; literal path as a fallback when the shell context is "all users"
   Delete "$APPDATA\Microsoft\Windows\Start Menu\Programs\Electron.lnk"
-  ; 全局开始菜单（早期用管理员安装时会落在这里）
-  Delete "$COMMONPROGRAMS\Electron.lnk"
-  ; 桌面
   Delete "$DESKTOP\Electron.lnk"
 !macroend

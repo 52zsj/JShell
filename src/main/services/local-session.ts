@@ -90,6 +90,25 @@ export class LocalSession implements TerminalSession {
     this.proc.write(data)
   }
 
+  /** 背压：暂停读取 pty，管道写满后子进程会自然阻塞（等同于终端自身的流控） */
+  pause(): void {
+    if (!this.proc || this.closed) return
+    try {
+      this.proc.pause()
+    } catch {
+      /* 进程已退出时忽略 */
+    }
+  }
+
+  resume(): void {
+    if (!this.proc || this.closed) return
+    try {
+      this.proc.resume()
+    } catch {
+      /* 进程已退出时忽略 */
+    }
+  }
+
   resize(cols: number, rows: number): void {
     this.lastSize = { cols, rows }
     if (!this.proc || this.closed) return

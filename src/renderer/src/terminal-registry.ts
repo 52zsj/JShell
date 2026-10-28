@@ -50,7 +50,10 @@ function flushPending(sessionId: string, term: Terminal): void {
   const backlog = pending.get(sessionId)
   if (!backlog) return
   pending.delete(sessionId)
-  for (const chunk of backlog) term.write(chunk)
+  for (const chunk of backlog) {
+    // 这些块在入队时已经回过执，创建终端后只补写，不再重复确认
+    term.write(chunk)
+  }
 }
 
 /** 取得（必要时创建）某个会话的终端实例 */
@@ -128,16 +131,25 @@ export function disposeTerminal(sessionId: string): void {
 }
 
 /** 远端/本地输出 -> 终端；终端尚未创建时先缓冲 */
+/** 回执：告诉主进程这一块已经解析完，主进程据此解除背压 */
+function ackOutput(sessionId: string, chars: number): void {
+  window.jshell.sessions.ack(sessionId, chars)
+}
+
 export function pushTerminalData(sessionId: string, data: string): void {
   const entry = entries.get(sessionId)
   if (entry) {
-    entry.term.write(data)
+    // 用 write 的回调做回执：xterm 真正解析完才确认，才是有效背压
+    entry.term.write(data, () => ackOutput(sessionId, data.length))
     return
   }
   const queue = pending.get(sessionId) ?? []
   queue.push(data)
   trimPending(queue)
   pending.set(sessionId, queue)
+  // 还没有终端时数据先入队：入队长度有上限（PENDING_BYTES），
+  // 这里直接回执，避免主进程一直等一个永远不会来的确认而卡住会话
+  ackOutput(sessionId, data.length)
 }
 
 /**

@@ -341,6 +341,15 @@ export class SshSession implements TerminalSession {
     this.stream.write(data)
   }
 
+  /** 背压：暂停从 SSH 通道读数据，TCP 窗口会把压力传回服务端 */
+  pause(): void {
+    this.stream?.pause()
+  }
+
+  resume(): void {
+    this.stream?.resume()
+  }
+
   /** 窗口尺寸变化 -> 远端 PTY */
   resize(cols: number, rows: number): void {
     this.lastSize = { cols, rows }

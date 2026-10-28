@@ -22,6 +22,8 @@ export const IPC = {
   sessionClose: 'session:close',
   sessionWrite: 'session:write',
   sessionResize: 'session:resize',
+  /** 渲染进程解析完一块输出后的回执（流控用） */
+  sessionAck: 'session:ack',
 
   // SFTP
   sftpList: 'sftp:list',

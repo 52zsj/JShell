@@ -403,6 +403,7 @@ app.on('before-quit', () => {
   ctx?.store.flushLayout()
   ctx?.tunnels.stopAll()
   ctx?.sessions.closeAll()
+  ctx?.sessions.dispose()
   ctx?.autoSync.stop()
   trayService?.destroy()
   trayService = null

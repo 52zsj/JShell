@@ -1,6 +1,8 @@
 import fs from 'node:fs'
 import type { OpenSessionResult, SessionEvent } from '../../shared/types'
+import { FlowControl } from './flow-control'
 import { LocalSession } from './local-session'
+import { log } from './logger'
 import { detectShells } from './shells'
 import { SshSession } from './ssh-session'
 import type { StoreService } from './store'
@@ -16,12 +18,59 @@ import type { TerminalSession } from './types'
  */
 export class SessionManager {
   private readonly sessions = new Map<string, TerminalSession>()
+  /** 每个会话一个流控账本：渲染端确认了多少、还欠多少 */
+  private readonly flows = new Map<string, FlowControl>()
   private readonly store: StoreService
   private readonly emit: (event: SessionEvent) => void
+  private flowTimer?: NodeJS.Timeout
 
   constructor(store: StoreService, emit: (event: SessionEvent) => void) {
     this.store = store
     this.emit = emit
+    this.startFlowWatchdog()
+  }
+
+  // ------------------------------------------------------------- 输出流控
+
+  private flowOf(sessionId: string): FlowControl | null {
+    const session = this.sessions.get(sessionId)
+    if (!session) return null
+    let flow = this.flows.get(sessionId)
+    if (!flow) {
+      flow = new FlowControl(
+        { pause: () => session.pause(), resume: () => session.resume() },
+        {
+          onStall: () =>
+            log.warn(`会话 ${sessionId} 的输出确认长时间未到达，已强制恢复（可能是终端已关闭）`)
+        }
+      )
+      this.flows.set(sessionId, flow)
+    }
+    return flow
+  }
+
+  /** 主进程推出一块终端输出后记账，超过高水位会暂停该会话的数据源 */
+  noteOutput(sessionId: string, chars: number): void {
+    this.flowOf(sessionId)?.onOutput(chars)
+  }
+
+  /** 渲染进程解析完一块输出后的回执 */
+  ack(sessionId: string, chars: number): void {
+    this.flows.get(sessionId)?.onAck(chars)
+  }
+
+  /** 看门狗：1 秒一次，兜住「暂停后 ack 再也不来」的情况，避免会话永久卡死 */
+  private startFlowWatchdog(): void {
+    this.flowTimer = setInterval(() => {
+      for (const flow of this.flows.values()) flow.tick()
+    }, 1000)
+    this.flowTimer.unref?.()
+  }
+
+  dispose(): void {
+    if (this.flowTimer) clearInterval(this.flowTimer)
+    this.flowTimer = undefined
+    this.flows.clear()
   }
 
   // ---------------------------------------------------------------- SSH
@@ -116,6 +165,8 @@ export class SessionManager {
     if (!session) return
     session.close()
     this.sessions.delete(sessionId)
+    // 流控账本随会话一起丢弃，避免 Map 长期持有已关闭会话
+    this.flows.delete(sessionId)
   }
 
   closeAll(): void {

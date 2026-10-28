@@ -9,4 +9,7 @@ export interface TerminalSession {
   write(data: string): void
   resize(cols: number, rows: number): void
   close(): void
+  /** 输出背压：渲染端跟不上时暂停数据源 */
+  pause(): void
+  resume(): void
 }
