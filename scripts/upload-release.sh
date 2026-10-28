@@ -35,7 +35,10 @@ while IFS= read -r -d '' file; do
 done < <(
   find "$ARTIFACTS" -type f \
     \( -name '*.dmg' -o -name '*.zip' -o -name '*-setup.exe' -o -name '*-portable.exe' -o -name '*.txt' \) \
-    ! -name '*.blockmap' -print0 | sort -z
+    ! -name '*.blockmap' \
+    ! -path '*/win-unpacked/*' \
+    ! -path '*/mac/*' ! -path '*/mac-arm64/*' \
+    -print0 | sort -z
 )
 
 if [ "${#FILES[@]}" -eq 0 ]; then

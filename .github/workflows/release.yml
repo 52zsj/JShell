@@ -134,14 +134,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: jshell-${{ matrix.platform }}
+          # 只取 release/<版本>/ 顶层产物。递归匹配会把 win-unpacked/ 里
+          # Electron 自带的 txt、辅助 exe 一起传上去，Release 页面会多出一堆垃圾文件
           path: |
-            release/**/*.dmg
-            release/**/*.zip
-            release/**/*-setup.exe
-            release/**/*-portable.exe
-            release/**/*.txt
-            release/**/*.AppImage
-            release/**/*.deb
+            release/*.dmg
+            release/*.zip
+            release/*-setup.exe
+            release/*-portable.exe
+            release/*.txt
           if-no-files-found: error
 
   release:
