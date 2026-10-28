@@ -2,6 +2,19 @@
 
 本文件随安装包一同分发（设置 → 关于 → 更新记录 可直接打开）。
 
+## 0.11.6（2026-10-28）
+
+### 改进：Windows 诊断脚本可以双击运行
+
+直接双击 `.ps1` 会「一闪就没了」——脚本执行完窗口立即关闭，而且默认执行策略可能直接拒绝运行。
+
+- 新增 `scripts/windows/run-diagnose-startmenu.cmd`：双击即跑只读诊断，
+  带 `chcp 65001`（中文不乱码）与 `pause`（窗口停住，报表能看完/复制）
+- 新增 `scripts/windows/run-fix-startmenu.cmd`：双击为**预览**，
+  在窗口里再执行 `run-fix-startmenu.cmd apply` 才会真正删除
+- 两个 `.cmd` 均为纯 ASCII，避免 cmd 代码页把内容读坏
+- `docs/Windows打包手册.md` 补「三种运行方式」，含仓库不在手边时的一行命令
+
 ## 0.11.5（2026-10-28）
 
 ### 修复：0.11.4 的 Windows 安装包打不出来

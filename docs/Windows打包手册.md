@@ -116,6 +116,17 @@ node scripts/build-all.mjs --win --arch x64 --skip-build
 
 桌面快捷方式正常、但开始菜单还是 Electron 图标和文字时，按顺序查：
 
+**方式一（最简单）：双击 .cmd**
+
+- `scripts\windows\run-diagnose-startmenu.cmd` —— 只读诊断，窗口不会自动关
+- `scripts\windows\run-fix-startmenu.cmd` —— 预览要清理的项
+- 预览确认后，在 cmd 窗口里再执行 `run-fix-startmenu.cmd apply` 才会真正删除
+
+> 直接双击 `.ps1` 会「一闪就没了」：脚本执行完窗口就关闭，且默认执行策略可能直接拒绝。
+> 用上面的 `.cmd` 会带 `chcp 65001` 并 `pause`，中文不会乱码、报表能停下来看。
+
+**方式二：在已有终端里执行**
+
 ```powershell
 # 1. 只读诊断：列出开始菜单/桌面所有相关快捷方式、指向、产品名、已安装版本
 powershell -ExecutionPolicy Bypass -File scripts\windows\diagnose-startmenu.ps1
@@ -126,6 +137,18 @@ powershell -ExecutionPolicy Bypass -File scripts\windows\fix-startmenu.ps1
 # 3. 确认后真正清理，并刷新图标缓存
 powershell -ExecutionPolicy Bypass -File scripts\windows\fix-startmenu.ps1 -Apply
 ```
+
+**方式三：仓库不在手边时的一行命令**
+
+```powershell
+Get-ChildItem "$env:APPDATA\Microsoft\Windows\Start Menu\Programs" -Recurse -Filter *.lnk |
+  ForEach-Object {
+    $l = (New-Object -ComObject WScript.Shell).CreateShortcut($_.FullName)
+    "{0}  ->  {1}" -f $_.Name, $l.TargetPath
+  }
+```
+
+只打印开始菜单里每个快捷方式的名字和指向，足以判断有没有遗留的 `Electron.lnk`。
 
 三种典型结论：
 
