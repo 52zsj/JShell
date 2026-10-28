@@ -2,6 +2,47 @@
 
 本文件随安装包一同分发（设置 → 关于 → 更新记录 可直接打开）。
 
+## 0.11.2（2026-10-28）
+
+### 全量核查后修复的问题
+
+**浅色主题下终端文字几乎看不见（较严重）**
+
+`.terminal-wrap .xterm .xterm-viewport` 被加了 `background-color: transparent !important`，
+终端背景于是跟着**应用主题**走。浅色应用 + 深色终端主题（如"夜幕黑"）时，
+浅灰前景（#abb2bf）落在近白背景上，终端内容基本不可读。已移除该覆盖，
+终端背景重新由 xterm 主题决定。
+
+**状态栏版本号显示成 Electron 版本**
+
+`app.getVersion()` 在开发态（直接跑 `out/main/index.js`）返回的是 Electron 自身版本，
+状态栏和「关于」里显示 `v45.0.0`。改为构建期把 package.json 版本注入主进程
+（`__JSHELL_VERSION__`），开发态与打包版一致。
+
+**其他**
+
+- `.transfer-cancel`（状态栏传输取消的 ×）同样缺 `padding: 0`，字符被挤到角落，已修正并改为 grid 居中；
+  `.swatch` 同步补上，保持一致
+- `--accent-2` 被 `.sidetree-icon.type-link` 使用却从未定义，仅靠 fallback 生效；补进深/浅两套主题
+- `.icon-btn.is-active` 重复定义两次且背景不同（后者把语义色 `--accent-soft` 覆盖成 `--bg-hover`），删掉重复项
+- rsync 向导在没有主机时「下一步」仍可点击，会进到空白的第二步；改为停在第一步
+- `scripts/build-release.sh` 默认会在 macOS 上打出 `--no-sign-edit` 的 Windows 包（图标/名称退回 Electron）；
+  改为直接跳过并提示走 CI
+- 文档纠正：README、`docs/06-distribution.md`、`docs/Windows打包手册.md` 里把 `--no-sign-edit`
+  标注为「仅本地验证」，手册里的原生构建命令去掉该参数
+
+**下载失败后临时文件偶尔残留（竞态）**
+
+`SftpService.download` 失败清理用的是不 `await` 的 `unlink`，调用方拿到异常时
+`.jshell-part` 可能还没删掉；连续跑 4 轮单测有 2 轮能复现。改为等写流关闭后再 `await` 删除
+（Windows 上对未关闭句柄 unlink 会 EBUSY），并去掉 `fail()` 里重复的清理。
+
+**新增样式守卫测试**
+
+`tests/style-guard.test.mjs` 校验：图标按钮必须重置 `padding`、`var(--x)` 必须有定义、
+同一选择器不允许出现冲突背景、终端背景不得被强制透明。四条都是这次真实踩到的坑，
+已用「注入 bug」验证过会失败。
+
 ## 0.11.1（2026-10-28）
 
 ### 修复：标签页关闭按钮的 hover 底板与 ✕ 错位

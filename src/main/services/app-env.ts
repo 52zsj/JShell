@@ -116,3 +116,30 @@ export function portableHint(): string {
   if (!state.portable) return ''
   return `便携模式：所有配置与会话数据保存在程序目录下的 ${PORTABLE_DATA_DIR} 文件夹。`
 }
+
+/**
+ * 应用版本号。
+ *
+ * 打包后 app.getVersion() 就是 package.json 的版本；但开发态（直接跑 out/main/index.js）
+ * 它会返回 Electron 自身的版本（例如 45.0.0），状态栏和「关于」里就会显示错。
+ * 构建期已把真实版本注入成 __JSHELL_VERSION__，优先用它。
+ */
+export function appVersion(): string {
+  try {
+    if (typeof __JSHELL_VERSION__ === 'string' && __JSHELL_VERSION__) return __JSHELL_VERSION__
+  } catch {
+    /* 未注入（例如单测直接引入本模块）时走兜底 */
+  }
+  const fromApp = app.getVersion()
+  if (app.isPackaged) return fromApp
+  // 兜底：读仓库根目录的 package.json，避免开发态显示 Electron 版本
+  try {
+    const root = path.join(app.getAppPath(), 'package.json')
+    const raw = JSON.parse(fs.readFileSync(root, 'utf8')) as { version?: string }
+    if (raw.version) return raw.version
+  } catch {
+    /* 读不到就接受 app.getVersion() */
+  }
+  return fromApp
+}
+

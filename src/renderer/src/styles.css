@@ -18,6 +18,8 @@
   --accent-soft: rgba(53, 208, 165, 0.14);
   /* 主色按钮上的文字色，保证与 --accent 的对比度 */
   --accent-contrast: #04221a;
+  /* 次级强调色：用于「链接/跳转」这类图标，与主色拉开区分 */
+  --accent-2: #7aa2f7;
   --danger: #e06c75;
   --warn: #e5c07b;
   --shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
@@ -41,6 +43,7 @@
   --accent: #0b8163;
   --accent-soft: rgba(11, 129, 99, 0.12);
   --accent-contrast: #ffffff;
+  --accent-2: #2f6bd8;
   --danger: #d64545;
   --warn: #b07800;
   --shadow: 0 18px 40px rgba(15, 23, 42, 0.14);
@@ -699,9 +702,9 @@ body.is-resizing {
   height: 100%;
 }
 
-.terminal-wrap .xterm .xterm-viewport {
-  background-color: transparent !important;
-}
+/* 注意：不要给 .xterm-viewport 加强制透明的 !important。
+   终端背景必须由 xterm 主题（themes.ts 的 background）决定，
+   否则浅色应用主题下会露出浅色底，而深色终端主题的前景色是浅灰 —— 文字几乎看不见。 */
 
 .xterm {
   padding-right: 4px;
@@ -1487,6 +1490,7 @@ textarea.input {
 .swatch {
   width: 22px;
   height: 22px;
+  padding: 0;
   border-radius: 50%;
   border: 2px solid transparent;
   cursor: pointer;
@@ -1906,12 +1910,16 @@ input[type='range'] {
 .transfer-cancel {
   width: 16px;
   height: 16px;
+  /* 清掉 UA 默认 padding，并用 grid 居中 ×，避免字符被挤到角落 */
+  padding: 0;
+  display: grid;
+  place-items: center;
   border: 0;
   border-radius: 4px;
   background: transparent;
   color: var(--text-faint);
   font-size: 13px;
-  line-height: 14px;
+  line-height: 1;
   cursor: pointer;
 }
 
@@ -2035,11 +2043,6 @@ input[type='range'] {
 .tree-row:hover .tree-ops,
 .tree-row:focus-within .tree-ops {
   opacity: 1;
-}
-
-.icon-btn.is-active {
-  color: var(--accent);
-  background: var(--bg-hover);
 }
 
 /* --------------------------------------------------------------- 内置编辑器 */

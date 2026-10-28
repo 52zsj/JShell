@@ -4,7 +4,7 @@ import path from 'node:path'
 import { IPC } from '../shared/ipc'
 import type { AppCommand } from '../shared/types'
 import { createContext, registerIpc, type AppContext } from './ipc'
-import { applyPortableDataDir, getPortableState, portableHint } from './services/app-env'
+import { applyPortableDataDir, getPortableState, portableHint, appVersion } from './services/app-env'
 import { copySelection, isTerminalFocused, pasteInto, selectAll } from './services/clipboard'
 import { syncLaunchAtLogin } from './services/login-item'
 import { installProcessHandlers, log, openLogDir } from './services/logger'
@@ -362,7 +362,7 @@ app.whenReady().then(() => {
 
   const meta = loadReleaseInfo()
   log.info(
-    `JShell ${app.getVersion()} 启动 | 平台 ${process.platform}/${process.arch} | 渠道 ${meta.channel}` +
+    `JShell ${appVersion()} 启动 | 平台 ${process.platform}/${process.arch} | 渠道 ${meta.channel}` +
       ` | ${getPortableState().portable ? '便携模式' : '安装模式'} | 数据目录 ${app.getPath('userData')}`
   )
   if (portableHint()) log.info(portableHint())
@@ -376,7 +376,7 @@ app.whenReady().then(() => {
   if (isMac) {
     app.setAboutPanelOptions({
       applicationName: 'JShell 终端工作台',
-      applicationVersion: app.getVersion(),
+      applicationVersion: appVersion(),
       version: meta.buildTime ? `构建于 ${meta.buildTime}` : '',
       copyright: 'Copyright © 2026 JShell',
       credits: '本地优先的 SSH / 终端工作台，无账号体系，默认不采集任何数据。'

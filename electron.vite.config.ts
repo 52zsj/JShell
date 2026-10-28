@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import react from '@vitejs/plugin-react'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
@@ -11,6 +12,11 @@ import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
  * externalizeDepsPlugin 会把 package.json 的 dependencies（ssh2 / node-pty）保持为
  * 运行时 require，避免把 CJS 原生模块打进 bundle 后出现动态 require 失败。
  */
+/** 版本号在构建期注入：开发态 app.getVersion() 会返回 Electron 版本而不是应用版本 */
+const pkgVersion = (
+  JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf8')) as { version: string }
+).version
+
 export default defineConfig(({ command }) => {
   const dev = command === 'serve'
   const csp = [
@@ -25,6 +31,9 @@ export default defineConfig(({ command }) => {
   return {
   main: {
     plugins: [externalizeDepsPlugin()],
+    define: {
+      __JSHELL_VERSION__: JSON.stringify(pkgVersion)
+    },
     resolve: {
       alias: {
         '@shared': resolve(__dirname, 'src/shared')

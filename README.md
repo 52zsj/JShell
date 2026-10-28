@@ -92,7 +92,7 @@ npm test
 npm run dist:all                                       # 当前平台（安装版 + 便携版）
 node scripts/build-all.mjs --mac --arch arm64,x64      # macOS 双架构
 node scripts/build-all.mjs --win --arch x64            # Windows（原生环境或 CI）
-node scripts/build-all.mjs --win --no-sign-edit        # macOS 无 wine 时交叉构建
+node scripts/build-all.mjs --win --no-sign-edit        # 仅本地验证（图标/版本资源不写入，勿分发）
 node scripts/build-all.mjs --win --docker              # 有 Docker 时用 wine 构建（产物元信息完整）
 node scripts/build-all.mjs --dir                       # 只产出免安装目录（冒烟验证）
 ```
@@ -101,9 +101,9 @@ node scripts/build-all.mjs --dir                       # 只产出免安装目�
 
 | 平台 | 安装版 | 便携版 |
 | --- | --- | --- |
-| macOS | `JShell-0.11.1-arm64.dmg` / `.zip`、`x64` 同名文件 | `JShell-0.11.1-<架构>-portable.zip`（解压即用） |
-| Windows | `JShell-0.11.1-x64-setup.exe`（简体中文 NSIS 向导） | `JShell-0.11.1-x64-portable.exe`（单文件） |
-| Linux | `JShell-0.11.1-x64.AppImage` / `.deb` | — |
+| macOS | `JShell-0.11.2-arm64.dmg` / `.zip`、`x64` 同名文件 | `JShell-0.11.2-<架构>-portable.zip`（解压即用） |
+| Windows | `JShell-0.11.2-x64-setup.exe`（简体中文 NSIS 向导） | `JShell-0.11.2-x64-portable.exe`（单文件） |
+| Linux | `JShell-0.11.2-x64.AppImage` / `.deb` | — |
 
 分发、签名、更新通道与发布检查清单见 [docs/06-distribution.md](docs/06-distribution.md)。
 跨平台实现细节与差异见 [docs/05-cross-platform.md](docs/05-cross-platform.md)。

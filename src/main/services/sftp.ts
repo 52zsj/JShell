@@ -177,10 +177,12 @@ export class SftpService {
     // 先写 .part：中途失败只会留下临时文件，用户原有的同名文件不会被破坏
     const partPath = `${localPath}${PART_SUFFIX}`
 
+    let part: fs.WriteStream | undefined
     try {
       await new Promise<void>((resolve, reject) => {
         const source = sftp.createReadStream(remotePath)
         const target = fs.createWriteStream(partPath)
+        part = target
         let transferred = 0
         let settled = false
         const onAbort = (): void => {
@@ -194,7 +196,6 @@ export class SftpService {
           signal?.removeEventListener('abort', onAbort)
           source.destroy()
           target.destroy()
-          fs.promises.unlink(partPath).catch(() => undefined)
           reject(err)
         }
         if (signal?.aborted) {
@@ -221,7 +222,16 @@ export class SftpService {
 
       await replaceFile(partPath, localPath)
     } catch (err) {
-      fs.promises.unlink(partPath).catch(() => undefined)
+      // 等写流真正关闭再删：Windows 上对未关闭的句柄 unlink 会 EBUSY，
+      // 而不等待就返回会让调用方（以及测试）看到残留的 .jshell-part
+      if (part && !part.closed) {
+        await new Promise<void>((resolve) => {
+          part!.once('close', () => resolve())
+          // 兜底：极端情况下 close 不触发也不能卡住调用方
+          setTimeout(resolve, 1000)
+        })
+      }
+      await fs.promises.unlink(partPath).catch(() => undefined)
       throw err
     }
   }

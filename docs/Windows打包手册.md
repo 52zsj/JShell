@@ -44,8 +44,11 @@ npm run build
 ### 2. 打包 Windows
 ```powershell
 $env:CSC_IDENTITY_AUTO_DISCOVERY="false"
-node scripts/build-all.mjs --win --arch x64 --skip-build --no-sign-edit
+node scripts/build-all.mjs --win --arch x64 --skip-build
 ```
+
+> **不要在 Windows 上加 `--no-sign-edit`**：该参数会跳过 rcedit，exe 的图标与版本信息会退回
+> Electron 默认值——这正是之前「任务栏显示 Electron 图标、开始菜单显示 Electron 名称」的原因。
 
 > 产出目录：`release/<版本>/`
 > - `JShell-<版本>-x64-setup.exe`（NSIS 安装版）

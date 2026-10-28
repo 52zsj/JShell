@@ -164,6 +164,8 @@ export function RsyncWizard({ onClose, onDone, defaultHostId, defaultRemoteDir }
   }
 
   const canNext = (): boolean => {
+    // 三种方向都至少需要一个 SSH 主机；没有主机时停在第一步，避免进到空白的第二步
+    if (step === 1) return hosts.length > 0
     if (step !== 2) return true
     if (direction === 'relay') {
       return Boolean(

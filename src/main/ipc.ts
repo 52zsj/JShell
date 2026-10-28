@@ -17,7 +17,7 @@ import type {
 import { mapErrorToChinese } from '../shared/errors'
 import { IPC, type IpcChannel } from '../shared/ipc'
 import type { AutoSyncPatch, SyncExportOptions, SyncImportMode, SyncImportRequest, SyncSource } from '../shared/sync'
-import { getPortableState } from './services/app-env'
+import { appVersion, getPortableState } from './services/app-env'
 import { readClipboard, setTerminalFocused, writeClipboard } from './services/clipboard'
 import { detectShells } from './services/shells'
 import { getLaunchAtLogin, setLaunchAtLogin } from './services/login-item'
@@ -559,7 +559,7 @@ export function registerIpc(ctx: AppContext, getWindow: () => BrowserWindow | nu
     const meta = loadReleaseInfo()
     const portable = getPortableState()
     return {
-      version: app.getVersion(),
+      version: appVersion(),
       electron: process.versions.electron,
       node: process.versions.node,
       platform: process.platform,

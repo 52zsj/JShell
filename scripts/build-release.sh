@@ -3,7 +3,7 @@
 # JShell 一键构建 + 打包脚本（macOS / Windows）
 #
 # 用法：
-#   ./scripts/build-release.sh                 # 默认：build + macOS(arm64,x64) + Windows(x64) + 冒烟
+#   ./scripts/build-release.sh                 # 默认：build + macOS(arm64,x64)，Windows 交给 CI
 #   ./scripts/build-release.sh mac             # 只打 macOS
 #   ./scripts/build-release.sh win             # 只打 Windows
 #   ./scripts/build-release.sh --skip-build    # 复用已有 out/，不重新 build
@@ -50,8 +50,14 @@ if [ "$DO_MAC" = "1" ]; then
 fi
 
 if [ "$DO_WIN" = "1" ]; then
-  echo "==> 打包 Windows（x64，本机无 wine，跳过 exe 图标/版本资源写入）"
-  node scripts/build-all.mjs --win --arch x64 --skip-build --no-sign-edit
+  if [ "$(uname -s)" = "Darwin" ]; then
+    # 不在这里用 --no-sign-edit 兜底：那样打出来的 exe 图标与产品名全是 Electron 默认值
+    echo "==> 跳过 Windows：macOS 上交叉打包无法写入 exe 图标与版本资源"
+    echo "    请推送到 main 由 CI 的 windows-latest 产出，或用 --docker（需 Docker）"
+  else
+    echo "==> 打包 Windows（x64，原生环境）"
+    node scripts/build-all.mjs --win --arch x64 --skip-build
+  fi
 fi
 
 # ---------------------------------------------------------------- 冒烟
