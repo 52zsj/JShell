@@ -170,12 +170,16 @@ jobs:
           bash scripts/upload-release.sh 2>&1 | tee "$RUNNER_TEMP/release.log"
 
       - name: Release 失败摘要
-        # 失败原因写进运行摘要，不用下载日志就能定位
+        # 把最后的报错写成注解：不用下载日志，运行页面直接能看到
         if: failure()
         run: |
           {
             echo '### Release 上传失败'
             echo '```'
-            tail -40 "$RUNNER_TEMP/release.log" 2>/dev/null || echo '（没有捕到日志）'
+            tail -30 "$RUNNER_TEMP/release.log" 2>/dev/null || echo '（没有捕到日志）'
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+          MSG=$(tail -12 "$RUNNER_TEMP/release.log" 2>/dev/null | tr '\n' ' ' | tr -s ' ' | cut -c1-800)
+          echo "::error title=Release 上传失败::${MSG:-没有日志，检查 upload 步骤}"
+          echo '--- artifacts 目录 ---'
+          ls -R artifacts 2>/dev/null | head -40 || true

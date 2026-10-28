@@ -67,5 +67,21 @@ else
   gh release create "$TAG" --title "JShell $TAG" --notes-file "$NOTES"
 fi
 
-gh release upload "$TAG" "${FILES[@]}" --clobber
+# 逐个上传：某个文件失败不至于全军覆没，而且能明确指出是哪个
+FAILED=()
+for file in "${FILES[@]}"; do
+  name="$(basename "$file")"
+  if gh release upload "$TAG" "$file" --clobber; then
+    echo "  ✓ $name"
+  else
+    echo "  ✗ $name" >&2
+    FAILED+=("$name")
+  fi
+done
+
+if [ "${#FAILED[@]}" -gt 0 ]; then
+  echo "✗ 有 ${#FAILED[@]} 个文件上传失败：${FAILED[*]}" >&2
+  exit 1
+fi
+
 echo "✓ 已上传 ${#FILES[@]} 个附件到 $TAG"
