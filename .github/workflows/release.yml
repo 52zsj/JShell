@@ -158,9 +158,15 @@ jobs:
         with:
           path: artifacts
 
+      - name: 生成版本说明
+        # 只取当前版本那一节，避免把整份 CHANGELOG 贴进 Release
+        run: node scripts/changelog-section.mjs
+
       - name: 创建 Release
         uses: softprops/action-gh-release@v2
         with:
+          name: JShell ${{ github.ref_name }}
           files: artifacts/**/*
-          # 版本说明使用中文 CHANGELOG 的对应章节，避免自动生成英文说明
-          body_path: CHANGELOG.md
+          body_path: release-notes.md
+          draft: false
+          generate_release_notes: false

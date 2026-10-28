@@ -2,6 +2,28 @@
 
 本文件随安装包一同分发（设置 → 关于 → 更新记录 可直接打开）。
 
+## 0.11.7（2026-10-28）
+
+### 发版流程：一条命令产出 GitHub Release
+
+之前只推 `main`，CI 只跑构建、不产出 Release，所以 GitHub 的 Releases 页面一直是空的。
+
+- 新增 `npm run release:tag`（`scripts/tag-release.mjs`）：
+  校验工作区干净 → 校验 CHANGELOG 有当前版本章节 → 校验 tag 未重复 →
+  创建附注 tag `v<版本>` 并推送 `main` 与该 tag
+- 新增 `npm run notes:section`（`scripts/changelog-section.mjs`）：
+  从 CHANGELOG 抽出当前版本那一节，附上下载指引，写成 `release-notes.md`
+- Release 正文改为**只含本版本改动 + 下载对应包表格**，
+  原来是把整份 CHANGELOG 贴上去（几百行，翻不到重点）
+- Release 标题固定为 `JShell v<版本>`，关闭自动生成英文说明
+
+推送策略（两条通道各司其职）：
+
+| 动作 | 触发结果 |
+| --- | --- |
+| `git push origin main` | 只跑构建，产物作为 Actions artifact 保留 90 天 |
+| `git push origin v<版本>` | 构建 + 创建 GitHub Release 并附上安装包 |
+
 ## 0.11.6（2026-10-28）
 
 ### 改进：Windows 诊断脚本可以双击运行

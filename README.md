@@ -101,9 +101,30 @@ node scripts/build-all.mjs --dir                       # 只产出免安装目�
 
 | 平台 | 安装版 | 便携版 |
 | --- | --- | --- |
-| macOS | `JShell-0.11.6-arm64.dmg` / `.zip`、`x64` 同名文件 | `JShell-0.11.6-<架构>-portable.zip`（解压即用） |
-| Windows | `JShell-0.11.6-x64-setup.exe`（简体中文 NSIS 向导） | `JShell-0.11.6-x64-portable.exe`（单文件） |
-| Linux | `JShell-0.11.6-x64.AppImage` / `.deb` | — |
+| macOS | `JShell-0.11.7-arm64.dmg` / `.zip`、`x64` 同名文件 | `JShell-0.11.7-<架构>-portable.zip`（解压即用） |
+| Windows | `JShell-0.11.7-x64-setup.exe`（简体中文 NSIS 向导） | `JShell-0.11.7-x64-portable.exe`（单文件） |
+| Linux | `JShell-0.11.7-x64.AppImage` / `.deb` | — |
+
+### 发版（推 GitHub Release）
+
+改完代码、升好版本号并补上 CHANGELOG 章节后：
+
+```bash
+node scripts/tag-release.mjs --dry-run   # 只校验：工作区干净 / CHANGELOG 有该版本 / tag 未占用
+npm run release:tag                      # 打 tag v<版本> 并推送 main 与 tag
+```
+
+推送后 GitHub Actions 会在 macOS 与 Windows 原生环境各构建一次，
+并**自动创建 Release**（正文是该版本的改动 + 下载对应包表格）。
+
+两条通道的分工：
+
+| 动作 | 结果 |
+| --- | --- |
+| `git push origin main` | 只跑构建，产物作为 Actions artifact（保留 90 天） |
+| 打 tag `v<版本>` | 构建 + 创建 GitHub Release，安装包直接挂在 Release 上 |
+
+> 忘记补 CHANGELOG 时脚本会直接拒绝——Release 正文由它生成，缺章节就没有说明可发。
 
 分发、签名、更新通道与发布检查清单见 [docs/06-distribution.md](docs/06-distribution.md)。
 跨平台实现细节与差异见 [docs/05-cross-platform.md](docs/05-cross-platform.md)。

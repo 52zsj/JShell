@@ -20,3 +20,6 @@ build/release-meta.json
 
 # 本地开发工具上下文
 .workbuddy/
+
+# 发版时从 CHANGELOG 抽取的版本说明（CI 生成）
+release-notes.md

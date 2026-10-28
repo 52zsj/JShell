@@ -1,7 +1,7 @@
 {
   "name": "jshell",
   "productName": "JShell",
-  "version": "0.11.6",
+  "version": "0.11.7",
   "private": true,
   "description": "JShell - 跨平台 SSH / 终端管理工作台",
   "author": {
@@ -30,7 +30,9 @@
     "postinstall": "node scripts/fix-native-perms.mjs",
     "check:icons": "node scripts/check-icons.mjs",
     "measure:memory": "node scripts/measure-memory.mjs",
-    "measure:startup": "node scripts/measure-startup.mjs"
+    "measure:startup": "node scripts/measure-startup.mjs",
+    "notes:section": "node scripts/changelog-section.mjs",
+    "release:tag": "node scripts/tag-release.mjs"
   },
   "dependencies": {
     "node-pty": "^1.1.0",
