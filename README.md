@@ -101,9 +101,9 @@ node scripts/build-all.mjs --dir                       # 只产出免安装目�
 
 | 平台 | 安装版 | 便携版 |
 | --- | --- | --- |
-| macOS | `JShell-0.11.0-arm64.dmg` / `.zip`、`x64` 同名文件 | `JShell-0.11.0-<架构>-portable.zip`（解压即用） |
-| Windows | `JShell-0.11.0-x64-setup.exe`（简体中文 NSIS 向导） | `JShell-0.11.0-x64-portable.exe`（单文件） |
-| Linux | `JShell-0.11.0-x64.AppImage` / `.deb` | — |
+| macOS | `JShell-0.11.1-arm64.dmg` / `.zip`、`x64` 同名文件 | `JShell-0.11.1-<架构>-portable.zip`（解压即用） |
+| Windows | `JShell-0.11.1-x64-setup.exe`（简体中文 NSIS 向导） | `JShell-0.11.1-x64-portable.exe`（单文件） |
+| Linux | `JShell-0.11.1-x64.AppImage` / `.deb` | — |
 
 分发、签名、更新通道与发布检查清单见 [docs/06-distribution.md](docs/06-distribution.md)。
 跨平台实现细节与差异见 [docs/05-cross-platform.md](docs/05-cross-platform.md)。

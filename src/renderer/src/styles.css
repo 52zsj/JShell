@@ -488,6 +488,9 @@ button {
   flex: 0 0 17px;
   display: grid;
   place-items: center;
+  /* 必须显式清零：Chrome 对 button 的 UA 默认 padding 是 1px 6px，
+     会把内容区压到 5px 宽，16px 的图标向右溢出，hover 底板与 ✕ 错位 */
+  padding: 0;
   border: 0;
   background: transparent;
   color: inherit;
@@ -1264,6 +1267,8 @@ body.is-resizing {
   flex: 0 0 auto;
   display: grid;
   place-items: center;
+  /* 同 .tab-close：清掉 UA 默认 padding，否则 16px 图标会偏右 */
+  padding: 0;
   border: 0;
   border-radius: 6px;
   background: transparent;
