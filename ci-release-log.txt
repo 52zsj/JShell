@@ -1,0 +1,642 @@
+tag: v0.11.7
+run: 40663310085
+--- artifacts ---
+artifacts:
+jshell-mac
+jshell-win
+
+artifacts/jshell-mac:
+0.11.7
+
+artifacts/jshell-mac/0.11.7:
+JShell-0.11.7-arm64-portable.zip
+JShell-0.11.7-arm64.dmg
+JShell-0.11.7-arm64.zip
+JShell-0.11.7-x64-portable.zip
+JShell-0.11.7-x64.dmg
+JShell-0.11.7-x64.zip
+SHA256SUMS-mac.txt
+mac
+mac-arm64
+安装说明-mac.txt
+
+artifacts/jshell-mac/0.11.7/mac:
+JShell.app
+
+artifacts/jshell-mac/0.11.7/mac/JShell.app:
+Contents
+
+artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents:
+Resources
+
+artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources:
+app.asar.unpacked
+
+artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked:
+node_modules
+
+artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules:
+node-pty
+
+artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty:
+deps
+
+artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps:
+winpty
+
+artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty:
+VERSION.txt
+misc
+
+artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc:
+EnableExtendedFlags.txt
+Font-Report-June2016
+MouseInputNotes.txt
+Notes.txt
+font-notes.txt
+
+artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016:
+CP437-Consolas.txt
+CP437-Lucida.txt
+CP932.txt
+CP936.txt
+CP949.txt
+--- release.log ---
++ set -euo pipefail
++ TAG=v0.11.7
++ ARTIFACTS=artifacts
++ NOTES=release-notes.md
++ '[' -z v0.11.7 ']'
++ '[' '!' -d artifacts ']'
++ FILES=()
++ IFS=
++ read -r -d '' file
+++ find artifacts -type f '(' -name '*.dmg' -o -name '*.zip' -o -name '*-setup.exe' -o -name '*-portable.exe' -o -name '*.txt' ')' '!' -name '*.blockmap' -print0
+++ sort -z
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ FILES+=("$file")
++ IFS=
++ read -r -d '' file
++ '[' 55 -eq 0 ']'
++ echo 'tag: v0.11.7'
+tag: v0.11.7
++ echo '将上传 55 个文件：'
+将上传 55 个文件：
++ printf '  %s\n' artifacts/jshell-mac/0.11.7/JShell-0.11.7-arm64-portable.zip artifacts/jshell-mac/0.11.7/JShell-0.11.7-arm64.dmg artifacts/jshell-mac/0.11.7/JShell-0.11.7-arm64.zip artifacts/jshell-mac/0.11.7/JShell-0.11.7-x64-portable.zip artifacts/jshell-mac/0.11.7/JShell-0.11.7-x64.dmg artifacts/jshell-mac/0.11.7/JShell-0.11.7-x64.zip artifacts/jshell-mac/0.11.7/SHA256SUMS-mac.txt artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/VERSION.txt artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/EnableExtendedFlags.txt artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP437-Consolas.txt artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP437-Lucida.txt artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP932.txt artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP936.txt artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP949.txt artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP950.txt artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/MinimumWindowWidths.txt artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/Results.txt artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/Windows10SetFontBugginess.txt artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/MouseInputNotes.txt artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Notes.txt artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/font-notes.txt artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/VERSION.txt artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/EnableExtendedFlags.txt artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP437-Consolas.txt artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP437-Lucida.txt artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP932.txt artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP936.txt artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP949.txt artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP950.txt artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/MinimumWindowWidths.txt artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/Results.txt artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/Windows10SetFontBugginess.txt artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/MouseInputNotes.txt artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Notes.txt artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/font-notes.txt artifacts/jshell-mac/0.11.7/安装说明-mac.txt artifacts/jshell-win/0.11.7/JShell-0.11.7-x64-portable.exe artifacts/jshell-win/0.11.7/JShell-0.11.7-x64-setup.exe artifacts/jshell-win/0.11.7/SHA256SUMS-win.txt artifacts/jshell-win/0.11.7/win-unpacked/LICENSE.electron.txt artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/VERSION.txt artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/EnableExtendedFlags.txt artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP437-Consolas.txt artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP437-Lucida.txt artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP932.txt artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP936.txt artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP949.txt artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP950.txt artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/MinimumWindowWidths.txt artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/Results.txt artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/Windows10SetFontBugginess.txt artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/MouseInputNotes.txt artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Notes.txt artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/font-notes.txt artifacts/jshell-win/0.11.7/安装说明-win.txt
+  artifacts/jshell-mac/0.11.7/JShell-0.11.7-arm64-portable.zip
+  artifacts/jshell-mac/0.11.7/JShell-0.11.7-arm64.dmg
+  artifacts/jshell-mac/0.11.7/JShell-0.11.7-arm64.zip
+  artifacts/jshell-mac/0.11.7/JShell-0.11.7-x64-portable.zip
+  artifacts/jshell-mac/0.11.7/JShell-0.11.7-x64.dmg
+  artifacts/jshell-mac/0.11.7/JShell-0.11.7-x64.zip
+  artifacts/jshell-mac/0.11.7/SHA256SUMS-mac.txt
+  artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/VERSION.txt
+  artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/EnableExtendedFlags.txt
+  artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP437-Consolas.txt
+  artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP437-Lucida.txt
+  artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP932.txt
+  artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP936.txt
+  artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP949.txt
+  artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP950.txt
+  artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/MinimumWindowWidths.txt
+  artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/Results.txt
+  artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/Windows10SetFontBugginess.txt
+  artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/MouseInputNotes.txt
+  artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Notes.txt
+  artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/font-notes.txt
+  artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/VERSION.txt
+  artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/EnableExtendedFlags.txt
+  artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP437-Consolas.txt
+  artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP437-Lucida.txt
+  artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP932.txt
+  artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP936.txt
+  artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP949.txt
+  artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP950.txt
+  artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/MinimumWindowWidths.txt
+  artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/Results.txt
+  artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/Windows10SetFontBugginess.txt
+  artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/MouseInputNotes.txt
+  artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Notes.txt
+  artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/font-notes.txt
+  artifacts/jshell-mac/0.11.7/安装说明-mac.txt
+  artifacts/jshell-win/0.11.7/JShell-0.11.7-x64-portable.exe
+  artifacts/jshell-win/0.11.7/JShell-0.11.7-x64-setup.exe
+  artifacts/jshell-win/0.11.7/SHA256SUMS-win.txt
+  artifacts/jshell-win/0.11.7/win-unpacked/LICENSE.electron.txt
+  artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/VERSION.txt
+  artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/EnableExtendedFlags.txt
+  artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP437-Consolas.txt
+  artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP437-Lucida.txt
+  artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP932.txt
+  artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP936.txt
+  artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP949.txt
+  artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP950.txt
+  artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/MinimumWindowWidths.txt
+  artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/Results.txt
+  artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/Windows10SetFontBugginess.txt
+  artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/MouseInputNotes.txt
+  artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Notes.txt
+  artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/font-notes.txt
+  artifacts/jshell-win/0.11.7/安装说明-win.txt
++ '[' 0 = 1 ']'
++ '[' '!' -f release-notes.md ']'
++ gh release view v0.11.7
++ echo 'Release v0.11.7 已存在，更新标题与说明'
+Release v0.11.7 已存在，更新标题与说明
++ gh release edit v0.11.7 --title 'JShell v0.11.7' --notes-file release-notes.md
+https://github.com/52zsj/JShell/releases/tag/untagged-d7e2472ed797251688d6
++ FAILED=()
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/JShell-0.11.7-arm64-portable.zip
++ name=JShell-0.11.7-arm64-portable.zip
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/JShell-0.11.7-arm64-portable.zip --clobber
++ echo '  ✓ JShell-0.11.7-arm64-portable.zip'
+  ✓ JShell-0.11.7-arm64-portable.zip
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/JShell-0.11.7-arm64.dmg
++ name=JShell-0.11.7-arm64.dmg
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/JShell-0.11.7-arm64.dmg --clobber
++ echo '  ✓ JShell-0.11.7-arm64.dmg'
+  ✓ JShell-0.11.7-arm64.dmg
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/JShell-0.11.7-arm64.zip
++ name=JShell-0.11.7-arm64.zip
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/JShell-0.11.7-arm64.zip --clobber
++ echo '  ✓ JShell-0.11.7-arm64.zip'
+  ✓ JShell-0.11.7-arm64.zip
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/JShell-0.11.7-x64-portable.zip
++ name=JShell-0.11.7-x64-portable.zip
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/JShell-0.11.7-x64-portable.zip --clobber
++ echo '  ✓ JShell-0.11.7-x64-portable.zip'
+  ✓ JShell-0.11.7-x64-portable.zip
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/JShell-0.11.7-x64.dmg
++ name=JShell-0.11.7-x64.dmg
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/JShell-0.11.7-x64.dmg --clobber
++ echo '  ✓ JShell-0.11.7-x64.dmg'
+  ✓ JShell-0.11.7-x64.dmg
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/JShell-0.11.7-x64.zip
++ name=JShell-0.11.7-x64.zip
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/JShell-0.11.7-x64.zip --clobber
++ echo '  ✓ JShell-0.11.7-x64.zip'
+  ✓ JShell-0.11.7-x64.zip
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/SHA256SUMS-mac.txt
++ name=SHA256SUMS-mac.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/SHA256SUMS-mac.txt --clobber
++ echo '  ✓ SHA256SUMS-mac.txt'
+  ✓ SHA256SUMS-mac.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/VERSION.txt
++ name=VERSION.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/VERSION.txt --clobber
++ echo '  ✓ VERSION.txt'
+  ✓ VERSION.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/EnableExtendedFlags.txt
++ name=EnableExtendedFlags.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/EnableExtendedFlags.txt --clobber
++ echo '  ✓ EnableExtendedFlags.txt'
+  ✓ EnableExtendedFlags.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP437-Consolas.txt
++ name=CP437-Consolas.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP437-Consolas.txt --clobber
++ echo '  ✓ CP437-Consolas.txt'
+  ✓ CP437-Consolas.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP437-Lucida.txt
++ name=CP437-Lucida.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP437-Lucida.txt --clobber
++ echo '  ✓ CP437-Lucida.txt'
+  ✓ CP437-Lucida.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP932.txt
++ name=CP932.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP932.txt --clobber
++ echo '  ✓ CP932.txt'
+  ✓ CP932.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP936.txt
++ name=CP936.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP936.txt --clobber
++ echo '  ✓ CP936.txt'
+  ✓ CP936.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP949.txt
++ name=CP949.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP949.txt --clobber
++ echo '  ✓ CP949.txt'
+  ✓ CP949.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP950.txt
++ name=CP950.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP950.txt --clobber
++ echo '  ✓ CP950.txt'
+  ✓ CP950.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/MinimumWindowWidths.txt
++ name=MinimumWindowWidths.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/MinimumWindowWidths.txt --clobber
++ echo '  ✓ MinimumWindowWidths.txt'
+  ✓ MinimumWindowWidths.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/Results.txt
++ name=Results.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/Results.txt --clobber
++ echo '  ✓ Results.txt'
+  ✓ Results.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/Windows10SetFontBugginess.txt
++ name=Windows10SetFontBugginess.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/Windows10SetFontBugginess.txt --clobber
++ echo '  ✓ Windows10SetFontBugginess.txt'
+  ✓ Windows10SetFontBugginess.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/MouseInputNotes.txt
++ name=MouseInputNotes.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/MouseInputNotes.txt --clobber
++ echo '  ✓ MouseInputNotes.txt'
+  ✓ MouseInputNotes.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Notes.txt
++ name=Notes.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Notes.txt --clobber
++ echo '  ✓ Notes.txt'
+  ✓ Notes.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/font-notes.txt
++ name=font-notes.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac-arm64/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/font-notes.txt --clobber
++ echo '  ✓ font-notes.txt'
+  ✓ font-notes.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/VERSION.txt
++ name=VERSION.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/VERSION.txt --clobber
++ echo '  ✓ VERSION.txt'
+  ✓ VERSION.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/EnableExtendedFlags.txt
++ name=EnableExtendedFlags.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/EnableExtendedFlags.txt --clobber
++ echo '  ✓ EnableExtendedFlags.txt'
+  ✓ EnableExtendedFlags.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP437-Consolas.txt
++ name=CP437-Consolas.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP437-Consolas.txt --clobber
++ echo '  ✓ CP437-Consolas.txt'
+  ✓ CP437-Consolas.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP437-Lucida.txt
++ name=CP437-Lucida.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP437-Lucida.txt --clobber
++ echo '  ✓ CP437-Lucida.txt'
+  ✓ CP437-Lucida.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP932.txt
++ name=CP932.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP932.txt --clobber
++ echo '  ✓ CP932.txt'
+  ✓ CP932.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP936.txt
++ name=CP936.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP936.txt --clobber
++ echo '  ✓ CP936.txt'
+  ✓ CP936.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP949.txt
++ name=CP949.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP949.txt --clobber
++ echo '  ✓ CP949.txt'
+  ✓ CP949.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP950.txt
++ name=CP950.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP950.txt --clobber
++ echo '  ✓ CP950.txt'
+  ✓ CP950.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/MinimumWindowWidths.txt
++ name=MinimumWindowWidths.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/MinimumWindowWidths.txt --clobber
++ echo '  ✓ MinimumWindowWidths.txt'
+  ✓ MinimumWindowWidths.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/Results.txt
++ name=Results.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/Results.txt --clobber
++ echo '  ✓ Results.txt'
+  ✓ Results.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/Windows10SetFontBugginess.txt
++ name=Windows10SetFontBugginess.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/Windows10SetFontBugginess.txt --clobber
++ echo '  ✓ Windows10SetFontBugginess.txt'
+  ✓ Windows10SetFontBugginess.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/MouseInputNotes.txt
++ name=MouseInputNotes.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/MouseInputNotes.txt --clobber
++ echo '  ✓ MouseInputNotes.txt'
+  ✓ MouseInputNotes.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Notes.txt
++ name=Notes.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Notes.txt --clobber
++ echo '  ✓ Notes.txt'
+  ✓ Notes.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/font-notes.txt
++ name=font-notes.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/mac/JShell.app/Contents/Resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/font-notes.txt --clobber
++ echo '  ✓ font-notes.txt'
+  ✓ font-notes.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-mac/0.11.7/安装说明-mac.txt
++ name=安装说明-mac.txt
++ gh release upload v0.11.7 artifacts/jshell-mac/0.11.7/安装说明-mac.txt --clobber
++ echo '  ✓ 安装说明-mac.txt'
+  ✓ 安装说明-mac.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-win/0.11.7/JShell-0.11.7-x64-portable.exe
++ name=JShell-0.11.7-x64-portable.exe
++ gh release upload v0.11.7 artifacts/jshell-win/0.11.7/JShell-0.11.7-x64-portable.exe --clobber
++ echo '  ✓ JShell-0.11.7-x64-portable.exe'
+  ✓ JShell-0.11.7-x64-portable.exe
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-win/0.11.7/JShell-0.11.7-x64-setup.exe
++ name=JShell-0.11.7-x64-setup.exe
++ gh release upload v0.11.7 artifacts/jshell-win/0.11.7/JShell-0.11.7-x64-setup.exe --clobber
++ echo '  ✓ JShell-0.11.7-x64-setup.exe'
+  ✓ JShell-0.11.7-x64-setup.exe
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-win/0.11.7/SHA256SUMS-win.txt
++ name=SHA256SUMS-win.txt
++ gh release upload v0.11.7 artifacts/jshell-win/0.11.7/SHA256SUMS-win.txt --clobber
++ echo '  ✓ SHA256SUMS-win.txt'
+  ✓ SHA256SUMS-win.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-win/0.11.7/win-unpacked/LICENSE.electron.txt
++ name=LICENSE.electron.txt
++ gh release upload v0.11.7 artifacts/jshell-win/0.11.7/win-unpacked/LICENSE.electron.txt --clobber
++ echo '  ✓ LICENSE.electron.txt'
+  ✓ LICENSE.electron.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/VERSION.txt
++ name=VERSION.txt
++ gh release upload v0.11.7 artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/VERSION.txt --clobber
++ echo '  ✓ VERSION.txt'
+  ✓ VERSION.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/EnableExtendedFlags.txt
++ name=EnableExtendedFlags.txt
++ gh release upload v0.11.7 artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/EnableExtendedFlags.txt --clobber
++ echo '  ✓ EnableExtendedFlags.txt'
+  ✓ EnableExtendedFlags.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP437-Consolas.txt
++ name=CP437-Consolas.txt
++ gh release upload v0.11.7 artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP437-Consolas.txt --clobber
++ echo '  ✓ CP437-Consolas.txt'
+  ✓ CP437-Consolas.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP437-Lucida.txt
++ name=CP437-Lucida.txt
++ gh release upload v0.11.7 artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP437-Lucida.txt --clobber
++ echo '  ✓ CP437-Lucida.txt'
+  ✓ CP437-Lucida.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP932.txt
++ name=CP932.txt
++ gh release upload v0.11.7 artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP932.txt --clobber
++ echo '  ✓ CP932.txt'
+  ✓ CP932.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP936.txt
++ name=CP936.txt
++ gh release upload v0.11.7 artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP936.txt --clobber
++ echo '  ✓ CP936.txt'
+  ✓ CP936.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP949.txt
++ name=CP949.txt
++ gh release upload v0.11.7 artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP949.txt --clobber
++ echo '  ✓ CP949.txt'
+  ✓ CP949.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP950.txt
++ name=CP950.txt
++ gh release upload v0.11.7 artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/CP950.txt --clobber
++ echo '  ✓ CP950.txt'
+  ✓ CP950.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/MinimumWindowWidths.txt
++ name=MinimumWindowWidths.txt
++ gh release upload v0.11.7 artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/MinimumWindowWidths.txt --clobber
++ echo '  ✓ MinimumWindowWidths.txt'
+  ✓ MinimumWindowWidths.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/Results.txt
++ name=Results.txt
++ gh release upload v0.11.7 artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/Results.txt --clobber
++ echo '  ✓ Results.txt'
+  ✓ Results.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/Windows10SetFontBugginess.txt
++ name=Windows10SetFontBugginess.txt
++ gh release upload v0.11.7 artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Font-Report-June2016/Windows10SetFontBugginess.txt --clobber
++ echo '  ✓ Windows10SetFontBugginess.txt'
+  ✓ Windows10SetFontBugginess.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/MouseInputNotes.txt
++ name=MouseInputNotes.txt
++ gh release upload v0.11.7 artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/MouseInputNotes.txt --clobber
++ echo '  ✓ MouseInputNotes.txt'
+  ✓ MouseInputNotes.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Notes.txt
++ name=Notes.txt
++ gh release upload v0.11.7 artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/Notes.txt --clobber
++ echo '  ✓ Notes.txt'
+  ✓ Notes.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/font-notes.txt
++ name=font-notes.txt
++ gh release upload v0.11.7 artifacts/jshell-win/0.11.7/win-unpacked/resources/app.asar.unpacked/node_modules/node-pty/deps/winpty/misc/font-notes.txt --clobber
++ echo '  ✓ font-notes.txt'
+  ✓ font-notes.txt
++ for file in "${FILES[@]}"
+++ basename artifacts/jshell-win/0.11.7/安装说明-win.txt
++ name=安装说明-win.txt
++ gh release upload v0.11.7 artifacts/jshell-win/0.11.7/安装说明-win.txt --clobber
++ echo '  ✓ 安装说明-win.txt'
+  ✓ 安装说明-win.txt
++ '[' 0 -gt 0 ']'
++ echo '✓ 已上传 55 个附件到 v0.11.7'
+✓ 已上传 55 个附件到 v0.11.7
