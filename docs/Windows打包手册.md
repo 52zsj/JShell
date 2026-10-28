@@ -111,3 +111,29 @@ node scripts/build-all.mjs --win --arch x64 --skip-build
 4. 产物在 GitHub Releases 页面下载
 
 详见 `.github/workflows/release.yml`。
+
+## 开始菜单显示 Electron 的排查
+
+桌面快捷方式正常、但开始菜单还是 Electron 图标和文字时，按顺序查：
+
+```powershell
+# 1. 只读诊断：列出开始菜单/桌面所有相关快捷方式、指向、产品名、已安装版本
+powershell -ExecutionPolicy Bypass -File scripts\windows\diagnose-startmenu.ps1
+
+# 2. 预览要清理的残留项（不加 -Apply 只打印，不删除）
+powershell -ExecutionPolicy Bypass -File scripts\windows\fix-startmenu.ps1
+
+# 3. 确认后真正清理，并刷新图标缓存
+powershell -ExecutionPolicy Bypass -File scripts\windows\fix-startmenu.ps1 -Apply
+```
+
+三种典型结论：
+
+| 诊断结果 | 含义 | 处理 |
+| --- | --- | --- |
+| 只有 `Electron.lnk`，没有 `JShell 终端.lnk` | 装的是**便携版**（便携版不创建任何快捷方式），或安装器没跑完 | 用 `*-setup.exe` 重新安装 |
+| 同时有 `Electron.lnk` 和 `JShell 终端.lnk` | 旧版本残留 | `fix-startmenu.ps1 -Apply` 删旧的 |
+| 只有 `JShell 终端.lnk`，图标却是旧的 | Windows 图标缓存 | `ie4uinit.exe -show`，或重启资源管理器 |
+
+新版安装器已经内置清理（`build/installer.nsh` 的 `customInstall`），
+覆盖安装时会自动删掉遗留的 `Electron.lnk`，不需要每台机器手工处理。

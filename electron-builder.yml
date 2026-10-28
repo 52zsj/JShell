@@ -120,6 +120,10 @@ nsis:
   installerIcon: build/icon.ico
   uninstallerIcon: build/icon.ico
   installerHeaderIcon: build/icon.ico
+  # 安装时清理旧版本留下的 Electron 快捷方式（见 build/installer.nsh）
+  include: build/installer.nsh
+  # 开始菜单不建二级文件夹，直接用「JShell 终端」这一项
+  menuCategory: false
 
 # 便携版：单个 exe，双击即用；数据写在与 exe 同级的 JShell-Data 目录
 portable:
