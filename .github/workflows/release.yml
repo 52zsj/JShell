@@ -55,7 +55,22 @@ jobs:
         run: node scripts/check-icons.mjs
 
       - name: 单元测试
-        run: npm test
+        shell: bash
+        # tee 一份日志：失败时下一步把关键行写进运行摘要，不用下载日志就能定位
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee "$RUNNER_TEMP/test.log"
+
+      - name: 测试失败摘要
+        if: failure()
+        shell: bash
+        run: |
+          {
+            echo "### 单元测试失败（${{ matrix.platform }}）"
+            echo '```'
+            grep -E "^(not ok|# fail|# pass|  ---|    error:|    expected:|    actual:|      \+ |      - )" "$RUNNER_TEMP/test.log" | head -60
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: 类型检查
         run: npm run typecheck
