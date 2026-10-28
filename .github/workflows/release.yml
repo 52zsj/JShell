@@ -1,0 +1,146 @@
+name: 构建与发布
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+  push:
+    # 推主分支也跑：不需要本地打包环境就能拿到双平台产物
+    branches: [main]
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: 构建（${{ matrix.platform }}）
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # macOS 同时产出 Apple Silicon 与 Intel 的 dmg / zip / 便携版
+          - os: macos-14
+            platform: mac
+            arch: 'arm64,x64'
+          - os: windows-latest
+            platform: win
+            arch: 'x64'
+          - os: ubuntu-22.04
+            platform: linux
+            arch: 'x64'
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 准备 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: 安装 Linux 编译依赖
+        if: matrix.platform == 'linux'
+        # node-pty 在 Linux 没有预编译产物，npm install 时会用 node-gyp 源码编译
+        run: sudo apt-get update && sudo apt-get install -y build-essential python3
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 图标资源检查
+        # 格式/尺寸不全时 Windows 会回退到默认 Electron 图标，这里提前拦住
+        run: node scripts/check-icons.mjs
+
+      - name: 单元测试
+        run: npm test
+
+      - name: 类型检查与编译
+        run: npm run build
+
+      - name: 生成发布元信息
+        run: npm run meta
+        env:
+          # 内部渠道：更新地址留空，应用不发起任何网络请求
+          JSHELL_CHANNEL: internal
+
+      - name: 打包（安装版 + 便携版）
+        run: node scripts/build-all.mjs --${{ matrix.platform }} --arch ${{ matrix.arch }} --skip-build
+        env:
+          # 未配置证书时产出未签名包（可直接内网分发）
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JSHELL_CHANNEL: internal
+
+      - name: 校验 Windows exe 图标与版本信息
+        # 交叉打包时 rcedit 会被跳过，exe 里只剩 Electron 默认图标与名称。
+        # Windows runner 上必须写入成功，这里做成硬性校验。
+        if: matrix.platform == 'win'
+        shell: pwsh
+        run: |
+          $version = node -p "require('./package.json').version"
+          $exe = "release/$version/win-unpacked/JShell.exe"
+          if (-not (Test-Path $exe)) { throw "找不到 $exe" }
+          $info = (Get-Item $exe).VersionInfo
+          Write-Host "ProductName   : $($info.ProductName)"
+          Write-Host "FileDescription: $($info.FileDescription)"
+          Write-Host "CompanyName   : $($info.CompanyName)"
+          if ($info.ProductName -ne 'JShell') { throw "exe 产品名不是 JShell：$($info.ProductName)" }
+          if ($info.FileDescription -notmatch 'JShell') { throw "exe 文件描述没写入：$($info.FileDescription)" }
+          if ($info.OriginalFilename -ne 'JShell.exe') { throw "exe 原始文件名不对：$($info.OriginalFilename)" }
+
+      - name: 打包冒烟
+        if: matrix.platform != 'linux'
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [ "${{ matrix.platform }}" = "mac" ]; then
+            "release/$VERSION/mac-arm64/JShell.app/Contents/MacOS/JShell" --smoke-test --user-data-dir="$RUNNER_TEMP/jshell-smoke"
+          else
+            "./release/$VERSION/win-unpacked/JShell.exe" --smoke-test --user-data-dir="$RUNNER_TEMP/jshell-smoke"
+          fi
+
+      - name: 区分平台分发说明
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          cd "release/$VERSION"
+          [ -f 安装说明.txt ] && mv 安装说明.txt "安装说明-${{ matrix.platform }}.txt" || true
+          [ -f SHA256SUMS.txt ] && mv SHA256SUMS.txt "SHA256SUMS-${{ matrix.platform }}.txt" || true
+
+      - name: 上传产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: jshell-${{ matrix.platform }}
+          path: |
+            release/**/*.dmg
+            release/**/*.zip
+            release/**/*-setup.exe
+            release/**/*-portable.exe
+            release/**/*.txt
+            release/**/*.AppImage
+            release/**/*.deb
+          if-no-files-found: error
+
+  release:
+    name: 发布到 GitHub Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 下载全部产物
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: 创建 Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*
+          # 版本说明使用中文 CHANGELOG 的对应章节，避免自动生成英文说明
+          body_path: CHANGELOG.md
