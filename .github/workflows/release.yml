@@ -167,19 +167,26 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -o pipefail
-          bash scripts/upload-release.sh 2>&1 | tee "$RUNNER_TEMP/release.log"
+          bash -x scripts/upload-release.sh 2>&1 | tee "$RUNNER_TEMP/release.log"
 
-      - name: Release 失败摘要
-        # 把最后的报错写成注解：不用下载日志，运行页面直接能看到
-        if: failure()
+      - name: 把发布日志推到 ci-diag 分支
+        # 临时诊断：Actions 日志需要登录才能看，这里把日志提交到一个分支，
+        # 维护者用 git 就能读到真实报错。排查完可以删掉这一步。
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           {
-            echo '### Release 上传失败'
-            echo '```'
-            tail -30 "$RUNNER_TEMP/release.log" 2>/dev/null || echo '（没有捕到日志）'
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-          MSG=$(tail -12 "$RUNNER_TEMP/release.log" 2>/dev/null | tr '\n' ' ' | tr -s ' ' | cut -c1-800)
-          echo "::error title=Release 上传失败::${MSG:-没有日志，检查 upload 步骤}"
-          echo '--- artifacts 目录 ---'
-          ls -R artifacts 2>/dev/null | head -40 || true
+            echo "tag: ${GITHUB_REF_NAME}"
+            echo "run: ${GITHUB_RUN_ID}"
+            echo '--- artifacts ---'
+            ls -R artifacts 2>/dev/null | head -60 || echo '(无 artifacts 目录)'
+            echo '--- release.log ---'
+            cat "$RUNNER_TEMP/release.log" 2>/dev/null || echo '(没有 release.log)'
+          } > ci-release-log.txt
+          git config user.name 'github-actions'
+          git config user.email 'actions@github.com'
+          git checkout -B ci-diag
+          git add -f ci-release-log.txt
+          git commit -m "ci-diag: ${GITHUB_REF_NAME} ${GITHUB_RUN_ID}" || true
+          git push -f origin ci-diag
