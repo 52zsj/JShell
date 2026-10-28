@@ -162,11 +162,29 @@ jobs:
         # 只取当前版本那一节，避免把整份 CHANGELOG 贴进 Release
         run: node scripts/changelog-section.mjs
 
-      - name: 创建 Release
-        uses: softprops/action-gh-release@v2
-        with:
-          name: JShell ${{ github.ref_name }}
-          files: artifacts/**/*
-          body_path: release-notes.md
-          draft: false
-          generate_release_notes: false
+      - name: 创建/更新 Release 并上传安装包
+        # 不用 softprops/action-gh-release：它在更新资产时会因为重名文件报
+        # "Not Found - update-a-release-asset"，导致 Release 建出来但没有附件。
+        # gh CLI 的 --clobber 能直接覆盖，行为更可预期。
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --title "JShell $TAG" --notes-file release-notes.md
+          else
+            gh release create "$TAG" --title "JShell $TAG" --notes-file release-notes.md
+          fi
+
+          # 只传真正的产物；GitHub 自动附带的 source.zip/tar.gz 不算
+          mapfile -t FILES < <(find artifacts -type f \
+            \( -name '*.dmg' -o -name '*.zip' -o -name '*-setup.exe' -o -name '*-portable.exe' -o -name '*.txt' \) \
+            ! -name '*.blockmap' | sort)
+          if [ "${#FILES[@]}" -eq 0 ]; then
+            echo "没有找到可上传的产物，检查 artifacts 目录" >&2
+            exit 1
+          fi
+          printf '将上传 %d 个文件：\n' "${#FILES[@]}"
+          printf '  %s\n' "${FILES[@]}"
+          gh release upload "$TAG" "${FILES[@]}" --clobber
