@@ -122,8 +122,12 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
               <section className="sync-section">
                 <h3>自动同步</h3>
                 <p className="sync-hint">
-                  把同一个同步包固定放在云盘目录（或自己的服务器）上：本机改动后自动写回，
-                  别的设备改动后自动拉取。拉取前仍然会做检测，遇到「会覆盖本机较新改动」默认先暂停。
+                  把配置固定放在一个共享位置（云盘目录或你自己的服务器）上：本机改动后自动写回，
+                  别的设备改动后自动拉取，多台机器始终一致。
+                </p>
+                <p className="sync-hint">
+                  和「配置包」的区别：配置包是手动拷文件；自动同步是长期开着、自己来回同步。
+                  拉取前仍然会做检测，遇到「会覆盖本机较新改动」默认先暂停。
                 </p>
                 <label className="sync-scope">
                   <input

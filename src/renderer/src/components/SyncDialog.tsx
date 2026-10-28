@@ -76,7 +76,7 @@ export function SyncDialog({ onClose }: Props) {
   const [scopes, setScopes] = useState<SyncScope[]>(DEFAULT_SCOPES)
   const [usePassword, setUsePassword] = useState(true)
   const [password, setPassword] = useState('')
-  const [passwordAgain, setPasswordAgain] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [busy, setBusy] = useState(false)
   const [exported, setExported] = useState<SyncExportResult | null>(null)
 
@@ -190,10 +190,6 @@ export function SyncDialog({ onClose }: Props) {
     if (usePassword) {
       if (password.length < MIN_PASSWORD_LENGTH) {
         pushToast(`口令至少 ${MIN_PASSWORD_LENGTH} 位`, 'error')
-        return
-      }
-      if (password !== passwordAgain) {
-        pushToast('两次输入的口令不一致', 'error')
         return
       }
     }
@@ -343,7 +339,12 @@ export function SyncDialog({ onClose }: Props) {
     <div className="modal-mask" onClick={close}>
       <div className="modal wide sync-modal" onClick={(event) => event.stopPropagation()}>
         <header className="modal-head">
-          <h2>数据共享</h2>
+          <div>
+            <h2>配置包</h2>
+            <p className="sync-intro">
+              把主机与设置打成一个文件，拷到另一台机器导入，就能多机统一配置。
+            </p>
+          </div>
           <button className="icon-btn" onClick={close} title="关闭">
             <IconClose />
           </button>
@@ -354,13 +355,13 @@ export function SyncDialog({ onClose }: Props) {
             className={cx('sync-tab', tab === 'export' && 'is-active')}
             onClick={() => setTab('export')}
           >
-            导出同步包
+            生成配置包
           </button>
           <button
             className={cx('sync-tab', tab === 'import' && 'is-active')}
             onClick={() => setTab('import')}
           >
-            导入同步包
+            导入配置包
           </button>
           <button
             className={cx('sync-tab', tab === 'auto' && 'is-active')}
@@ -385,44 +386,30 @@ export function SyncDialog({ onClose }: Props) {
           {tab === 'export' ? (
             <>
               <section className="sync-section">
-                <h3>放在哪里</h3>
+                <h3>保存到哪里</h3>
                 <p className="sync-hint">
-                  同步包就是一个普通文件，放哪儿都行。三种方式互相独立，没有云盘也能用。
+                  配置包就是一个普通文件，放哪儿都行。默认存成文件；放进云盘目录可以自动同步，
+                  复制到剪贴板适合临时传给另一台设备。
                 </p>
-                <div className="sync-dests">
+                <div className="sync-dest-row">
                   <button
-                    className={cx('sync-dest', dest === 'file' && 'is-active')}
+                    className={cx('btn', dest === 'file' ? 'btn-primary' : 'btn-ghost')}
                     onClick={() => setDest('file')}
                   >
-                    <span className="sync-dest-icon">
-                      <IconSave />
-                    </span>
-                    <strong>选择文件…</strong>
-                    <em>任意位置：桌面、U 盘、局域网共享、自建网盘挂载点</em>
+                    <IconSave /> 保存到文件…
                   </button>
                   <button
-                    className={cx('sync-dest', dest === 'folder' && 'is-active')}
+                    className={cx('btn', dest === 'folder' ? 'btn-primary' : 'btn-ghost')}
                     onClick={() => setDest('folder')}
                   >
-                    <span className="sync-dest-icon">
-                      <IconCloud />
-                    </span>
-                    <strong>云盘目录</strong>
-                    <em>
-                      {targets.length > 0
-                        ? `已发现 ${targets.length} 个同步目录`
-                        : '未发现云盘：改用「选择文件…」即可'}
-                    </em>
+                    <IconCloud /> 云盘目录
+                    {targets.length > 0 && <span className="sync-badge">{targets.length}</span>}
                   </button>
                   <button
-                    className={cx('sync-dest', dest === 'clipboard' && 'is-active')}
+                    className={cx('btn', dest === 'clipboard' ? 'btn-primary' : 'btn-ghost')}
                     onClick={() => setDest('clipboard')}
                   >
-                    <span className="sync-dest-icon">
-                      <IconClipboard />
-                    </span>
-                    <strong>复制到剪贴板</strong>
-                    <em>临时传给另一台设备：粘贴进备忘录或聊天窗口</em>
+                    <IconClipboard /> 复制到剪贴板
                   </button>
                 </div>
 
@@ -452,25 +439,38 @@ export function SyncDialog({ onClose }: Props) {
               </section>
 
               <section className="sync-section">
-                <h3>同步什么</h3>
-                <div className="sync-scopes">
-                  {SYNC_SCOPES.map((item) => (
-                    <label className="sync-scope" key={item.id}>
-                      <input
-                        type="checkbox"
-                        checked={scopes.includes(item.id)}
-                        onChange={() => toggleScope(item.id)}
-                      />
-                      <span className="sync-scope-body">
-                        <strong>
-                          {item.label}
-                          {item.sensitive && <span className="sync-badge warn">敏感</span>}
-                        </strong>
-                        <em>{item.hint}</em>
-                      </span>
-                    </label>
-                  ))}
-                </div>
+                <h3>包含内容</h3>
+                {/* 不受控的 details：默认收起，用户自己决定要不要展开看细节 */}
+                <details className="sync-advanced">
+                  <summary>
+                    <span className="sync-summary-text">
+                      {scopes.length === SYNC_SCOPES.length
+                        ? '全部内容（主机与分组 · 命令片段 · 转发设置 · 端口转发规则）'
+                        : `已选 ${scopes.length} 项：${scopes
+                            .map((id) => SYNC_SCOPES.find((item) => item.id === id)?.label ?? id)
+                            .join('、')}`}
+                    </span>
+                    <span className="sync-summary-hint">点击调整</span>
+                  </summary>
+                  <div className="sync-scopes">
+                    {SYNC_SCOPES.map((item) => (
+                      <label className="sync-scope" key={item.id}>
+                        <input
+                          type="checkbox"
+                          checked={scopes.includes(item.id)}
+                          onChange={() => toggleScope(item.id)}
+                        />
+                        <span className="sync-scope-body">
+                          <strong>
+                            {item.label}
+                            {item.sensitive && <span className="sync-badge warn">敏感</span>}
+                          </strong>
+                          <em>{item.hint}</em>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </details>
               </section>
 
               <section className="sync-section">
@@ -502,24 +502,23 @@ export function SyncDialog({ onClose }: Props) {
                   <div className="sync-password">
                     <label className="field">
                       <span>口令</span>
-                      <input
-                        className="input"
-                        type="password"
-                        autoComplete="new-password"
-                        value={password}
-                        placeholder={`至少 ${MIN_PASSWORD_LENGTH} 位，导入时需输入`}
-                        onChange={(event) => setPassword(event.target.value)}
-                      />
-                    </label>
-                    <label className="field">
-                      <span>再输一次</span>
-                      <input
-                        className="input"
-                        type="password"
-                        autoComplete="new-password"
-                        value={passwordAgain}
-                        onChange={(event) => setPasswordAgain(event.target.value)}
-                      />
+                      <div className="sync-password-row">
+                        <input
+                          className="input"
+                          type={showPassword ? 'text' : 'password'}
+                          autoComplete="new-password"
+                          value={password}
+                          placeholder={`至少 ${MIN_PASSWORD_LENGTH} 位，导入时需输入`}
+                          onChange={(event) => setPassword(event.target.value)}
+                        />
+                        <button
+                          className="btn btn-ghost"
+                          type="button"
+                          onClick={() => setShowPassword((v) => !v)}
+                        >
+                          {showPassword ? '隐藏' : '显示'}
+                        </button>
+                      </div>
                     </label>
                     {password && (
                       <p className={cx('sync-strength', `is-${strength}`)}>
@@ -540,7 +539,7 @@ export function SyncDialog({ onClose }: Props) {
 
               {exported && (
                 <div className="sync-result">
-                  <div className="sync-result-title">已生成同步包</div>
+                  <div className="sync-result-title">已生成配置包</div>
                   <div className="sync-result-body">
                     {exported.clipboard ? (
                       <span>已复制到剪贴板（{formatBytes(exported.bytes ?? 0)}）</span>
@@ -588,10 +587,10 @@ export function SyncDialog({ onClose }: Props) {
               ) : (
                 <>
                   <section className="sync-section">
-                    <h3>从哪里读取</h3>
+                    <h3>读取配置包</h3>
                     <div className="sync-sources">
                       <button
-                        className="btn btn-ghost"
+                        className="btn btn-primary"
                         disabled={busy}
                         onClick={() => void runInspect({ kind: 'file' })}
                       >
@@ -663,7 +662,7 @@ export function SyncDialog({ onClose }: Props) {
 
                     {!inspect && !folderTarget && (
                       <p className="sync-hint">
-                        同步包是一个 <code>.jshellsync</code> 文件。可以选任意位置的文件、云盘{' '}
+                        配置包是一个 <code>.jshellsync</code> 文件。可以选任意位置的文件、云盘{' '}
                         <code>JShell</code> 目录里的历史包，或直接粘贴复制到剪贴板的包内容。
                         加密包会在读取后提示输入口令。
                       </p>
@@ -769,7 +768,7 @@ export function SyncDialog({ onClose }: Props) {
                 取消
               </button>
               <button className="btn btn-primary" disabled={busy} onClick={() => void runExport()}>
-                {busy ? '处理中…' : '生成同步包'}
+                {busy ? '处理中…' : '生成配置包'}
               </button>
             </>
           ) : (

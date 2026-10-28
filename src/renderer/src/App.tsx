@@ -356,10 +356,10 @@ export default function App() {
           <button
             className="btn btn-ghost"
             onClick={() => setRsyncOpen(true)}
-            title="rsync 同步（全局工具，支持断点续传与重试）"
+            title="文件传输：在本机与服务器之间传文件（rsync，支持断点续传与重试）"
           >
             <IconSync />
-            同步
+            文件传输
           </button>
           <button
             className="icon-btn"

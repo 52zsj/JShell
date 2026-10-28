@@ -191,8 +191,12 @@ export function RsyncWizard({ onClose, onDone, defaultHostId, defaultRemoteDir }
         <header className="modal-head">
           <h2>
             <IconSync />
-            rsync 同步
+            文件传输
           </h2>
+          <p className="sync-intro">
+            在本机和服务器之间传文件（rsync）。适合整目录同步、增量续传；想临时看几个文件，
+            用终端里的 SFTP 文件面板更方便。
+          </p>
           <button className="icon-btn" onClick={onClose} title="关闭" disabled={running}>
             <IconClose />
           </button>
@@ -459,7 +463,7 @@ export function RsyncWizard({ onClose, onDone, defaultHostId, defaultRemoteDir }
               disabled={!capability?.available}
               onClick={() => void start()}
             >
-              开始同步
+              开始传输
             </button>
           )}
           {step === 4 && running && (
@@ -467,7 +471,7 @@ export function RsyncWizard({ onClose, onDone, defaultHostId, defaultRemoteDir }
               className="btn btn-ghost"
               onClick={() => void window.jshell.rsync.cancel(taskId.current)}
             >
-              取消同步
+              取消传输
             </button>
           )}
           {step === 4 && task?.status === 'error' && (

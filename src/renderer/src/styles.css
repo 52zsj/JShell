@@ -2937,6 +2937,82 @@ input[type='range'] {
 }
 
 /* 导入来源 */
+/* ---------------- 配置包（数据共享）简化后的样式 ---------------- */
+
+/* 标题下的一句用途说明 */
+.sync-intro {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-dim);
+  max-width: 46ch;
+}
+
+/* 保存位置：主入口一行，不再是三张大卡片 */
+.sync-dest-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.sync-dest-row .btn {
+  justify-content: center;
+}
+
+/* 折叠区（包含内容等次要选项） */
+.sync-advanced {
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.sync-advanced > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.sync-advanced > summary::-webkit-details-marker {
+  display: none;
+}
+
+.sync-advanced > summary:hover {
+  background: var(--bg-hover);
+}
+
+.sync-summary-text {
+  font-size: 12.5px;
+  color: var(--text);
+}
+
+.sync-summary-hint {
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+
+.sync-advanced > .sync-scopes {
+  padding: 4px 12px 12px;
+  border-top: 1px solid var(--border);
+}
+
+/* 口令：单输入框 + 显示/隐藏 */
+.sync-password-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.sync-password-row .input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 .sync-sources {
   display: flex;
   gap: 8px;

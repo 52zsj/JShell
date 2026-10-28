@@ -10,7 +10,7 @@ interface Props {
   isMac: boolean
   bindings: Bindings
   onClose: () => void
-  /** 打开「数据共享」面板（同步包导出/导入） */
+  /** 打开「配置包」面板（配置导出/导入） */
   onOpenSync: () => void
 }
 
@@ -138,7 +138,7 @@ export function SettingsDialog({ isMac, bindings, onClose, onOpenSync }: Props) 
               ['terminal', '终端'],
               ['shortcuts', '快捷键'],
               ['hosts', '主机与连接'],
-              ['files', '文件与同步'],
+              ['files', '文件与配置'],
               ['integration', '系统集成'],
               ['about', '关于']
             ].map(([id, label]) => (
@@ -402,7 +402,7 @@ export function SettingsDialog({ isMac, bindings, onClose, onOpenSync }: Props) 
           </section>
 
           <section className="settings-section" hidden={tab !== 'files'}>
-            <h3>文件与同步</h3>
+            <h3>文件与目录</h3>
             <div className="tile-grid">
               <label className="tile">
                 <input
@@ -426,7 +426,7 @@ export function SettingsDialog({ isMac, bindings, onClose, onOpenSync }: Props) 
               </div>
               <div className="tile is-static">
                 <span className="tile-body">
-                  <strong>rsync 同步</strong>
+                  <strong>文件传输（rsync）</strong>
                   <em>标题栏「同步」：支持本机上传/下载、服务器间中转、断点续传与失败重试</em>
                 </span>
               </div>
@@ -441,15 +441,16 @@ export function SettingsDialog({ isMac, bindings, onClose, onOpenSync }: Props) 
               rsync 需要本机与远端都安装 rsync（macOS 自带 2.6.9 可用，但安装 3.1+ 才有整体百分比与剩余时间）。
             </p>
 
-            <h3 className="settings-sub">数据共享</h3>
+            <h3 className="settings-sub">配置包</h3>
             <div className="settings-actions">
               <button className="btn btn-primary" onClick={onOpenSync}>
-                打开数据共享…
+                生成 / 导入配置包…
               </button>
             </div>
             <p className="notice">
-              导出 / 导入加密同步包：可存到任意文件夹、iCloud / OneDrive / Dropbox / 坚果云等同步目录，
-              或直接用剪贴板在两台设备之间传递。选择口令加密后，云盘里只有密文。
+              把主机与设置打成一个加密文件，拷到另一台机器导入，即可多机统一配置。
+              可存到任意文件夹、放进 iCloud / OneDrive / Dropbox / 坚果云等云盘目录自动同步，
+              或用剪贴板临时传递。加密后云盘里只有密文。
             </p>
           </section>
 
