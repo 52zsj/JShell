@@ -1,6 +1,7 @@
 import { app, dialog, shell } from 'electron'
 import fs from 'node:fs'
 import path from 'node:path'
+import { LOG_KEEP_DAYS, SIZE_CHECK_EVERY, pruneOldLogs, rotateIfTooLarge } from './log-files'
 
 type LogLevel = 'info' | 'warn' | 'error'
 
@@ -10,9 +11,6 @@ const LEVEL_TEXT: Record<LogLevel, string> = {
   error: '错误'
 }
 
-/** 单文件上限：超过后重命名为 .1.log 重新开始，避免长期使用把磁盘写满 */
-const MAX_BYTES = 5 * 1024 * 1024
-
 /**
  * 轻量文件日志。
  *
@@ -21,6 +19,8 @@ const MAX_BYTES = 5 * 1024 * 1024
  */
 class Logger {
   private dirCache: string | null = null
+  /** 距上次体积检查已写入的行数 */
+  private linesSinceCheck = SIZE_CHECK_EVERY
 
   getDir(): string {
     if (this.dirCache) return this.dirCache
@@ -65,10 +65,10 @@ class Logger {
 
     try {
       const file = this.file()
-      try {
-        if (fs.statSync(file).size > MAX_BYTES) fs.renameSync(file, `${file}.1`)
-      } catch {
-        /* 文件不存在时忽略 */
+      // 体积检查不必每行都做：5MB 内一行日志改变不了什么，statSync 反而是主线程开销
+      if (++this.linesSinceCheck >= SIZE_CHECK_EVERY) {
+        this.linesSinceCheck = 0
+        rotateIfTooLarge(file)
       }
       fs.appendFileSync(file, line, { mode: 0o600 })
     } catch {
@@ -90,6 +90,12 @@ class Logger {
 }
 
 export const log = new Logger()
+
+/** 启动时清一次过期日志，避免长期使用无限增长 */
+export function pruneLogsOnStartup(): void {
+  const removed = pruneOldLogs(log.getDir())
+  if (removed > 0) log.info(`已清理 ${removed} 个过期日志文件（保留 ${LOG_KEEP_DAYS} 天）`)
+}
 
 /** 用系统文件管理器打开日志目录 */
 export async function openLogDir(): Promise<void> {

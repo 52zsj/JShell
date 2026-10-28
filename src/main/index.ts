@@ -7,7 +7,7 @@ import { createContext, registerIpc, type AppContext } from './ipc'
 import { applyPortableDataDir, getPortableState, portableHint, appVersion } from './services/app-env'
 import { copySelection, isTerminalFocused, pasteInto, selectAll } from './services/clipboard'
 import { syncLaunchAtLogin } from './services/login-item'
-import { installProcessHandlers, log, openLogDir } from './services/logger'
+import { installProcessHandlers, log, openLogDir, pruneLogsOnStartup } from './services/logger'
 import { configureNotifications } from './services/notifications'
 import { TrayService } from './services/tray'
 import { loadReleaseInfo } from './services/update'
@@ -359,6 +359,9 @@ app.whenReady().then(() => {
     }
   })
   trayService.create()
+
+  // 清掉过期日志：每天一个文件，不清理会随使用年限无限增长
+  pruneLogsOnStartup()
 
   const meta = loadReleaseInfo()
   log.info(

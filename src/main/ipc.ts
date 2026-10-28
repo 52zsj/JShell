@@ -291,9 +291,13 @@ export function registerIpc(ctx: AppContext, getWindow: () => BrowserWindow | nu
       sessions.openLocal(size, sessionId, shellPath)
   )
   handle(IPC.sessionClose, (sessionId: string) => sessions.close(sessionId))
-  handle(IPC.sessionWrite, (sessionId: string, data: string) => sessions.require(sessionId).write(data))
+  // 键盘输入走单向通道：不需要回执，省掉每次按键的 IPC 往返。
+  // 会话不在就直接丢弃——标签页刚关时输入还在路上是常态。
+  ipcMain.on(IPC.sessionWrite, (_event, sessionId: string, data: string) => {
+    sessions.get(sessionId)?.write(data)
+  })
   handle(IPC.sessionResize, (sessionId: string, cols: number, rows: number) =>
-    sessions.require(sessionId).resize(cols, rows)
+    sessions.get(sessionId)?.resize(cols, rows)
   )
 
   // ------------------------------------------------------------------- SFTP

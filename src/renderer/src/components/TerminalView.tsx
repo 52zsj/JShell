@@ -55,10 +55,21 @@ export function TerminalView({ sessionId, active, settings, onContextMenu }: Pro
     textarea?.addEventListener('focus', handleFocus)
     textarea?.addEventListener('blur', handleBlur)
 
-    const observer = new ResizeObserver(() => fitTerminal(sessionId))
+    // 尺寸变化合并到下一帧再 fit：拖窗口时 ResizeObserver 一帧可能回调多次，
+    // 每次都 fit 会重复测量 DOM 并向主进程发多余的 resize IPC
+    let frame = 0
+    const scheduleFit = (): void => {
+      if (frame) return
+      frame = requestAnimationFrame(() => {
+        frame = 0
+        fitTerminal(sessionId)
+      })
+    }
+    const observer = new ResizeObserver(scheduleFit)
     observer.observe(container)
 
     return () => {
+      if (frame) cancelAnimationFrame(frame)
       observer.disconnect()
       textarea?.removeEventListener('focus', handleFocus)
       textarea?.removeEventListener('blur', handleBlur)

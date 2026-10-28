@@ -67,7 +67,8 @@ export interface JShellApi {
       shellPath?: string
     ): Promise<OpenSessionResult>
     close(sessionId: string): Promise<void>
-    write(sessionId: string, data: string): Promise<void>
+    /** 键盘输入：单向通知，不等回执（每次按键都往返一次会拖慢输入） */
+    write(sessionId: string, data: string): void
     resize(sessionId: string, cols: number, rows: number): Promise<void>
   }
   sftp: {

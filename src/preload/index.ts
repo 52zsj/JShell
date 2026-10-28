@@ -25,7 +25,7 @@ const api: JShellApi = {
     openLocal: (size, sessionId, shellPath) =>
       ipcRenderer.invoke(IPC.sessionOpenLocal, size, sessionId, shellPath),
     close: (sessionId) => ipcRenderer.invoke(IPC.sessionClose, sessionId),
-    write: (sessionId, data) => ipcRenderer.invoke(IPC.sessionWrite, sessionId, data),
+    write: (sessionId, data) => ipcRenderer.send(IPC.sessionWrite, sessionId, data),
     resize: (sessionId, cols, rows) => ipcRenderer.invoke(IPC.sessionResize, sessionId, cols, rows)
   },
   sftp: {
