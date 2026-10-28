@@ -57,8 +57,12 @@ jobs:
       - name: 单元测试
         run: npm test
 
-      - name: 类型检查与编译
-        run: npm run build
+      - name: 类型检查
+        run: npm run typecheck
+
+      - name: 编译
+        # 拆开执行：失败时能直接看出是类型问题还是打包问题
+        run: npx electron-vite build
 
       - name: 生成发布元信息
         run: npm run meta
