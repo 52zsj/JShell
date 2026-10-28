@@ -127,8 +127,14 @@ jobs:
         run: |
           VERSION=$(node -p "require('./package.json').version")
           cd "release/$VERSION"
-          [ -f 安装说明.txt ] && mv 安装说明.txt "安装说明-${{ matrix.platform }}.txt" || true
-          [ -f SHA256SUMS.txt ] && mv SHA256SUMS.txt "SHA256SUMS-${{ matrix.platform }}.txt" || true
+          # Windows runner 的 bash 按系统代码页处理文件名，中文名会被吃掉
+          # （曾经把「安装说明-mac.txt」传成了「-mac.txt」），这里统一用 ASCII 名
+          for f in *.txt; do
+            case "$f" in
+              SHA256SUMS.txt) mv -- "$f" "SHA256SUMS-${{ matrix.platform }}.txt" ;;
+              *) mv -- "$f" "INSTALL-${{ matrix.platform }}.txt" ;;
+            esac
+          done
 
       - name: 上传产物
         uses: actions/upload-artifact@v4
