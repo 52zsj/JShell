@@ -1,8 +1,9 @@
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import '@xterm/xterm/css/xterm.css'
 import type { AppSettings } from '@shared/types'
 import { acquireTerminal, fitTerminal, getTerminal, hiddenScrollback, setFocusedSession, setTerminalVisible } from '../terminal-registry'
 import { useAppStore } from '../store'
+import { acceptanceSequence, matchSuggestion, type SnippetSuggestion } from '../snippet-suggest'
 import { getTerminalTheme } from '../themes'
 
 interface Props {
@@ -24,6 +25,9 @@ interface Props {
  */
 export function TerminalView({ sessionId, active, settings, onContextMenu }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
+  /** 当前输入行能补全成的命令（片段触发词） */
+  const [suggestion, setSuggestion] = useState<SnippetSuggestion | null>(null)
+  const suggestionRef = useRef<SnippetSuggestion | null>(null)
   const settingsRef = useRef(settings)
   settingsRef.current = settings
 
@@ -65,6 +69,45 @@ export function TerminalView({ sessionId, active, settings, onContextMenu }: Pro
         fitTerminal(sessionId)
       })
     }
+    // ---- 片段补全：像 shell 的 alias 一样，输入触发词按 Tab 补全 ----
+    const applySuggestion = (next: SnippetSuggestion | null): void => {
+      const current = suggestionRef.current
+      // 只有内容真的变了才更新，避免每次渲染都触发 React 重渲染
+      if (current === next) return
+      if (current && next && current.typed === next.typed && current.full === next.full) return
+      suggestionRef.current = next
+      setSuggestion(next)
+    }
+    const updateSuggestion = (): void => {
+      const term = getTerminal(sessionId)
+      if (!term) return
+      const buffer = term.buffer.active
+      const line = buffer.getLine(buffer.cursorY)
+      if (!line) {
+        applySuggestion(null)
+        return
+      }
+      // 只看光标处的最后一个词：整行里还带着 shell 提示符（`~ gps`），
+      // 而且触发词就是命令名所在的那个词
+      const before = line.translateToString(true).slice(0, buffer.cursorX)
+      const token = before.match(/[^\s]*$/)?.[0] ?? ''
+      applySuggestion(matchSuggestion(useAppStore.getState().snippets, token))
+    }
+    // 必须用 onRender（渲染完成后）而不是 onData（用户输入时）：
+    // onData 触发时 pty 还没回显，xterm buffer 里还是旧内容，匹配不到触发词
+    const renderDisposable = entry.term.onRender(() => updateSuggestion())
+    // xterm 的 attachCustomKeyEventHandler 返回 void，没有 dispose
+    entry.term.attachCustomKeyEventHandler((event) => {
+      if (event.type !== 'keydown' || event.key !== 'Tab') return true
+      const current = suggestionRef.current
+      if (!current) return true
+      event.preventDefault()
+      // 先退格删掉已经输入的触发词，再写补全后的整行；不代为回车，交给用户确认
+      window.jshell.sessions.write(sessionId, acceptanceSequence(current))
+      applySuggestion(null)
+      return false
+    })
+
     const observer = new ResizeObserver(scheduleFit)
     observer.observe(container)
 
@@ -73,6 +116,7 @@ export function TerminalView({ sessionId, active, settings, onContextMenu }: Pro
       observer.disconnect()
       textarea?.removeEventListener('focus', handleFocus)
       textarea?.removeEventListener('blur', handleBlur)
+      renderDisposable.dispose()
       // 只摘除宿主节点，不销毁终端（终端生命周期由会话决定）
       if (entry.host.parentElement === container) container.removeChild(entry.host)
     }
@@ -121,6 +165,17 @@ export function TerminalView({ sessionId, active, settings, onContextMenu }: Pro
         event.preventDefault()
         onContextMenu?.(event)
       }}
-    />
+    >
+      {suggestion && (
+        <div className="snippet-suggest">
+          <span className="snippet-suggest-from">
+            {suggestion.matchedAlias ?? suggestion.snippet.name}
+          </span>
+          <span className="snippet-suggest-arrow">→</span>
+          <code>{suggestion.full.slice(suggestion.typed.length) || suggestion.full}</code>
+          <em>Tab 补全</em>
+        </div>
+      )}
+    </div>
   )
 }

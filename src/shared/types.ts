@@ -193,6 +193,8 @@ export interface Snippet {
   id: string
   name: string
   command: string
+  /** 触发词：在终端里输入它，按 Tab 可补全成整条命令（像 shell 的 alias） */
+  alias?: string
   createdAt: number
 }
 

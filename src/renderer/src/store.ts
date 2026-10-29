@@ -122,7 +122,7 @@ interface AppState {
   /** 信任新指纹并重连（指纹变更弹窗里的「信任」按钮） */
   trustHostKey: () => Promise<void>
   dismissHostKeyPrompt: () => void
-  saveSnippet: (input: { id?: string; name: string; command: string }) => Promise<void>
+  saveSnippet: (input: { id?: string; name: string; command: string; alias?: string }) => Promise<void>
   removeSnippet: (id: string) => Promise<void>
   pushToast: (text: string, kind?: Toast['kind']) => void
   dismissToast: (id: string) => void

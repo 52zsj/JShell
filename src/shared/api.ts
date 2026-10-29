@@ -165,7 +165,7 @@ export interface JShellApi {
   }
   snippets: {
     list(): Promise<Snippet[]>
-    save(input: { id?: string; name: string; command: string }): Promise<Snippet>
+    save(input: { id?: string; name: string; command: string; alias?: string }): Promise<Snippet>
     remove(id: string): Promise<void>
   }
   tunnels: {

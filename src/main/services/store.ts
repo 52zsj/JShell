@@ -603,13 +603,14 @@ export class StoreService {
     return [...this.state.snippets].sort((a, b) => a.createdAt - b.createdAt)
   }
 
-  saveSnippet(input: { id?: string; name: string; command: string }): Snippet {
+  saveSnippet(input: { id?: string; name: string; command: string; alias?: string }): Snippet {
     if (!input.command.trim()) throw new Error('命令内容不能为空')
     const existing = input.id ? this.state.snippets.find((s) => s.id === input.id) : undefined
     const snippet: Snippet = {
       id: existing?.id ?? randomUUID(),
       name: input.name.trim() || input.command.slice(0, 24),
       command: input.command,
+      alias: input.alias?.trim() || undefined,
       createdAt: existing?.createdAt ?? Date.now()
     }
     if (existing) {

@@ -555,7 +555,7 @@ export function registerIpc(ctx: AppContext, getWindow: () => BrowserWindow | nu
   })
 
   handle(IPC.snippetList, () => store.listSnippets())
-  handle(IPC.snippetSave, (input: { id?: string; name: string; command: string }) =>
+  handle(IPC.snippetSave, (input: { id?: string; name: string; command: string; alias?: string }) =>
     store.saveSnippet(input)
   )
   handle(IPC.snippetRemove, (id: string) => store.deleteSnippet(id))

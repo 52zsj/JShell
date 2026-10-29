@@ -690,6 +690,7 @@ body.is-resizing {
 }
 
 .terminal-wrap {
+  position: relative;
   flex: 1;
   min-height: 0;
   padding: 6px 4px 2px 8px;
@@ -1085,6 +1086,57 @@ body.is-resizing {
   font-size: 12px;
   color: var(--text-faint);
   line-height: 1.6;
+}
+
+/* 片段列表：触发词标签 */
+.snippet-alias {
+  align-self: flex-start;
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: var(--accent-soft, rgba(80, 160, 255, 0.16));
+  color: var(--accent, #4a9eff);
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+/* 终端里的片段补全提示 */
+.snippet-suggest {
+  position: absolute;
+  left: 10px;
+  bottom: 8px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--bg-elevated, rgba(22, 24, 30, 0.94));
+  color: var(--text);
+  font-size: 12px;
+  pointer-events: none;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.snippet-suggest-from {
+  font-family: var(--font-mono, monospace);
+  color: var(--accent, #4a9eff);
+}
+
+.snippet-suggest-arrow {
+  color: var(--text-faint);
+}
+
+.snippet-suggest code {
+  font-family: var(--font-mono, monospace);
+  color: var(--text);
+}
+
+.snippet-suggest em {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--text-faint);
 }
 
 .snippet-item {
