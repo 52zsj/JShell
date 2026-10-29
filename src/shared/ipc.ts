@@ -75,6 +75,9 @@ export const IPC = {
   syncAutoApply: 'sync:auto-apply',
   syncAutoPick: 'sync:auto-pick',
   syncAutoTest: 'sync:auto-test',
+  syncAutoPathAdd: 'sync:auto-path-add',
+  syncAutoPathRename: 'sync:auto-path-rename',
+  syncAutoPathRemove: 'sync:auto-path-remove',
 
   settingsGet: 'settings:get',
   settingsUpdate: 'settings:update',

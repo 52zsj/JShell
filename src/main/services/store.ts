@@ -5,7 +5,7 @@ import path from 'node:path'
 import { sanitizeLayout } from '../../shared/layout-schema'
 import { DEFAULT_SETTINGS, sanitizeSettings } from '../../shared/settings'
 import type { SyncCredential, SyncScope, SyncTransportKind } from '../../shared/sync'
-import { SYNC_SCOPES } from '../../shared/sync'
+import { SYNC_SCOPES, AutoSyncPath} from '../../shared/sync'
 import type {
   AppSettings,
   HostDraft,
@@ -51,6 +51,8 @@ export interface StoredAutoSync {
   /** WebDAV 通道：目录地址 / 用户名（密码单独封装） */
   webdavUrl?: string
   webdavUsername?: string
+  /** 用户手动添加的同步路径（本机私有，不随配置包同步） */
+  paths?: AutoSyncPath[]
   scopes: SyncScope[]
   pushLocalChanges: boolean
   pullRemoteChanges: boolean
@@ -560,7 +562,11 @@ export class StoreService {
   }
 
   getAutoSync(): StoredAutoSync {
-    return { ...this.autoSync, scopes: [...this.autoSync.scopes] }
+    return {
+      ...this.autoSync,
+      scopes: [...this.autoSync.scopes],
+      paths: (this.autoSync.paths ?? []).map((item) => ({ ...item }))
+    }
   }
 
   saveAutoSync(patch: Partial<StoredAutoSync>): StoredAutoSync {

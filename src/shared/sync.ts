@@ -360,6 +360,26 @@ export const SYNC_AUTO_FILE = 'jshell-auto.jshellsync'
 /** 传输方式：本地/云盘目录、SFTP 自有服务器、或 WebDAV */
 export type SyncTransportKind = 'folder' | 'sftp' | 'webdav'
 
+/**
+ * 用户手动添加的同步路径。
+ *
+ * 自动探测只认各网盘客户端的约定位置，自建网盘、NAS/SMB、U 盘、
+ * 装在非默认路径的网盘都探测不到，所以留一个手动入口。
+ *
+ * 存在 sync.json（自动同步配置）里，**不进配置包**——路径是本机的，
+ * 别的机器上不存在，同步过去反而添乱。
+ */
+export interface AutoSyncPath {
+  id: string
+  /** 显示名，如「坚果云(公司)」 */
+  label: string
+  /** 绝对路径 */
+  dir: string
+}
+
+/** 自定义路径在 targetId 里的前缀，避免和探测出来的网盘 id 冲突 */
+export const CUSTOM_PATH_PREFIX = 'custom:'
+
 export interface AutoSyncConfig {
   enabled: boolean
   transport: SyncTransportKind
@@ -377,6 +397,8 @@ export interface AutoSyncConfig {
   webdavUrl?: string
   /** WebDAV：用户名（密码单独存，只回 hasWebdavPassword） */
   webdavUsername?: string
+  /** 用户手动添加的同步路径（本机私有，不随配置包同步） */
+  paths?: AutoSyncPath[]
   scopes: SyncScope[]
   /** 本机配置变化后自动写回远端 */
   pushLocalChanges: boolean

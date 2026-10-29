@@ -86,6 +86,9 @@ const api: JShellApi = {
     applyPending: () => ipcRenderer.invoke(IPC.syncAutoApply),
     pick: () => ipcRenderer.invoke(IPC.syncAutoPick),
     test: () => ipcRenderer.invoke(IPC.syncAutoTest),
+    addPath: () => ipcRenderer.invoke(IPC.syncAutoPathAdd),
+    renamePath: (id, label) => ipcRenderer.invoke(IPC.syncAutoPathRename, id, label),
+    removePath: (id) => ipcRenderer.invoke(IPC.syncAutoPathRemove, id),
     onStatus: (listener) => {
       ipcRenderer.removeAllListeners(IPC.evtSyncAuto)
       ipcRenderer.on(IPC.evtSyncAuto, (_event, state) => listener(state))

@@ -6,6 +6,7 @@ import {
   type AutoSyncPatch,
   type SyncScope,
   type SyncTarget,
+  CUSTOM_PATH_PREFIX,
   pickDefaultTarget
 } from '@shared/sync'
 import { useAppStore } from '../../store'
@@ -76,6 +77,9 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
     [pushToast, setAutoSync]
   )
 
+  /** 用户手动添加的同步路径（本机私有） */
+  const customPaths = auto?.paths ?? []
+
   /** 自动挑一个网盘目录：上次用过的 → 唯一检测到的 → 最近活跃的 */
   const defaultTarget = useMemo(
     () => pickDefaultTarget(targets, auto?.targetId),
@@ -89,8 +93,10 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
         await patchAuto({ transport: kind })
         return
       }
-      const picked = pickDefaultTarget(targets, auto?.targetId)
-      await patchAuto({ transport: 'folder', targetId: picked?.id ?? '' })
+      const current = auto?.targetId
+      const keep = current && current.startsWith(CUSTOM_PATH_PREFIX) ? current : ''
+      const picked = pickDefaultTarget(targets, keep || undefined)
+      await patchAuto({ transport: 'folder', targetId: picked?.id ?? keep })
     },
     [targets, auto?.targetId, patchAuto]
   )
@@ -99,8 +105,10 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
   useEffect(() => {
     if ((auto?.transport ?? 'folder') !== 'folder') return
     const current = auto?.targetId
-    if (current === 'custom') return
-    if (current && targets.some((t) => t.id === current)) return
+    // 手动添加的路径也算「已经选好了」，别用自动挑选把它覆盖掉
+    if (current && (current.startsWith(CUSTOM_PATH_PREFIX) || targets.some((t) => t.id === current))) {
+      return
+    }
     if (!defaultTarget) return
     void patchAuto({ targetId: defaultTarget.id })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -236,20 +244,29 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                           onChange={(event) => void patchAuto({ targetId: event.target.value })}
                         >
                           <option value="">（未选择）</option>
-                          {auto?.targetId === 'custom' && auto.dir && (
-                            <option value="custom">{auto.targetLabel ?? '自定义目录'}</option>
+                          {targets.length > 0 && (
+                            <optgroup label="自动探测的网盘">
+                              {targets.map((target) => (
+                                <option key={target.id} value={target.id}>
+                                  {target.label} — {target.dir}
+                                </option>
+                              ))}
+                            </optgroup>
                           )}
-                          {targets.map((target) => (
-                            <option key={target.id} value={target.id}>
-                              {target.label} — {target.dir}
-                            </option>
-                          ))}
+                          {customPaths.length > 0 && (
+                            <optgroup label="我添加的路径">
+                              {customPaths.map((item) => (
+                                <option key={item.id} value={`${CUSTOM_PATH_PREFIX}${item.id}`}>
+                                  {item.label} — {item.dir}
+                                </option>
+                              ))}
+                            </optgroup>
+                          )}
                         </select>
                         <p className="sync-hint">
                           这些目录是<strong>自动探测</strong>出来的（打开面板就扫一遍本机）：
                           iCloud / OneDrive / Dropbox / Google 云端硬盘 / 坚果云 / 百度网盘 / Nextcloud。
                           只有一个时直接选中；多个时优先用你上次选过的，再按最近活跃排序。
-                          列表里没有你的网盘？用下面的「改用其他目录…」指到它的同步目录即可。
                         </p>
                       </>
                     )}
@@ -259,14 +276,56 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                         disabled={autoBusy}
                         onClick={() =>
                           void window.jshell.autoSync
-                            .pick()
+                            .addPath()
                             .then((state) => setAutoSync(state))
                             .catch((err) => pushToast(errorMessage(err), 'error'))
                         }
                       >
-                        改用其他目录…
+                        ＋ 添加同步路径
                       </button>
                     </div>
+                    <p className="sync-hint">
+                      探测不到你的网盘（自建网盘、NAS / 共享盘、U 盘、装在非默认路径的客户端），
+                      就点上面加一条，指定目录后可以随时改名字。路径只存在本机，不会跟着配置包跑到别的机器上。
+                    </p>
+                    {customPaths.length > 0 && (
+                      <div className="sync-path-list">
+                        {customPaths.map((item) => (
+                          <div className="sync-path-row" key={item.id}>
+                            <input
+                              key={`${item.id}:${item.label}`}
+                              className="input"
+                              defaultValue={item.label}
+                              disabled={autoBusy}
+                              aria-label="路径名称"
+                              onBlur={(event) => {
+                                const next = event.target.value.trim()
+                                if (!next || next === item.label) return
+                                void window.jshell.autoSync
+                                  .renamePath(item.id, next)
+                                  .then((state) => setAutoSync(state))
+                                  .catch((err) => pushToast(errorMessage(err), 'error'))
+                              }}
+                            />
+                            <span className="mono" title={item.dir}>
+                              {item.dir}
+                            </span>
+                            <button
+                              className="btn btn-ghost"
+                              disabled={autoBusy}
+                              onClick={() =>
+                                void window.jshell.autoSync
+                                  .removePath(item.id)
+                                  .then((state) => setAutoSync(state))
+                                  .catch((err) => pushToast(errorMessage(err), 'error'))
+                              }
+                            >
+                              删除
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     <p className="sync-hint">
                       文件固定为 <code>&lt;目录&gt;/JShell/jshell-auto.jshellsync</code>，
                       反复同步不会在目录里堆出一堆副本。

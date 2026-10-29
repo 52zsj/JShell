@@ -148,6 +148,12 @@ export interface JShellApi {
     applyPending(): Promise<AutoSyncRunResult>
     /** 系统对话框选择任意目录（网络共享、加密盘等不在探测列表里的位置） */
     pick(): Promise<AutoSyncState>
+    /** 弹目录选择器，添加一个自定义同步路径（本机私有，不随配置包同步） */
+    addPath(): Promise<AutoSyncState>
+    /** 给自定义同步路径改名 */
+    renamePath(id: string, label: string): Promise<AutoSyncState>
+    /** 删除自定义同步路径 */
+    removePath(id: string): Promise<AutoSyncState>
     /** 自检当前同步位置：目录可读写、SFTP 能连上并建目录 */
     test(): Promise<AutoSyncTestResult>
     onStatus(listener: (state: AutoSyncState) => void): void

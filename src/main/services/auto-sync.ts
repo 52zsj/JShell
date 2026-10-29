@@ -1,6 +1,7 @@
 import { dialog, type BrowserWindow } from 'electron'
 import path from 'node:path'
 import {
+  CUSTOM_PATH_PREFIX,
   SYNC_AUTO_FILE,
   SYNC_SCOPES,
   type AutoSyncPatch,
@@ -29,7 +30,7 @@ import { createSftpTransport, normalizeRemoteDir } from './sftp-transport'
 import { createWebdavTransport, normalizeWebdavUrl } from './webdav-transport'
 import { createFolderTransport, type SyncTransport } from './sync-transport'
 import { detectSyncTargets, ensureSyncFolder } from './sync-targets'
-import type { StoreService } from './store'
+import type { StoredAutoSync, StoreService } from './store'
 
 /** 本机改动后延迟推送：合并短时间内的连续编辑，避免每改一个字就写一次云盘 */
 const PUSH_DEBOUNCE_MS = 1500
@@ -154,6 +155,7 @@ export class AutoSyncService {
       webdavUrl: config.webdavUrl,
       webdavUsername: config.webdavUsername,
       hasWebdavPassword: Boolean(config.webdavPassword),
+      paths: (config.paths ?? []).map((item) => ({ ...item })),
       scopes: [...config.scopes],
       pushLocalChanges: config.pushLocalChanges,
       pullRemoteChanges: config.pullRemoteChanges,
@@ -198,6 +200,14 @@ export class AutoSyncService {
         dir = ''
         targetId = ''
         targetLabel = undefined
+      } else if (patch.targetId.startsWith(CUSTOM_PATH_PREFIX)) {
+        // 用户手动添加的路径
+        const customId = patch.targetId.slice(CUSTOM_PATH_PREFIX.length)
+        const hit = (current.paths ?? []).find((item) => item.id === customId)
+        if (!hit) throw new SyncError('该同步路径已被删除，请重新选择')
+        targetId = patch.targetId
+        targetLabel = hit.label
+        dir = ensureSyncFolder(hit.dir)
       } else {
         const hit = detectSyncTargets().find((item) => item.id === patch.targetId)
         if (!hit) throw new SyncError('该同步目录已不存在，请重新选择')
@@ -296,6 +306,71 @@ export class AutoSyncService {
    * 「选择文件夹…」：目录由主进程的系统对话框选出，渲染层不传任何路径。
    * 覆盖「云盘不在探测列表里」的情况——例如网络共享、加密盘、自建同步目录。
    */
+  /**
+   * 添加一个自定义同步路径。
+   *
+   * 自动探测只认各网盘客户端的约定位置，自建网盘、NAS/SMB、U 盘、
+   * 装在非默认路径的网盘都探测不到，所以留这个手动入口。
+   */
+  async addCustomPath(win: BrowserWindow | null): Promise<AutoSyncState> {
+    const options = {
+      title: '选择同步路径',
+      properties: ['openDirectory', 'createDirectory'] as Array<'openDirectory' | 'createDirectory'>
+    }
+    const result = win
+      ? await dialog.showOpenDialog(win, options)
+      : await dialog.showOpenDialog(options)
+    if (result.canceled || result.filePaths.length === 0) return this.state()
+
+    const chosen = result.filePaths[0]
+    const current = this.store.getAutoSync()
+    const paths = [...(current.paths ?? [])]
+    // 同一个目录不重复添加
+    if (!paths.some((item) => item.dir === chosen)) {
+      paths.push({
+        id: `p${Date.now().toString(36)}${Math.floor(Math.random() * 1e4).toString(36)}`,
+        label: path.basename(chosen) || chosen,
+        dir: chosen
+      })
+    }
+    this.store.saveAutoSync({ paths })
+    this.emit()
+    return this.state()
+  }
+
+  /** 给自定义路径改名 */
+  renameCustomPath(id: string, label: string): AutoSyncState {
+    const current = this.store.getAutoSync()
+    const paths = [...(current.paths ?? [])]
+    const hit = paths.find((item) => item.id === id)
+    if (!hit) throw new SyncError('该同步路径已被删除')
+    const next = label.trim()
+    if (!next) throw new SyncError('名称不能为空')
+    hit.label = next
+    this.store.saveAutoSync({ paths })
+    // 当前正在用它的话，标签也要跟着更新
+    if (current.targetId === `${CUSTOM_PATH_PREFIX}${id}`) {
+      this.store.saveAutoSync({ targetLabel: next })
+    }
+    this.emit()
+    return this.state()
+  }
+
+  /** 删掉一个自定义路径；若正在用它，同步位置一并清空 */
+  removeCustomPath(id: string): AutoSyncState {
+    const current = this.store.getAutoSync()
+    const paths = (current.paths ?? []).filter((item) => item.id !== id)
+    const patch: Partial<StoredAutoSync> = { paths }
+    if (current.targetId === `${CUSTOM_PATH_PREFIX}${id}`) {
+      patch.dir = ''
+      patch.targetId = ''
+      patch.targetLabel = undefined
+    }
+    this.store.saveAutoSync(patch)
+    this.emit()
+    return this.state()
+  }
+
   async pickDirectory(win: BrowserWindow | null): Promise<AutoSyncState> {
     const options = {
       title: '选择自动同步目录',

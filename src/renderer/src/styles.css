@@ -3034,6 +3034,39 @@ input[type='range'] {
   white-space: nowrap;
 }
 
+/* 自动同步：手动添加的同步路径列表 */
+.sync-path-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.sync-path-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 9px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg);
+}
+
+.sync-path-row .input {
+  flex: 0 0 150px;
+  max-width: 180px;
+}
+
+.sync-path-row .mono {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 11.5px;
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .sync-sources {
   display: flex;
   gap: 8px;
