@@ -2,7 +2,7 @@ import os from 'node:os'
 import path from 'node:path'
 import * as pty from 'node-pty'
 import { mapErrorToChinese } from '../../shared/errors'
-import type { SessionEvent, SessionStatus } from '../../shared/types'
+import type { SessionCloseReason, SessionEvent, SessionStatus } from '../../shared/types'
 import { OutputBuffer } from './output-buffer'
 import { buildEnv, shellArgs } from './shells'
 import type { TerminalSession } from './types'
@@ -47,8 +47,12 @@ export class LocalSession implements TerminalSession {
     )
   }
 
-  private emitStatus(status: SessionStatus, message?: string): void {
-    this.deps.emit({ type: 'status', sessionId: this.id, status, message })
+  private emitStatus(
+    status: SessionStatus,
+    message?: string,
+    reason?: SessionCloseReason
+  ): void {
+    this.deps.emit({ type: 'status', sessionId: this.id, status, message, reason })
   }
 
   start(size: { cols: number; rows: number }): void {
@@ -71,7 +75,13 @@ export class LocalSession implements TerminalSession {
         this.closed = true
         // 用户主动关闭时不重复上报，避免关闭分屏后弹一条「进程已退出」
         if (!this.closing) {
-          this.emitStatus('closed', signal ? `进程被信号 ${signal} 终止` : `进程已退出（code ${exitCode}）`)
+          // 本地终端没有「网络断线」这回事：进程退出就是用户退出（或 shell 结束），
+          // 明确标成 user-exit，避免被自动重连立刻拉起来
+          this.emitStatus(
+            'closed',
+            signal ? `进程被信号 ${signal} 终止` : `进程已退出（code ${exitCode}）`,
+            'user-exit'
+          )
         }
       })
 

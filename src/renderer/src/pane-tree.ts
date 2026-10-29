@@ -1,4 +1,4 @@
-import type { SessionKind, SessionStatus } from '@shared/types'
+import type {SessionKind, SessionStatus, SessionCloseReason} from '@shared/types'
 
 export type PaneMode = 'terminal' | 'files'
 
@@ -9,6 +9,8 @@ export interface PaneState {
   mode: PaneMode
   status: SessionStatus
   message?: string
+  /** 断开原因：决定要不要自动重连（用户 exit 不该重连） */
+  closeReason?: SessionCloseReason
   title: string
   subtitle: string
   hostId?: string

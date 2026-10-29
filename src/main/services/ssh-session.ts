@@ -5,7 +5,12 @@ import { Client } from 'ssh2'
 import type { ClientChannel, ConnectConfig, SFTPWrapper } from 'ssh2'
 import { mapErrorToChinese } from '../../shared/errors'
 import { expandUserPath } from '../../shared/paths'
-import type { HostProfile, SessionEvent, SessionStatus } from '../../shared/types'
+import type {
+  HostProfile,
+  SessionCloseReason,
+  SessionEvent,
+  SessionStatus
+} from '../../shared/types'
 import { OscCwdScanner, buildShellIntegrationHook, SHELL_HOOK_MARKER } from './osc-cwd'
 import { fingerprintOf, hostKeyAlgorithm } from './ssh-fingerprint'
 import { OutputBuffer } from './output-buffer'
@@ -54,6 +59,12 @@ export class SshSession implements TerminalSession {
   private closed = false
   /** 用户主动关闭（区别于网络中断）：关闭后不再上报错误，避免关闭标签页时弹提示 */
   private closing = false
+  /** SSH 客户端连接本身是否已经没了（用于区分「用户 exit」和「网络断开」） */
+  private clientGone = false
+  /** 认证失败（口令/密钥不被接受）：重试没意义 */
+  private authFailed = false
+  /** 主机指纹不匹配：必须人工确认 */
+  private hostKeyFailed = false
 
   constructor(id: string, host: HostProfile, deps: SshSessionDeps) {
     this.id = id
@@ -79,9 +90,23 @@ export class SshSession implements TerminalSession {
     this.deps.emit(event)
   }
 
-  private emitStatus(status: SessionStatus, message?: string): void {
+  private emitStatus(status: SessionStatus, message?: string, reason?: SessionCloseReason): void {
     this.status = status
-    this.emit({ type: 'status', sessionId: this.id, status, message })
+    this.emit({ type: 'status', sessionId: this.id, status, message, reason })
+  }
+
+  /**
+   * 推断断开原因。
+   *
+   * 关键判断：远端 shell 退出时 **SSH 客户端连接还活着**，只是 shell 通道关了；
+   * 而网络断开时客户端连接本身也会没。所以看 clientGone 就能分开这两种情况——
+   * 这正是「用户 exit 不该自动重连、网络断线才该重连」的判据。
+   */
+  private closeReason(): SessionCloseReason {
+    if (this.authFailed) return 'auth'
+    if (this.hostKeyFailed) return 'hostkey'
+    if (this.clientGone) return 'network'
+    return 'user-exit'
   }
 
   // ------------------------------------------------------------ 连接参数
@@ -117,7 +142,9 @@ export class SshSession implements TerminalSession {
           return true
         }
 
-        // 记录不匹配详情，交给渲染层弹窗决定「信任新指纹」还是放弃连接
+        // 记录不匹配详情，交给渲染层弹窗决定「信任新指纹」还是放弃连接。
+        // 这种情况绝不能自动重连（重试只会再弹一次窗）
+        this.hostKeyFailed = true
         this.emit({
           type: 'hostkey',
           sessionId: this.id,
@@ -228,10 +255,20 @@ export class SshSession implements TerminalSession {
     client.on('ready', () => settle())
     client.on('error', (err: Error & { level?: string }) => {
       settle(err)
+      // 认证类错误和网络类错误要分开：前者重试没意义，后者值得重连
+      if (err.level === 'client-authentication') this.authFailed = true
+      else this.clientGone = true
       if (this.status === 'ready') {
         // 握手后出现的错误（如网络中断）直接反映到该标签页
-        this.emitStatus('error', this.describeError(err))
+        this.emitStatus('error', this.describeError(err), this.closeReason())
       }
+    })
+    // 客户端连接没了：说明是网络层断开，而不是用户在远端 shell 里退出
+    client.on('close', () => {
+      this.clientGone = true
+    })
+    client.on('end', () => {
+      this.clientGone = true
     })
     client.on('close', () => {
       settle(new Error('SSH 连接在握手完成前被关闭'))
@@ -249,7 +286,9 @@ export class SshSession implements TerminalSession {
     try {
       await handshake
     } catch (err) {
-      if (!this.closing) this.emitStatus('error', this.describeError(err as Error))
+      if (!this.closing) {
+        this.emitStatus('error', this.describeError(err as Error), this.closeReason())
+      }
       this.close()
       throw err
     }
@@ -398,7 +437,7 @@ export class SshSession implements TerminalSession {
     this.closed = true
     this.output.dispose()
     this.sftpPromise = undefined
-    if (!this.closing) this.emitStatus('closed')
+    if (!this.closing) this.emitStatus('closed', undefined, this.closeReason())
   }
 
   close(): void {

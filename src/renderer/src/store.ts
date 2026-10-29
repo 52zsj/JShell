@@ -315,7 +315,12 @@ export const useAppStore = create<AppState>()((set, get) => {
       }
 
       if (event.type === 'status') {
-        patchPane(event.sessionId, { status: event.status, message: event.message })
+        patchPane(event.sessionId, {
+          status: event.status,
+          message: event.message,
+          // 只在断开时记原因；重连失败/成功时清掉旧原因，避免残留
+          closeReason: event.status === 'closed' || event.status === 'error' ? event.reason : undefined
+        })
         if (event.status === 'error' && event.message) {
           get().pushToast(event.message, 'error')
         }

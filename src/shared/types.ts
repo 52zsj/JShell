@@ -139,6 +139,20 @@ export interface HostDraft {
 
 export type SessionStatus = 'connecting' | 'ready' | 'closed' | 'error'
 
+/**
+ * 会话为什么断开。
+ *
+ * 自动重连要靠它决策——**用户主动退出绝不能自动重连**，
+ * 否则敲完 exit 又被连上，比手动点还难受。
+ *
+ * - user-exit：远端 shell 正常退出（客户端连接还活着，只是 shell 通道关了）
+ * - network：网络层断开（客户端连接没了 / 超时）
+ * - auth：认证失败（口令错、密钥不接受）→ 重试只会反复失败
+ * - hostkey：主机指纹变了 → 必须人工确认，绝不自动重试
+ * - unknown：判断不出来，保守当作可重试
+ */
+export type SessionCloseReason = 'user-exit' | 'network' | 'auth' | 'hostkey' | 'unknown'
+
 /** 会话状态的中文展示文案（主进程与渲染层共用，避免多处硬编码） */
 export const SESSION_STATUS_TEXT: Record<SessionStatus, string> = {
   connecting: '连接中',
@@ -162,7 +176,14 @@ export interface HostKeyMismatch {
 
 /** 会话事件：主进程 -> 渲染进程的单向推送 */
 export type SessionEvent =
-  | { type: 'status'; sessionId: string; status: SessionStatus; message?: string }
+  | {
+      type: 'status'
+      sessionId: string
+      status: SessionStatus
+      message?: string
+      /** 断开原因，供渲染层决定要不要自动重连 */
+      reason?: SessionCloseReason
+    }
   | { type: 'data'; sessionId: string; data: string }
   | { type: 'cwd'; sessionId: string; cwd: string }
   | { type: 'transfer'; task: TransferTask }

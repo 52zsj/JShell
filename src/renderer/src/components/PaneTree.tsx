@@ -7,6 +7,8 @@ import {
   type DockSide,
   type DragPayload
 } from '../pane-dock'
+import { getTerminal } from '../terminal-registry'
+import { reconnectDelay, shouldAutoReconnect } from '../reconnect-policy'
 import { useAppStore } from '../store'
 import { cx } from '../utils'
 import { TerminalView } from './TerminalView'
@@ -15,6 +17,9 @@ import { LocalFilesPanel } from './LocalFilesPanel'
 import { TerminalSearchBar } from './TerminalSearchBar'
 import type { TerminalMenuTarget } from './TerminalContextMenu'
 import { IconClose } from '../icons'
+
+/** 自动重连的退避间隔（毫秒）；数组长度即最大重试次数 */
+const AUTO_RECONNECT_DELAYS = [1000, 2000, 4000, 8000, 8000]
 
 interface Props {
   tabId: string
@@ -116,6 +121,95 @@ function SessionPane({
   const [filesVisited, setFilesVisited] = useState(false)
   const [dropSide, setDropSide] = useState<DockSide | null>(null)
   const isActive = tabActive && pane.sessionId === activeSessionId
+
+  // ---- 断线重连 ----
+  const overlayRef = useRef<HTMLDivElement>(null)
+  const [retry, setRetry] = useState(0)
+  const [countdown, setCountdown] = useState<number | null>(null)
+  const disconnected = pane.status === 'closed' || pane.status === 'error'
+  /**
+   * 哪些断开值得自动重连。
+   *
+   * **用户主动退出绝不重连**——敲完 exit 又被连上，比手动点还烦。
+   * 认证失败和主机指纹变更也不重试：只会反复失败、反复弹窗。
+   */
+  const retriable = shouldAutoReconnect(
+    pane.status,
+    pane.closeReason,
+    retry,
+    AUTO_RECONNECT_DELAYS.length
+  )
+  // 「本来能重连，但次数用完了」：和「根本不该重连」要区分开，文案不同
+  const exhausted =
+    disconnected &&
+    retry >= AUTO_RECONNECT_DELAYS.length &&
+    shouldAutoReconnect(pane.status, pane.closeReason, 0, Number.MAX_SAFE_INTEGER)
+
+  // 连上后重置计数
+  useEffect(() => {
+    if (pane.status === 'ready') {
+      setRetry(0)
+      setCountdown(null)
+    }
+  }, [pane.status])
+
+  // 退避重连：1s → 2s → 4s → 8s → 8s
+  useEffect(() => {
+    if (!retriable || exhausted) {
+      setCountdown(null)
+      return
+    }
+    const delay = reconnectDelay(AUTO_RECONNECT_DELAYS, retry)
+    setCountdown(Math.ceil(delay / 1000))
+    const tick = window.setInterval(() => {
+      setCountdown((value) => (value && value > 1 ? value - 1 : value))
+    }, 1000)
+    const timer = window.setTimeout(() => {
+      setRetry((value) => value + 1)
+      void reconnect(pane.sessionId)
+    }, delay)
+    return () => {
+      window.clearInterval(tick)
+      window.clearTimeout(timer)
+      setCountdown(null)
+    }
+    // reconnect 来自 store，签名稳定；不放进依赖避免每次渲染重装定时器
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [retriable, exhausted, retry, pane.sessionId])
+
+  // 断开时把焦点交给覆盖层（否则按键会被 xterm 吃掉），恢复后还给终端
+  const wasDisconnected = useRef(false)
+  useEffect(() => {
+    if (disconnected) {
+      wasDisconnected.current = true
+      overlayRef.current?.focus()
+    } else if (wasDisconnected.current) {
+      wasDisconnected.current = false
+      getTerminal(pane.sessionId)?.focus()
+    }
+  }, [disconnected, pane.sessionId])
+
+  const manualReconnect = (): void => {
+    if (pane.status === 'connecting') return
+    setRetry(0)
+    void reconnect(pane.sessionId)
+  }
+
+  /** 断开原因的中文说明（比 message 更稳定，message 可能是空） */
+  const reasonText = ((): string => {
+    switch (pane.closeReason) {
+      case 'user-exit':
+        return '会话已正常退出'
+      case 'network':
+        return '网络连接中断'
+      case 'auth':
+        return '认证失败（口令或密钥不被接受）'
+      case 'hostkey':
+        return '主机指纹与记录不一致'
+      default:
+        return pane.message || '连接已断开'
+    }
+  })()
 
   // ---- 拖拽吸附：把标签/分屏拖到本分屏的某一侧即可并排 ----
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
@@ -246,18 +340,63 @@ function SessionPane({
           ))}
       </div>
 
-      {(pane.status === 'error' || pane.status === 'closed') && (
-        <div className="pane-banner">
-          <span className="pane-banner-text">
-            {pane.status === 'error' ? pane.message || '连接失败' : pane.message || '会话已断开'}
-          </span>
-          <div className="pane-banner-actions">
-            <button className="btn btn-ghost" onClick={() => void reconnect(pane.sessionId)}>
-              重新连接
-            </button>
-            <button className="btn btn-ghost" onClick={() => void closeSession(pane.sessionId)}>
-              关闭
-            </button>
+      {disconnected && (
+        <div
+          className="pane-overlay"
+          ref={overlayRef}
+          tabIndex={-1}
+          role="dialog"
+          aria-label="连接已断开"
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault()
+              manualReconnect()
+            }
+          }}
+        >
+          <div className="pane-overlay-card">
+            <div
+              className={cx('pane-overlay-title', pane.status === 'error' && 'is-error')}
+            >
+              {pane.closeReason === 'user-exit'
+                ? '会话已退出'
+                : pane.status === 'error'
+                  ? '连接失败'
+                  : '连接已断开'}
+            </div>
+            <div className="pane-overlay-reason">{reasonText}</div>
+            {retriable && !exhausted && countdown !== null && (
+              <div className="pane-overlay-hint">
+                {countdown} 秒后自动重连（第 {retry + 1}/{AUTO_RECONNECT_DELAYS.length} 次）
+              </div>
+            )}
+            {exhausted && (
+              <div className="pane-overlay-hint">
+                已重试 {AUTO_RECONNECT_DELAYS.length} 次仍未成功
+              </div>
+            )}
+            {!retriable && (
+              <div className="pane-overlay-hint">
+                {pane.closeReason === 'hostkey'
+                  ? '请先处理主机指纹，再手动连接'
+                  : pane.closeReason === 'auth'
+                    ? '请检查口令 / 密钥后重试'
+                    : '按 Enter 重新打开'}
+              </div>
+            )}
+            <div className="pane-overlay-actions">
+              <button className="btn btn-primary" onClick={manualReconnect}>
+                {pane.closeReason === 'user-exit' ? '重新打开' : '重新连接'}
+              </button>
+              <button
+                className="btn btn-ghost"
+                onClick={() => void closeSession(pane.sessionId)}
+              >
+                关闭
+              </button>
+            </div>
+            {/* 可自动重连时提示 Enter；不可重连时上面的说明已经写过了，不重复 */}
+            {retriable && <div className="pane-overlay-enter">按 Enter 立即重连</div>}
           </div>
         </div>
       )}

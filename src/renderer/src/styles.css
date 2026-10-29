@@ -711,6 +711,69 @@ body.is-resizing {
   padding-right: 4px;
 }
 
+/* 断线覆盖层：直接盖在终端上，不再挤在底部横条里 */
+.pane-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  outline: none;
+  /* 不铺底色：终端内容仍可见，卡片自己带背景，换主题也不用改 */
+}
+
+.pane-overlay-card {
+  min-width: 240px;
+  max-width: 420px;
+  padding: 16px 20px 14px;
+  border-radius: 12px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  text-align: center;
+}
+
+.pane-overlay-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pane-overlay-title.is-error {
+  color: var(--danger);
+}
+
+.pane-overlay-reason {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.55;
+  word-break: break-word;
+}
+
+.pane-overlay-hint {
+  font-size: 11.5px;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.pane-overlay-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 3px;
+}
+
+.pane-overlay-enter {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 1px;
+}
+
 .pane-banner {
   position: absolute;
   left: 12px;
