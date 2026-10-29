@@ -278,6 +278,17 @@ export class SshSession implements TerminalSession {
       throw new Error(message)
     }
 
+    // 申请 shell 也是一次 await：这期间用户可能已经把分屏关了。
+    // 不复检就会接管一个已关闭会话的流，并把状态改回 ready。
+    if (this.closed) {
+      try {
+        stream.close()
+      } catch {
+        /* 已经关了，忽略 */
+      }
+      return
+    }
+
     this.stream = stream
     this.emitStatus('ready')
 

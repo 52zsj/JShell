@@ -113,6 +113,10 @@ export function createContext(getWindow: () => BrowserWindow | null): AppContext
     if (event.type === 'status' && (event.status === 'closed' || event.status === 'error')) {
       tunnels?.stopBySession(event.sessionId)
     }
+    // 会话已经结束：只摘表（不重复 close），避免对象被 Map 一直强引用
+    if (event.type === 'status' && event.status === 'closed') {
+      sessions.forget(event.sessionId)
+    }
   })
   const sftp = new SftpService(sessions)
   const localFs = new LocalFsService()

@@ -159,7 +159,8 @@ export function createWebdavTransport(options: WebdavTransportOptions): SyncTran
             lastKey = ''
             return
           }
-          if (lastKey && meta.etag !== lastKey) onChange()
+          // 请求期间可能已经被 unwatch：停止后不要再回调，否则会重新装上定时器
+          if (!stopped && lastKey && meta.etag !== lastKey) onChange()
           lastKey = meta.etag
         } catch {
           // 网络抖动/认证临时失效：等下一轮，不在这里刷错误

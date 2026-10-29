@@ -155,6 +155,17 @@ export const useAppStore = create<AppState>()((set, get) => {
   }
 
   /** 更新某个分屏的状态（不重建终端实例，避免历史丢失） */
+  /** 会话关掉后把它的 cwd 记录一并删掉，否则这个对象只增不减 */
+  const forgetCwd = (sessionIds: string[]): void => {
+    set((state) => {
+      const present = sessionIds.filter((id) => id in state.cwdBySession)
+      if (present.length === 0) return state
+      const next = { ...state.cwdBySession }
+      for (const id of present) delete next[id]
+      return { cwdBySession: next }
+    })
+  }
+
   const patchPane = (sessionId: string, patch: Partial<PaneState>): void => {
     set((state) => ({
       tabs: state.tabs.map((tab) => {
@@ -467,6 +478,7 @@ export const useAppStore = create<AppState>()((set, get) => {
       await closeSessionInMain(sessionId)
 
       disposeTerminal(sessionId)
+      forgetCwd([sessionId])
       if (get().findSessionId === sessionId) set({ findSessionId: null })
 
       const nextRoot = removeLeaf(found.tab.root, sessionId)
@@ -494,6 +506,7 @@ export const useAppStore = create<AppState>()((set, get) => {
       const sessionIds = leaves(tab.root).map((node) => node.pane.sessionId)
       await Promise.all(sessionIds.map((sessionId) => closeSessionInMain(sessionId)))
       for (const sessionId of sessionIds) disposeTerminal(sessionId)
+      forgetCwd(sessionIds)
       rememberClosed(tab)
       removeTab(tabId)
     },
@@ -503,6 +516,9 @@ export const useAppStore = create<AppState>()((set, get) => {
       if (!found) return
       const { pane } = found
       await closeSessionInMain(sessionId)
+      // 这段 await 期间用户可能已经把这个分屏关掉了。
+      // 不复检就会在主进程里新建一个会话，而渲染层已没有对应的 pane 去接它的输出。
+      if (!locate(sessionId)) return
       patchPane(sessionId, { status: 'connecting', message: undefined })
 
       try {

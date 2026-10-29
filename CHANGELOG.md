@@ -2,6 +2,63 @@
 
 本文件随安装包一同分发（设置 → 关于 → 更新记录 可直接打开）。
 
+## 0.11.20（2026-10-29）
+
+### 全链路稳定性优化（只修真实缺陷，不动结构）
+
+按「不丢功能、不随便乱改」的要求做了一轮资源生命周期审查，改动全部是局部小补，
+每条都做过代码核实与端到端回归验证。
+
+**1. macOS 关窗后后台会话变成孤儿（最严重）**
+
+窗口真销毁时（关闭「最小化到托盘」后关窗），没有任何代码关闭 SSH / pty 会话。
+旧会话继续把远端输出读进内存再丢掉（背压会周期性 resume），而且新窗口是空的，
+**再也没有 UI 入口能关掉它们**——每开关一次窗口泄漏一批连接。
+
+- `closed` 事件里补上 `sessions.closeAll()`
+- 回归验证：开 2 个会话 → 关窗 → pty 进程数 5 → 3（正确关闭）；
+  **托盘模式（真实点关闭按钮）→ 窗口隐藏、会话保留 4 → 4**，原有行为不受影响
+
+**2. 会话自然结束后不从会话表摘除**
+
+远端 `exit`、网络断开、shell 退出后，会话对象仍被 Map 强引用，
+连带 ssh2 Client（内含连接时的口令/私钥）、已关闭的 stream、流控账本一起常驻。
+
+- 新增 `SessionManager.forget()`：只摘表、不重复 close
+- `ipc.ts` 收到 `status === 'closed'` 时调用（`error` 不摘，因为还能重连）
+- 回归验证：`exit` → 状态显示已断开 → 点重连仍能正常建立新会话
+
+**3. `closeAll()` 不清流控账本** —— 补上 `flows.clear()`，避免残留条目被每秒白跑
+
+**4. 申请 shell 的 await 之后不复检已关闭**
+
+握手期间关标签，shell 请求返回后仍会接管一个已关闭会话的流、并把状态改回 `ready`。
+- `await client.shell(...)` 之后补 `if (this.closed) { stream.close(); return }`
+
+**5. 半截 OSC 序列的缓存无上限**
+
+输出里出现 `ESC ]` 却一直等不到终止符时，后续所有输出都会被吞进 `tail`
+（同时也从显示流里扣掉，界面会卡住）且无界增长。
+- 超过 8KB 未闭合就当普通文本吐出
+
+**6. WebDAV 轮询在停止后仍可能回调一次**
+
+`await metaOf()` 期间被 unwatch，回来仍会 `onChange()`，进而在已 teardown 的服务上
+重新装一个定时器。
+- 回调前补 `!stopped` 判断
+
+**7. 渲染层 `cwdBySession` 只增不减** —— 关闭分屏/标签时一并删除对应键
+
+**8. `reconnect()` 的 await 之后不复检分屏是否还在** —— 补 `if (!locate(sessionId)) return`，
+避免在主进程里新建一个渲染层已无人认领的会话
+
+### 核查过但确认无问题的部分
+
+`flow-control.ts`（无定时器，靠外部 tick）、`output-buffer.ts`（flush/dispose 都清 timer）、
+`local-session.ts`、`terminal-registry.ts`（entries/pending 都有清理路径与上限）、
+`preload` 的所有订阅（都先 removeAllListeners）、`transferCancels`（四个 handler 的
+finally 都做了 cleanup）、`auto-sync` 的 timer/监听（teardown 全覆盖）。
+
 ## 0.11.19（2026-10-29）
 
 ### 自动同步：破坏性的事交给人决定

@@ -169,6 +169,11 @@ function createWindow(showWhenReady = !windowShouldStartHidden()): void {
     log.info('主窗口已销毁')
     mainWindow = null
     rendererReady = false
+    // 走到这里说明窗口是真销毁（不是「隐藏到托盘」）：
+    // 渲染层没了，后台的 SSH / pty 会话再也没有 UI 入口能关，
+    // 而且它们会继续把远端输出读进内存再丢掉（背压见 flow-control）。
+    // 所以在这里一并关掉，避免每开关一次窗口泄漏一批连接。
+    ctx?.sessions.closeAll()
   })
 
   if (isDev && process.env.ELECTRON_RENDERER_URL) {

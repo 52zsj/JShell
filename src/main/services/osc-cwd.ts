@@ -115,6 +115,12 @@ export class OscCwdScanner {
     }
 
     this.tail = combined.slice(i)
+    // 半截 OSC 序列（有 ESC ] 却一直等不到终止符）会把后续输出全吞进 tail。
+    // 超过 8KB 还没闭合就放弃等待，当普通文本吐出去，避免无界增长和界面卡住。
+    if (this.tail.length > 8192) {
+      out += this.tail
+      this.tail = ''
+    }
 
     // 剔除注入命令的回显。命中标记后把整条回显（含折行 \r 与行尾 \n）吞掉，
     // 支持跨 chunk、也支持同一条命令被回显多次；窗口结束后自动失效。

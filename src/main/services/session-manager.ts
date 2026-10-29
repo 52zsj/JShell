@@ -169,8 +169,22 @@ export class SessionManager {
     this.flows.delete(sessionId)
   }
 
+  /**
+   * 只把已结束的会话从表里摘掉，不再调用 close()。
+   *
+   * 会话自己断开时（远端 exit、网络断、shell 退出）对象已经关过了，
+   * 但它仍被 Map 强引用着，连带 client（内含连接时的口令/私钥）、
+   * 已关闭的 stream 和流控账本一起常驻。这里只负责摘表。
+   */
+  forget(sessionId: string): void {
+    this.sessions.delete(sessionId)
+    this.flows.delete(sessionId)
+  }
+
   closeAll(): void {
     for (const session of this.sessions.values()) session.close()
     this.sessions.clear()
+    // 账本跟着一起清，避免残留条目被每秒 tick 白跑
+    this.flows.clear()
   }
 }
