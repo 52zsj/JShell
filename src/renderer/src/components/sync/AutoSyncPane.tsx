@@ -5,9 +5,9 @@ import {
   SYNC_SCOPES,
   type AutoSyncPatch,
   type SyncScope,
-  type SyncTarget
+  type SyncTarget,
+  pickDefaultTarget
 } from '@shared/sync'
-import { IconCloud } from '../../icons'
 import { useAppStore } from '../../store'
 import { cx, errorMessage } from '../../utils'
 import { formatTime } from './format'
@@ -76,34 +76,35 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
     [pushToast, setAutoSync]
   )
 
-  /** iCloud 云盘目录（自动探测，不需要用户选） */
-  const icloudTarget = useMemo(
-    () => targets.find((t) => t.id === 'icloud') ?? targets.find((t) => t.kind === 'icloud'),
-    [targets]
+  /** 自动挑一个网盘目录：上次用过的 → 唯一检测到的 → 最近活跃的 */
+  const defaultTarget = useMemo(
+    () => pickDefaultTarget(targets, auto?.targetId),
+    [targets, auto?.targetId]
   )
 
-  /** 切换通道：iCloud 直接定位到 iCloud 云盘，用户零选择 */
+  /** 切换通道：网盘通道会自动落到一个检测到的网盘目录 */
   const selectChannel = useCallback(
     async (kind: 'folder' | 'sftp' | 'webdav'): Promise<void> => {
       if (kind !== 'folder') {
         await patchAuto({ transport: kind })
         return
       }
-      await patchAuto({ transport: 'folder', targetId: icloudTarget?.id ?? '' })
+      const picked = pickDefaultTarget(targets, auto?.targetId)
+      await patchAuto({ transport: 'folder', targetId: picked?.id ?? '' })
     },
-    [icloudTarget, patchAuto]
+    [targets, auto?.targetId, patchAuto]
   )
 
-  // iCloud 通道：如果还没定位到目录（或原来指向已不存在的网盘），自动落到 iCloud
+  // 网盘通道：如果还没定位到目录（或原来指向已不存在的网盘），自动挑一个
   useEffect(() => {
     if ((auto?.transport ?? 'folder') !== 'folder') return
     const current = auto?.targetId
     if (current === 'custom') return
     if (current && targets.some((t) => t.id === current)) return
-    if (!icloudTarget) return
-    void patchAuto({ targetId: icloudTarget.id })
+    if (!defaultTarget) return
+    void patchAuto({ targetId: defaultTarget.id })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [targets, icloudTarget, auto?.transport, auto?.targetId])
+  }, [targets, defaultTarget, auto?.transport, auto?.targetId])
 
   const runAuto = async (): Promise<void> => {
     setAutoBusy(true)
@@ -152,7 +153,7 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
               <section className="sync-section">
                 <h3>自动同步</h3>
                 <p className="sync-hint">
-                  把配置固定放在一个共享位置（iCloud 云盘、你的服务器或 WebDAV）上：
+                  把配置固定放在一个共享位置（网盘目录、你的服务器或 WebDAV）上：
                   本机改动后自动写回，其他设备改动后自动拉回，多台机器始终一致。
                 </p>
                 <p className="sync-hint">
@@ -200,7 +201,7 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                     disabled={autoBusy}
                     onClick={() => void selectChannel('folder')}
                   >
-                    iCloud 云盘
+                    网盘
                   </button>
                   <button
                     className={cx('segmented-item', auto?.transport === 'sftp' && 'is-active')}
@@ -220,17 +221,37 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
 
                 {(auto?.transport ?? 'folder') === 'folder' ? (
                   <>
-                    {icloudTarget ? (
-                      <div className="sync-target-line">
-                        <IconCloud />
-                        <span>iCloud 云盘</span>
-                        <span className="mono">{icloudTarget.dir}</span>
-                      </div>
-                    ) : (
+                    {targets.length === 0 ? (
                       <p className="sync-hint warn">
-                        本机没有检测到 iCloud 云盘。可以点下面的「改用其他目录…」指到任意同步目录，
+                        没有检测到 iCloud、OneDrive、Dropbox、Google 云端硬盘、坚果云、百度网盘等网盘目录。
+                        点下面的「改用其他目录…」指到任意同步目录（网络共享、自建网盘、U 盘都行），
                         或者换成 WebDAV / SFTP。
                       </p>
+                    ) : (
+                      <>
+                        <select
+                          className="input"
+                          value={auto?.targetId ?? ''}
+                          disabled={autoBusy}
+                          onChange={(event) => void patchAuto({ targetId: event.target.value })}
+                        >
+                          <option value="">（未选择）</option>
+                          {auto?.targetId === 'custom' && auto.dir && (
+                            <option value="custom">{auto.targetLabel ?? '自定义目录'}</option>
+                          )}
+                          {targets.map((target) => (
+                            <option key={target.id} value={target.id}>
+                              {target.label} — {target.dir}
+                            </option>
+                          ))}
+                        </select>
+                        <p className="sync-hint">
+                          这些目录是<strong>自动探测</strong>出来的（打开面板就扫一遍本机）：
+                          iCloud / OneDrive / Dropbox / Google 云端硬盘 / 坚果云 / 百度网盘 / Nextcloud。
+                          只有一个时直接选中；多个时优先用你上次选过的，再按最近活跃排序。
+                          列表里没有你的网盘？用下面的「改用其他目录…」指到它的同步目录即可。
+                        </p>
+                      </>
                     )}
                     <div className="settings-actions">
                       <button
