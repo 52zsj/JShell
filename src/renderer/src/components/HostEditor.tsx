@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { AuthType, HostProfile } from '@shared/types'
 import { useAppStore } from '../store'
-import { errorMessage } from '../utils'
+import { cx, errorMessage } from '../utils'
+import { useModalDrag } from '../use-modal-drag'
 import { IconClose, IconKey } from '../icons'
 
 interface Props {
@@ -44,6 +45,9 @@ export function HostEditor({ host, clone, onClose }: Props) {
   const [testing, setTesting] = useState(false)
   const [test, setTest] = useState<{ ok: boolean; message: string } | null>(null)
   const [error, setError] = useState('')
+
+  // 表单可以拖着走：填表时想边看终端边填，弹窗挡着就直接拖开
+  const drag = useModalDrag<HTMLFormElement>()
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent): void => {
@@ -106,9 +110,15 @@ export function HostEditor({ host, clone, onClose }: Props) {
   }
 
   return (
-    <div className="modal-mask" onClick={onClose}>
-      <form className="modal" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
-        <header className="modal-head">
+    <div className={cx('modal-mask', drag.dragging && 'is-dragging')}>
+      <form
+        className="modal is-draggable"
+        ref={drag.modalRef}
+        style={drag.style}
+        onClick={(e) => e.stopPropagation()}
+        onSubmit={submit}
+      >
+        <header className="modal-head" {...drag.handleProps}>
           <h2>{clone ? '克隆主机' : host ? '编辑主机' : '新建主机'}</h2>
           <button type="button" className="icon-btn" onClick={onClose} title="关闭">
             <IconClose />
@@ -270,6 +280,23 @@ export function HostEditor({ host, clone, onClose }: Props) {
                   title={color}
                 />
               ))}
+              {/*
+                自定义颜色：用原生取色器，外观仍是一个圆点。
+                当前色不在预设里时，这个圆点显示当前色并高亮——这样「自定义」
+                和预设是同一个视觉语义，不需要额外的输入框。
+              */}
+              <label
+                className={cx('swatch', 'swatch-custom', !COLORS.includes(form.color) && 'is-active')}
+                style={!COLORS.includes(form.color) ? { background: form.color } : undefined}
+                title="自定义颜色"
+              >
+                <input
+                  type="color"
+                  value={form.color}
+                  onChange={(e) => update('color', e.target.value)}
+                  aria-label="自定义标签色"
+                />
+              </label>
             </div>
           </div>
 

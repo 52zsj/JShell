@@ -3,6 +3,7 @@ import type { RsyncCapability, RsyncDirection, RsyncPlan, RsyncTask } from '@sha
 import { useAppStore } from '../store'
 import { cx, errorMessage, formatBytes } from '../utils'
 import { IconClose, IconFolder, IconRefresh, IconSync } from '../icons'
+import { useModalDrag } from '../use-modal-drag'
 
 interface Props {
   onClose: () => void
@@ -180,15 +181,33 @@ export function RsyncWizard({ onClose, onDone, defaultHostId, defaultRemoteDir }
   }
 
   const running = task?.status === 'running' || task?.status === 'retrying'
+
+  // 弹窗可以拖着走：传输时想看着终端/文件面板，窗口挡着就拖开
+  const drag = useModalDrag()
+
+  // Esc 关闭。传输进行中不响应——半路关掉会留下一半的文件，退出按钮此时也是禁用的
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape' && !running) onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [running, onClose])
+
   const relayHosts = useMemo(
     () => hosts.filter((host) => host.id !== relaySourceHost),
     [hosts, relaySourceHost]
   )
 
   return (
-    <div className="modal-mask" onClick={() => !running && onClose()}>
-      <div className="modal rsync-modal" onClick={(e) => e.stopPropagation()}>
-        <header className="modal-head">
+    <div className={cx('modal-mask', drag.dragging && 'is-dragging')}>
+      <div
+        className="modal rsync-modal is-draggable"
+        ref={drag.modalRef}
+        style={drag.style}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <header className="modal-head" {...drag.handleProps}>
           <h2>
             <IconSync />
             文件传输

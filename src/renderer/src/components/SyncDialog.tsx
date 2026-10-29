@@ -30,6 +30,7 @@ import { cx, errorMessage, formatBytes } from '../utils'
 import { AutoSyncPane } from './sync/AutoSyncPane'
 import { DiffPanel } from './sync/DiffPanel'
 import { formatTime } from './sync/format'
+import { useModalDrag } from '../use-modal-drag'
 
 interface Props {
   onClose: () => void
@@ -155,6 +156,9 @@ export function SyncDialog({ onClose }: Props) {
     void window.jshell.sync.dispose().catch(() => undefined)
     onClose()
   }, [onClose])
+
+  // 可以拖着走：对照着终端看配置差异时，弹窗挡着就拖开
+  const drag = useModalDrag()
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent): void => {
@@ -335,9 +339,14 @@ export function SyncDialog({ onClose }: Props) {
   }, [dest, targetId, targets])
 
   return (
-    <div className="modal-mask" onClick={close}>
-      <div className="modal wide sync-modal" onClick={(event) => event.stopPropagation()}>
-        <header className="modal-head">
+    <div className={cx('modal-mask', drag.dragging && 'is-dragging')}>
+      <div
+        className="modal wide sync-modal is-draggable"
+        ref={drag.modalRef}
+        style={drag.style}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <header className="modal-head" {...drag.handleProps}>
           <div>
             <h2>配置包</h2>
             <p className="sync-intro">
