@@ -3,6 +3,7 @@ import os from 'node:os'
 import { Client } from 'ssh2'
 import type { ClientChannel, ConnectConfig } from 'ssh2'
 import { expandUserPath } from '../../shared/paths'
+import { keepaliveConfig } from '../../shared/settings'
 import type { HostProfile } from '../../shared/types'
 import { fingerprintOf, hostKeyAlgorithm } from './ssh-fingerprint'
 import type { StoreService } from './store'
@@ -35,13 +36,16 @@ export async function buildSshConfig(
   const password = override.password || saved.password
   const passphrase = override.passphrase || saved.passphrase
 
+  // 与会话层共用同一套保活设置：设置里关掉就是全局关掉，
+  // 不会出现「会话不保活了、后台 SFTP 还在偷偷保活」这种不一致。
+  const keepalive = keepaliveConfig(store.getSettings())
   const cfg: ConnectConfig = {
     host: host.host,
     port: host.port,
     username: host.username,
     readyTimeout: timeoutMs,
-    keepaliveInterval: 15_000,
-    keepaliveCountMax: 3,
+    keepaliveInterval: keepalive.intervalMs,
+    keepaliveCountMax: keepalive.countMax,
     tryKeyboard: true,
     hostVerifier: (key: Buffer): boolean => {
       if (store.getSettings().hostKeyPolicy === 'ignore') return true

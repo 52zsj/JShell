@@ -231,7 +231,10 @@ export const useAppStore = create<AppState>()((set, get) => {
       hostDeleteButton: true,
       hostDeleteConfirm: true,
       hiddenLocalShells: [],
-      autoFollowCwd: true
+      autoFollowCwd: true,
+      keepaliveEnabled: true,
+      keepaliveIntervalSeconds: 60,
+      keepaliveCountMax: 3
     },
     snippets: [],
     tabs: [],

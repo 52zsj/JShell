@@ -5,6 +5,7 @@ import { Client } from 'ssh2'
 import type { ClientChannel, ConnectConfig, SFTPWrapper } from 'ssh2'
 import { mapErrorToChinese } from '../../shared/errors'
 import { expandUserPath } from '../../shared/paths'
+import { keepaliveConfig } from '../../shared/settings'
 import type {
   HostProfile,
   SessionCloseReason,
@@ -114,13 +115,17 @@ export class SshSession implements TerminalSession {
   private async buildConfigFor(host: HostProfile): Promise<ConnectConfig> {
     const { store, hostKeyPolicy } = this.deps
     const creds = store.getCredentials(host.id)
+    const settings = store.getSettings()
+    const keepalive = keepaliveConfig(settings)
     const cfg: ConnectConfig = {
       host: host.host,
       port: host.port,
       username: host.username,
       readyTimeout: 20_000,
-      keepaliveInterval: 15_000,
-      keepaliveCountMax: 3,
+      // 保活走 SSH 层的 global request（keepalive@openssh.com），不往终端写字符：
+      // 不会污染输入、不会被打进 shell 历史，也不会打断 vim/less 这类程序。
+      keepaliveInterval: keepalive.intervalMs,
+      keepaliveCountMax: keepalive.countMax,
       // 部分服务器只开放 keyboard-interactive，这里允许其复用已保存的口令
       tryKeyboard: true,
       hostVerifier: (key: Buffer): boolean => {

@@ -278,6 +278,20 @@ export interface AppSettings {
   autoFollowCwd: boolean
   /** 侧边栏里隐藏的本机终端（按 shell 绝对路径记录） */
   hiddenLocalShells: string[]
+
+  // ---------------------------------------------------------- SSH 保活
+  /**
+   * 是否让 SSH 层定时发保活请求（keepalive@openssh.com）。
+   *
+   * 走 SSH 协议本身，不往终端写字符，所以不会污染输入、也不会被打进 shell 历史。
+   * 作用是避免服务器/中间的 NAT 认为连接空闲把它掐掉，同时能及时发现「已经死了
+   * 但本地还不知道」的连接（合盖、切 Wi-Fi、NAT 超时）。
+   */
+  keepaliveEnabled: boolean
+  /** 保活间隔（秒）。太短没必要，太长可能赶不上部分服务器的空闲超时 */
+  keepaliveIntervalSeconds: number
+  /** 连续多少次保活没有回应就判定连接已断（会触发断线处理与自动重连） */
+  keepaliveCountMax: number
 }
 
 export interface AppInfo {

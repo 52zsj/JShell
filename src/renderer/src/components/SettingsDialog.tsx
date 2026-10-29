@@ -374,6 +374,58 @@ export function SettingsDialog({ isMac, bindings, onClose, onOpenSync }: Props) 
                 : '当前系统未提供可用的安全存储（常见于无 keyring 的 Linux），口令将以弱编码形式保存，请谨慎使用。'}
             </p>
 
+            <h3 className="settings-sub">连接保活</h3>
+            <label className="tile">
+              <input
+                type="checkbox"
+                checked={settings.keepaliveEnabled}
+                onChange={(e) => commit({ keepaliveEnabled: e.target.checked })}
+              />
+              <span className="tile-body">
+                <strong>定时保活，避免空闲连接被中断</strong>
+                <em>
+                  在 SSH 协议层定时发保活请求，<strong>不往终端写字符</strong>——
+                  不会污染输入、不会进 shell 历史，也不会打断 vim / less 这类程序。
+                  开启后还能及时发现「已经断了但本地不知道」的情况（合盖、切 Wi-Fi、NAT 超时），
+                  断线会被自动重连接管。只对 SSH 会话生效，本地终端不受影响。
+                </em>
+              </span>
+            </label>
+            <div className="field-row">
+              <label className="field">
+                <span>保活间隔（秒）</span>
+                <input
+                  className="input"
+                  type="number"
+                  min={10}
+                  max={300}
+                  step={10}
+                  disabled={!settings.keepaliveEnabled}
+                  value={settings.keepaliveIntervalSeconds}
+                  onChange={(e) => commit({ keepaliveIntervalSeconds: Number(e.target.value) })}
+                />
+              </label>
+              <label className="field">
+                <span>无响应几次判定断开</span>
+                <input
+                  className="input"
+                  type="number"
+                  min={1}
+                  max={10}
+                  step={1}
+                  disabled={!settings.keepaliveEnabled}
+                  value={settings.keepaliveCountMax}
+                  onChange={(e) => commit({ keepaliveCountMax: Number(e.target.value) })}
+                />
+              </label>
+            </div>
+            <p className="notice">
+              默认每 {settings.keepaliveIntervalSeconds} 秒发一次，连续{' '}
+              {settings.keepaliveCountMax} 次没有回应即判定连接已断（约{' '}
+              {Math.round((settings.keepaliveIntervalSeconds * settings.keepaliveCountMax) / 60)} 分钟），
+              随后走断线处理：网络类原因会自动重连。改过设置后仅对<strong>新建或重连</strong>的会话生效。
+            </p>
+
             <h3 className="settings-sub">主机删除</h3>
             <div className="tile-grid">
               <label className="tile">

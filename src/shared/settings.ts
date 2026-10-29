@@ -20,7 +20,10 @@ export const DEFAULT_SETTINGS: AppSettings = {
   hostDeleteButton: true,
   hostDeleteConfirm: true,
   hiddenLocalShells: [],
-  autoFollowCwd: true
+  autoFollowCwd: true,
+  keepaliveEnabled: true,
+  keepaliveIntervalSeconds: 60,
+  keepaliveCountMax: 3
 }
 
 const THEMES: AppTheme[] = ['dark', 'light', 'system']
@@ -80,6 +83,34 @@ export function sanitizeSettings(input: unknown): AppSettings {
     hostDeleteButton: bool(raw.hostDeleteButton, DEFAULT_SETTINGS.hostDeleteButton),
     hostDeleteConfirm: bool(raw.hostDeleteConfirm, DEFAULT_SETTINGS.hostDeleteConfirm),
     hiddenLocalShells: shellList(raw.hiddenLocalShells),
-    autoFollowCwd: bool(raw.autoFollowCwd, DEFAULT_SETTINGS.autoFollowCwd)
+    autoFollowCwd: bool(raw.autoFollowCwd, DEFAULT_SETTINGS.autoFollowCwd),
+    keepaliveEnabled: bool(raw.keepaliveEnabled, DEFAULT_SETTINGS.keepaliveEnabled),
+    // 下限 10 秒：再短就是无谓流量；上限 300 秒：再长赶不上多数服务器的空闲超时
+    keepaliveIntervalSeconds: clamp(
+      raw.keepaliveIntervalSeconds,
+      DEFAULT_SETTINGS.keepaliveIntervalSeconds,
+      10,
+      300
+    ),
+    keepaliveCountMax: clamp(raw.keepaliveCountMax, DEFAULT_SETTINGS.keepaliveCountMax, 1, 10)
+  }
+}
+
+/**
+ * 把「保活设置」翻译成 ssh2 的连接参数。
+ *
+ * ssh2 约定 `keepaliveInterval === 0` 表示禁用，所以关闭时必须显式传 0，
+ * 而不是省略这个字段（省略会走 ssh2 自己的默认值，等于开了个用户没要的保活）。
+ */
+export function keepaliveConfig(settings: AppSettings): {
+  intervalMs: number
+  countMax: number
+} {
+  if (!settings.keepaliveEnabled || settings.keepaliveIntervalSeconds <= 0) {
+    return { intervalMs: 0, countMax: settings.keepaliveCountMax }
+  }
+  return {
+    intervalMs: settings.keepaliveIntervalSeconds * 1000,
+    countMax: settings.keepaliveCountMax
   }
 }
