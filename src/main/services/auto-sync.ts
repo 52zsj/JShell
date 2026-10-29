@@ -388,11 +388,15 @@ export class AutoSyncService {
 
     let pulled = false
     let pushed = false
+    let recreated = false
     let report: DiffReport | undefined
     let pulledCount = 0
 
-    if (wantsPull) {
-      const text = (await transport.exists()) ? await transport.read() : null
+    // 远端文件在不在，只查一次：拉取和写回都要用
+    const remoteExists = await transport.exists()
+
+    if (wantsPull && remoteExists) {
+      const text = await transport.read()
       if (text) {
         const payload = this.decode(text, password)
         const hash = contentHash(payload)
@@ -433,19 +437,24 @@ export class AutoSyncService {
       const { payload, meta } = composeLocalBundle(this.store, config.scopes)
       if (!password) delete payload.credentials
       const hash = contentHash(payload)
-      if (shouldPush(hash, this.store.getAutoSync().lastPushedHash)) {
+      if (shouldPush(hash, this.store.getAutoSync().lastPushedHash, remoteExists)) {
         const envelope = password
           ? encryptBundle(payload, meta, password)
           : plainBundle(payload, meta)
         await transport.write(serializeBundle(envelope))
         this.store.saveAutoSync({ lastPushedHash: hash })
         pushed = true
+        recreated = !remoteExists
       }
     }
 
     const at = Date.now()
     const action = pulled && pushed ? 'both' : pulled ? 'pulled' : pushed ? 'pushed' : 'idle'
-    const message = this.describe(action, pulledCount)
+    const message = recreated
+      ? '同步位置的文件已不存在，已按本机配置重新创建'
+      : !remoteExists && !wantsPush
+        ? '同步位置的文件不存在；已关闭「本机改动后写回」，无法自动重建'
+        : this.describe(action, pulledCount)
     if (action !== 'idle' || trigger === 'manual') {
       // 后台空转不覆盖上一轮有意义的结果，否则状态栏永远显示「已是最新」
       this.store.saveAutoSync({ lastSyncedAt: at, lastResult: message, lastError: undefined })

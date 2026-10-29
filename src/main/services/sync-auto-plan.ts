@@ -41,7 +41,14 @@ export function decidePull(input: PullInput): PullDecision {
 }
 
 /** 本机内容与「上次写出去的内容」一致就没必要再写一次，避免自我回声 */
-export function shouldPush(currentHash: string, lastPushedHash?: string): boolean {
+export function shouldPush(
+  currentHash: string,
+  lastPushedHash?: string,
+  remoteExists = true
+): boolean {
+  // 远端文件被删掉了：内容哈希虽然没变，但同步位置已经没有这个文件，
+  // 必须重新写一份回去，否则它会一直缺失（用户手动删文件后遇到的正是这个）
+  if (!remoteExists) return true
   return !lastPushedHash || currentHash !== lastPushedHash
 }
 

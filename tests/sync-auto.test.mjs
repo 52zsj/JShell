@@ -79,6 +79,15 @@ test('推送判定：没有历史指纹就推，内容没变就不推', () => {
   assert.equal(shouldPush('h2', 'h1'), true)
 })
 
+test('推送判定：远端文件不存在时必须重建（哪怕内容哈希没变）', () => {
+  // 用户手动删掉同步位置里的文件后，内容哈希与上次推的一样，
+  // 如果只看哈希就会永远不重建——这正是之前「删了文件仍提示一致」的根因
+  assert.equal(shouldPush('h1', 'h1', false), true)
+  assert.equal(shouldPush('h1', undefined, false), true)
+  // 远端还在时行为不变
+  assert.equal(shouldPush('h1', 'h1', true), false)
+})
+
 test('计数与摘要', () => {
   const risky = report({ add: 1, update: 2, deleteCount: 1, riskyNewer: 2, riskyDelete: 1 })
   assert.equal(changedCount(risky), 4)
