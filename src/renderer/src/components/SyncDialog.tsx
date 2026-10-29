@@ -393,7 +393,8 @@ export function SyncDialog({ onClose }: Props) {
                   </button>
                 </div>
                 <p className="sync-hint">
-                  想让它长期跟着多台机器一致，用下面的「自动同步」——它会自己写进网盘目录，不用手动搬。
+                  这是<strong>手动导出</strong>的一份文件，拷给对方导入即可。
+                  想让多台机器长期自动保持一致，用「自动同步」页签——它由程序自己维护，不用手动搬。
                 </p>
 
               </section>
@@ -622,9 +623,11 @@ export function SyncDialog({ onClose }: Props) {
 
                     {!inspect && !folderTarget && (
                       <p className="sync-hint">
-                        配置包是一个 <code>.jshellsync</code> 文件。可以选任意位置的文件、云盘{' '}
-                        <code>JShell</code> 目录里的历史包，或直接粘贴复制到剪贴板的包内容。
+                        配置包是一个 <code>.jshellsync</code> 文件。可以选任意位置的文件、
+                        网盘目录里的历史包，或直接粘贴复制到剪贴板的包内容。
                         加密包会在读取后提示输入口令。
+                        注意：这里导入的是<strong>别人手动导出的包</strong>，
+                        与「自动同步」维护的那个固定文件无关。
                       </p>
                     )}
                   </section>

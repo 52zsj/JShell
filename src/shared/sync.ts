@@ -470,34 +470,3 @@ export function passwordStrength(password: string): PasswordStrength {
   if (password.length >= 10 && varied >= 2) return 'fair'
   return 'weak'
 }
-
-
-/**
- * 自动挑一个默认网盘目录。
- *
- * 背景：用户问「云盘目录只能是固定的吗？没办法自动选择么？」
- *
- * 探测本来就是自动的（打开面板就扫一遍本机真实存在的网盘目录），
- * 但「选哪一个」系统没有标准答案，只能靠启发式：
- *   1. 上次用过的仍然存在 → 继续用它（多数人只用一个网盘）
- *   2. 只检测到一个 → 直接用它
- *   3. 多个 → 取目录最近修改时间最新的（最活跃的那个）
- *   4. 都判断不了 → 返回 undefined，交给用户选一次，之后就记住了
- */
-export function pickDefaultTarget(
-  targets: SyncTarget[],
-  lastTargetId?: string
-): SyncTarget | undefined {
-  if (targets.length === 0) return undefined
-
-  if (lastTargetId) {
-    const last = targets.find((target) => target.id === lastTargetId)
-    if (last) return last
-  }
-  if (targets.length === 1) return targets[0]
-
-  const best = [...targets].sort((a, b) => (b.mtimeMs ?? 0) - (a.mtimeMs ?? 0))[0]
-  // 全都没有活动信息时不要假装判断得出来
-  if ((best.mtimeMs ?? 0) <= 0) return undefined
-  return best
-}

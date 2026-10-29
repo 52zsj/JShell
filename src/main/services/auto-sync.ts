@@ -481,7 +481,7 @@ export class AutoSyncService {
   }
 
   private describe(action: 'pushed' | 'pulled' | 'both' | 'idle', pulledCount: number): string {
-    if (action === 'idle') return '已是最新，无需同步'
+    if (action === 'idle') return '已比对：同步位置与本机内容一致，没有变化'
     if (action === 'pulled') return `已应用远端 ${pulledCount} 项变更`
     if (action === 'pushed') return '已把本机配置写入同步位置'
     return `已应用远端 ${pulledCount} 项变更，并回写本机配置`

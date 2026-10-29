@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   MIN_PASSWORD_LENGTH,
   SYNC_DELETE_NOTICE,
   SYNC_SCOPES,
   type AutoSyncPatch,
   type SyncScope,
-  type SyncTarget,
-  pickDefaultTarget
+  type SyncTarget
 } from '@shared/sync'
+import { IconCloud } from '../../icons'
 import { useAppStore } from '../../store'
 import { cx, errorMessage } from '../../utils'
 import { formatTime } from './format'
@@ -61,20 +61,6 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
         : auto?.dir
   )
 
-  /**
-   * 自动挑一个网盘目录：上次用过的 → 唯一检测到的 → 最近活跃的。
-   * 只在当前选择失效时改，避免覆盖用户手动指定的自定义目录。
-   */
-  useEffect(() => {
-    if ((auto?.transport ?? 'folder') !== 'folder') return
-    const current = auto?.targetId
-    if (current && (current === 'custom' || targets.some((t) => t.id === current))) return
-    const picked = pickDefaultTarget(targets, current)
-    if (!picked) return
-    void patchAuto({ targetId: picked.id })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [targets, auto?.transport, auto?.targetId])
-
   /** 每个开关都是即时生效（与设置面板一致，没有「保存」按钮） */
   const patchAuto = useCallback(
     async (patch: AutoSyncPatch): Promise<void> => {
@@ -89,6 +75,35 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
     },
     [pushToast, setAutoSync]
   )
+
+  /** iCloud 云盘目录（自动探测，不需要用户选） */
+  const icloudTarget = useMemo(
+    () => targets.find((t) => t.id === 'icloud') ?? targets.find((t) => t.kind === 'icloud'),
+    [targets]
+  )
+
+  /** 切换通道：iCloud 直接定位到 iCloud 云盘，用户零选择 */
+  const selectChannel = useCallback(
+    async (kind: 'folder' | 'sftp' | 'webdav'): Promise<void> => {
+      if (kind !== 'folder') {
+        await patchAuto({ transport: kind })
+        return
+      }
+      await patchAuto({ transport: 'folder', targetId: icloudTarget?.id ?? '' })
+    },
+    [icloudTarget, patchAuto]
+  )
+
+  // iCloud 通道：如果还没定位到目录（或原来指向已不存在的网盘），自动落到 iCloud
+  useEffect(() => {
+    if ((auto?.transport ?? 'folder') !== 'folder') return
+    const current = auto?.targetId
+    if (current === 'custom') return
+    if (current && targets.some((t) => t.id === current)) return
+    if (!icloudTarget) return
+    void patchAuto({ targetId: icloudTarget.id })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targets, icloudTarget, auto?.transport, auto?.targetId])
 
   const runAuto = async (): Promise<void> => {
     setAutoBusy(true)
@@ -137,11 +152,15 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
               <section className="sync-section">
                 <h3>自动同步</h3>
                 <p className="sync-hint">
-                  把配置固定放在一个共享位置（云盘目录或你自己的服务器）上：本机改动后自动写回，
-                  别的设备改动后自动拉取，多台机器始终一致。
+                  把配置固定放在一个共享位置（iCloud 云盘、你的服务器或 WebDAV）上：
+                  本机改动后自动写回，其他设备改动后自动拉回，多台机器始终一致。
                 </p>
                 <p className="sync-hint">
-                  和「配置包」的区别：配置包是手动拷文件；自动同步是长期开着、自己来回同步。
+                  <strong>和「配置包」是两件事</strong>：配置包是你手动导出一个文件、拷给对方；
+                  自动同步是程序自己维护一个固定文件（<code>jshell-auto.jshellsync</code>），
+                  双方都不需要手动搬。你手动导出的包，它不会去读。
+                </p>
+                <p className="sync-hint">
                   拉取前仍然会做检测，遇到「会覆盖本机较新改动」默认先暂停。
                 </p>
                 <label className="sync-scope">
@@ -179,9 +198,9 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                   <button
                     className={cx('segmented-item', (auto?.transport ?? 'folder') === 'folder' && 'is-active')}
                     disabled={autoBusy}
-                    onClick={() => void patchAuto({ transport: 'folder' })}
+                    onClick={() => void selectChannel('folder')}
                   >
-                    云盘
+                    iCloud 云盘
                   </button>
                   <button
                     className={cx('segmented-item', auto?.transport === 'sftp' && 'is-active')}
@@ -201,36 +220,17 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
 
                 {(auto?.transport ?? 'folder') === 'folder' ? (
                   <>
-                    {targets.length === 0 ? (
-                      <p className="sync-hint warn">
-                        没有检测到 iCloud、OneDrive、Dropbox、Google 云端硬盘、坚果云等网盘目录。
-                        这不影响使用：点下面的「选择文件夹…」指定任意目录即可
-                        （网络共享、自建网盘、U 盘都行）。
-                      </p>
+                    {icloudTarget ? (
+                      <div className="sync-target-line">
+                        <IconCloud />
+                        <span>iCloud 云盘</span>
+                        <span className="mono">{icloudTarget.dir}</span>
+                      </div>
                     ) : (
-                      <>
-                        <select
-                          className="input"
-                          value={auto?.targetId ?? ''}
-                          disabled={autoBusy}
-                          onChange={(event) => void patchAuto({ targetId: event.target.value })}
-                        >
-                          <option value="">（未选择）</option>
-                          {auto?.targetId === 'custom' && auto.dir && (
-                            <option value="custom">{auto.targetLabel ?? '自定义目录'}</option>
-                          )}
-                          {targets.map((target) => (
-                            <option key={target.id} value={target.id}>
-                              {target.label} — {target.dir}
-                            </option>
-                          ))}
-                        </select>
-                        <p className="sync-hint">
-                          这些目录是<strong>自动探测</strong>出来的（打开面板就扫一遍本机），
-                          只有一个时直接选中；多个时优先用你上次选过的，再按最近活跃排序。
-                          列表里没有你的网盘？用下面的「选择文件夹…」指到它的同步目录即可。
-                        </p>
-                      </>
+                      <p className="sync-hint warn">
+                        本机没有检测到 iCloud 云盘。可以点下面的「改用其他目录…」指到任意同步目录，
+                        或者换成 WebDAV / SFTP。
+                      </p>
                     )}
                     <div className="settings-actions">
                       <button
@@ -243,12 +243,12 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                             .catch((err) => pushToast(errorMessage(err), 'error'))
                         }
                       >
-                        选择文件夹…
+                        改用其他目录…
                       </button>
                     </div>
                     <p className="sync-hint">
                       文件固定为 <code>&lt;目录&gt;/JShell/jshell-auto.jshellsync</code>，
-                      反复同步不会在云盘里堆出一堆副本。
+                      反复同步不会在目录里堆出一堆副本。
                     </p>
                   </>
                 ) : auto?.transport === 'sftp' ? (
@@ -546,6 +546,10 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                     立即同步
                   </button>
                 </div>
+                <p className="sync-hint">
+                  立即同步 = 用当前配置<strong>重新组一份包</strong>写回同步位置，
+                  同时把同步位置的内容拉回来逐条比对。本机没变化时会提示「已是最新」。
+                </p>
               </section>
       </div>
 

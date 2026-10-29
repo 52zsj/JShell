@@ -135,4 +135,254 @@ drwxr-xr-x   6 jay  staff    192 Oct 28 15:51 [1m[36mwindows[39;49m[0m
 ]2;ls -G]1;ls[1m[36m0.10.1[39;49m[0m [1m[36m0.11.0[39;49m[0m [1m[36m0.11.1[39;49m[0m [1m[36m0.11.2[39;49m[0m [1m[36m0.11.3[39;49m[0m [1m[36m0.11.5[39;49m[0m [1m[36m0.11.6[39;49m[0m [1m[36m0.11.7[39;49m[0m [1m[36m0.11.8[39;49m[0m [1m[36m0.11.9[39;49m[0m
 [1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/www/Jshell/release]1;..shell/release[0m[27m[24m[J[1m[34mrelease[1m[34m[32m [main[1m[32m[32m][1m[32m[35m [00m[K[?1h=[?2004hc[1m[31mc[0m[39m[1m[31mc[0m[39m[90md ../release[39m[12D[1m[31mc[1m[31md[0m[39m[0m[32mc[0m[32md[39m[32mc[32md[32m [39m[32mc[32md[39m[39m [39m.[4m.[24m[4m.[39m[4m0[24m[39m [39m [39m [39m [39m [39m [39m [39m [8D[24m.[24m011   [4m.[24m[90m./release[39m[9D[24m [39m [39m [39m [39m [39m [39m [39m [39m [39m [10D[90m../release[39m[10D[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [11D[90m ../release[39m[11D[32mc[39m[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [12D[1m[31mc[0m[39m[1m[31mc[0m[39m[90md ../release[39m[12D[0m[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [13Dc[1m[31mc[0m[39m[1m[31mc[0m[39m[90md ../release[39m[12D[1m[31mc[1m[31md[0m[39m[0m[32mc[0m[32md[39m[32mc[32md[32m [39m[32mc[32md[39m[39m [39m.[4m.[24m[4m.[39m[4m.[24m[4m.[39m[4m/[24m[39m [39m [39m [39m [39m [39m [39m [?1l>[?2004l
 ]2;cd ../]1;cd[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/www/Jshell]1;/www/Jshell[0m[27m[24m[J[1m[34mJshell[1m[34m[32m [main[1m[32m[31m●[32m][1m[32m[35m [00m[K[?1h=[?2004ho[4mo[24m[4mo[24m[90mpen ./[39m[4mo[39m[4mp[24m[24m[1m[31mo[24m[1m[31mp[0m[39m[1m[31mo[1m[31mp[1m[31me[0m[39m[1m[31me[1m[31mn[0m[39m[0m[32mo[0m[32mp[0m[32me[0m[32mn[39m[32mn[32m [39m[32mn[39m[39m [39m.[4m.[24m[4m.[39m[4m/[24m[?1l>[?2004l
-]2;open ./]1;open[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/www/Jshell]1;/www/Jshell[0m[27m[24m[J[1m[34mJshell[1m[34m[32m [main[1m[32m[31m●[32m][1m[32m[35m [00m[K[?1h=[?2004h
+]2;open ./]1;open[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/www/Jshell]1;/www/Jshell[0m[27m[24m[J[1m[34mJshell[1m[34m[32m [main[1m[32m[31m●[32m][1m[32m[35m [00m[K[?1h=[?2004hc[1m[31mc[0m[39m[1m[31mc[0m[39m[90md ../[39m[1m[31mc[1m[31md[0m[39m[0m[32mc[0m[32md[39m[32mc[32md[32m [39m[32mc[32md[39m[39m [39m/[39m  [39m [39m [39m /var/folders/[13Dcd [7m/[7mv[7ma[7mr[7m/[7mf[7mo[7ml[7md[7me[7mrs/[27m[13D[27m/[27mv[27ma[27mr[27m/[27mf[27mo[27ml[27md[27me[27mr[27ms[27m/[90m..[39m[90m/[39m[39m [39m [39m [16D[32mc[32md[39m [4m/[4mv[4ma[4mr[4m/[4mf[4mo[4ml[4md[4me[4mr[4ms[4m/[24m[?1l>[?2004l
+]2;cd /var/folders/]1;cd[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/var/folders]1;/var/folders[0m[27m[24m[J[1m[34mfolders[1m[34m[32m[1m[32m[35m [00m[K[?1h=[?2004hl[32ml[39m[32ml[39m[90ms[39m[32ml[32ms[39m[?1l>[?2004l
+]2;ls -G]1;ls[1m[36mkk[39;49m[0m [1m[36mzz[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/var/folders]1;/var/folders[0m[27m[24m[J[1m[34mfolders[1m[34m[32m[1m[32m[35m [00m[K[?1h=[?2004hc[1m[31mc[0m[39m[1m[31mc[0m[39m[90md /var/folders/[39m[15D[1m[31mc[1m[31md[0m[39m[0m[32mc[0m[32md[39m[32mc[32md[32m [39m[32mc[32md[39m[39m [39mk[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [12D[4mk[24m[90muhou-zhurong[39m[12D[4mk[39m[4mk[24m[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [11D[4mk[1m[4m/[0m[24m[4mk[24m[0m[24m [?1l>[?2004l
+]2;cd kk]1;cd[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/var/folders/kk]1;/var/folders/kk[0m[27m[24m[J[1m[34mkk[1m[34m[32m[1m[32m[35m [00m[K[?1h=[?2004hk[1m[31mk[0m[39m[1m[31mk[0m[39m[90mex_exchange_identification: read: Connection reset by peer[39m[58D[0m[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [59Dl[32ml[39m[32ml[39m[90ms[39m[32ml[39m[39m [?1l>[?2004l
+]2;ls -G -lah]1;ltotal 0
+drwxr-xr-x@ 3 root  wheel    96B Apr 28  2022 [1m[36m.[39;49m[0m
+drwxr-xr-x  4 root  wheel   128B May 29 08:33 [1m[36m..[39;49m[0m
+drwxr-xr-x@ 9 jay   staff   288B Jan 18  2026 [1m[36m33p4s99s5mb7fljktj62lpt40000gn[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/var/folders/kk]1;/var/folders/kk[0m[27m[24m[J[1m[34mkk[1m[34m[32m[1m[32m[35m [00m[K[?1h=[?2004hc[1m[31mc[0m[39m[1m[31mc[0m[39m[90md kk[39m[1m[31mc[1m[31md[0m[39m[0m[32mc[0m[32md[39m[32mc[32md[32m [39m[32mc[32md[39m[39m [39m.[39m [4m.[24m[90m./[39m[4m.[39m[4m.[24m[4m.[39m[4m/[24m[4m/[4mz[24m[?1l>[?2004l[24m.[24m.[24m/[24mz
+]2;cd ../z]1;cdcd: no such file or directory: ../z
+[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/var/folders/kk]1;/var/folders/kk[0m[27m[24m[J[1m[34mkk[1m[34m[32m[1m[32m[35m [00m[K[?1h=[?2004hc[1m[31mc[0m[39m[1m[31mc[0m[39m[90md ../z[39m[1m[31mc[1m[31md[0m[39m[0m[32mc[0m[32md[39m[32mc[32md[32m [39m[32mc[32md[39m[39m [39m.[4m.[24m[4m.[39m[4m.[24m[4m.[39m[4m/[24m[4m/[39m[4mz[24m[4mz[4mz[24m[4mz[1m[4m/[0m[24m[4mz[24m[0m[24m [?1l>[?2004l
+]2;cd ../zz]1;cd[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/var/folders/zz]1;/var/folders/zz[0m[27m[24m[J[1m[34mzz[1m[34m[32m[1m[32m[35m [00m[K[?1h=[?2004hl[32ml[39m[32ml[32ml[39m[?1l>[?2004l
+]2;ls -G -lh]1;lltotal 0
+drwxr-xr-x@ 7 root                    wheel                    224B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n0000000000000[39;49m[0m
+drwxr-xr-x@ 6 _networkd               _networkd                192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000003000000r[39;49m[0m
+drwxr-xr-x@ 6 _lp                     _lp                      192B May 31  2022 [1m[36mzyxvpxvq6csfxvn_n000003800000t[39;49m[0m
+drwxr-xr-x@ 6 _appleevents            _appleevents             192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000006w00001q[39;49m[0m
+drwxr-xr-x@ 6 _mdnsresponder          _mdnsresponder           192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n0000084000021[39;49m[0m
+drwxr-xr-x@ 6 _windowserver           _windowserver            192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000b000002r[39;49m[0m
+drwxr-xr-x@ 6 _spotlight              _spotlight               192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000b400002s[39;49m[0m
+drwxr-xr-x@ 6 _securityagent          _securityagent           192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000bh00002w[39;49m[0m
+drwxr-xr-x@ 6 _softwareupdate         _softwareupdate          192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000s0000068[39;49m[0m
+drwxr-xr-x@ 6 _coreaudiod             _coreaudiod              192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000s800006_[39;49m[0m
+drwxr-xr-x@ 5 _locationd              _locationd               160B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000sm00006d[39;49m[0m
+drwxr-xr-x@ 6 _cvmsroot               _cvms                    192B May  2  2022 [1m[36mzyxvpxvq6csfxvn_n00000th00006m[39;49m[0m
+drwxr-xr-x@ 6 _usbmuxd                _usbmuxd                 192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000tm00006n[39;49m[0m
+drwxr-xr-x@ 6 _netbios                _netbios                 192B May 12  2022 [1m[36mzyxvpxvq6csfxvn_n00000vr00006y[39;49m[0m
+drwxr-xr-x@ 6 _assetcache             _assetcache              192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000xc00007b[39;49m[0m
+drwxr-xr-x@ 6 _iconservices           _iconservices            192B Apr 29  2022 [1m[36mzyxvpxvq6csfxvn_n00000y000007h[39;49m[0m
+drwxr-xr-x@ 6 _distnote               _distnote                192B May 12  2022 [1m[36mzyxvpxvq6csfxvn_n00000y400007j[39;49m[0m
+drwxr-xr-x@ 6 _nsurlsessiond          _nsurlsessiond           192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000y800007k[39;49m[0m
+drwxr-xr-x@ 6 _gamecontrollerd        _gamecontrollerd         192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000yw00007q[39;49m[0m
+drwxr-xr-x@ 6 _mbsetupuser            _mbsetupuser             192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000z000007r[39;49m[0m
+drwxr-xr-x@ 6 _datadetectors          _datadetectors           192B May 17  2022 [1m[36mzyxvpxvq6csfxvn_n0000104000081[39;49m[0m
+drwxr-xr-x@ 6 _captiveagent           _captiveagent            192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n0000108000082[39;49m[0m
+drwxr-xr-x@ 6 _ctkd                   _ctkd                    192B May 17  2022 [1m[36mzyxvpxvq6csfxvn_n000010c000083[39;49m[0m
+drwxr-xr-x@ 6 _applepay               _applepay                192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000010h000084[39;49m[0m
+drwxr-xr-x@ 6 _hidd                   _hidd                    192B May 17  2022 [1m[36mzyxvpxvq6csfxvn_n000010m000085[39;49m[0m
+drwxr-xr-x@ 6 _cmiodalassistants      _cmiodalassistants       192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000010r000086[39;49m[0m
+drwxr-xr-x@ 6 _analyticsd             _analyticsd              192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000010w000087[39;49m[0m
+drwxr-xr-x@ 6 _fpsd                   _fpsd                    192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n0000114000089[39;49m[0m
+drwxr-xr-x@ 6 _timed                  _timed                   192B May 12  2022 [1m[36mzyxvpxvq6csfxvn_n000011800008_[39;49m[0m
+drwxr-xr-x@ 6 _nearbyd                _nearbyd                 192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000011h00008c[39;49m[0m
+drwxr-xr-x@ 6 _reportmemoryexception  _reportmemoryexception   192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000011m00008d[39;49m[0m
+drwxr-xr-x@ 6 _driverkit              _driverkit               192B May 12  2022 [1m[36mzyxvpxvq6csfxvn_n000011r00008f[39;49m[0m
+drwxr-xr-x@ 6 _diskimagesiod          _diskimagesiod           192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000011w00008g[39;49m[0m
+drwxr-xr-x@ 6 _appinstalld            _appinstalld             192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000012400008j[39;49m[0m
+drwxr-xr-x@ 6 _installcoordinationd   _installcoordinationd    192B Apr 30  2022 [1m[36mzyxvpxvq6csfxvn_n000012800008k[39;49m[0m
+drwxr-xr-x@ 6 _rmd                    _rmd                     192B Nov  5  2022 [1m[36mzyxvpxvq6csfxvn_n000012m00008n[39;49m[0m
+drwxr-xr-x@ 6 _accessoryupdater       _accessoryupdater        192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000012r00008p[39;49m[0m
+drwxr-xr-x@ 6 _trustd                 _trustd                  192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000013800008t[39;49m[0m
+drwxr-xr-x@ 6 _biome                  _biome                   192B Nov  5  2022 [1m[36mzyxvpxvq6csfxvn_n0000144000091[39;49m[0m
+drwxr-xr-x@ 6 _audiomxd               _audiomxd                192B Dec  5  2023 [1m[36mzyxvpxvq6csfxvn_n000014r000096[39;49m[0m
+drwxr-xr-x@ 6 _neuralengine           _neuralengine            192B Dec  9  2023 [1m[36mzyxvpxvq6csfxvn_n0000150000098[39;49m[0m
+drwxr-xr-x@ 6 _oahd                   _oahd                    192B May 12  2022 [1m[36mzyxvpxvq6csfxvn_n00001q40000ds[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/var/folders/zz]1;/var/folders/zz[0m[27m[24m[J[1m[34mzz[1m[34m[32m[1m[32m[35m [00m[K[?1h=[?2004hl[32ml[39m[32ml[39m[90ml[39m[32ml[32ms[39m[32ml[32ms[32m [39m[32ml[32ms[39m[39m [90m-la [39m[39m-[39ml[39ma[39m [?1l>[?2004l
+]2;ls -G -la]1;lstotal 0
+drwxr-xr-x@ 44 root                    wheel                   1408 Dec  9  2023 [1m[36m.[39;49m[0m
+drwxr-xr-x   4 root                    wheel                    128 May 29 08:33 [1m[36m..[39;49m[0m
+drwxr-xr-x@  7 root                    wheel                    224 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n0000000000000[39;49m[0m
+drwxr-xr-x@  6 _networkd               _networkd                192 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000003000000r[39;49m[0m
+drwxr-xr-x@  6 _lp                     _lp                      192 May 31  2022 [1m[36mzyxvpxvq6csfxvn_n000003800000t[39;49m[0m
+drwxr-xr-x@  6 _appleevents            _appleevents             192 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000006w00001q[39;49m[0m
+drwxr-xr-x@  6 _mdnsresponder          _mdnsresponder           192 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n0000084000021[39;49m[0m
+drwxr-xr-x@  6 _windowserver           _windowserver            192 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000b000002r[39;49m[0m
+drwxr-xr-x@  6 _spotlight              _spotlight               192 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000b400002s[39;49m[0m
+drwxr-xr-x@  6 _securityagent          _securityagent           192 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000bh00002w[39;49m[0m
+drwxr-xr-x@  6 _softwareupdate         _softwareupdate          192 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000s0000068[39;49m[0m
+drwxr-xr-x@  6 _coreaudiod             _coreaudiod              192 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000s800006_[39;49m[0m
+drwxr-xr-x@  5 _locationd              _locationd               160 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000sm00006d[39;49m[0m
+drwxr-xr-x@  6 _cvmsroot               _cvms                    192 May  2  2022 [1m[36mzyxvpxvq6csfxvn_n00000th00006m[39;49m[0m
+drwxr-xr-x@  6 _usbmuxd                _usbmuxd                 192 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000tm00006n[39;49m[0m
+drwxr-xr-x@  6 _netbios                _netbios                 192 May 12  2022 [1m[36mzyxvpxvq6csfxvn_n00000vr00006y[39;49m[0m
+drwxr-xr-x@  6 _assetcache             _assetcache              192 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000xc00007b[39;49m[0m
+drwxr-xr-x@  6 _iconservices           _iconservices            192 Apr 29  2022 [1m[36mzyxvpxvq6csfxvn_n00000y000007h[39;49m[0m
+drwxr-xr-x@  6 _distnote               _distnote                192 May 12  2022 [1m[36mzyxvpxvq6csfxvn_n00000y400007j[39;49m[0m
+drwxr-xr-x@  6 _nsurlsessiond          _nsurlsessiond           192 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000y800007k[39;49m[0m
+drwxr-xr-x@  6 _gamecontrollerd        _gamecontrollerd         192 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000yw00007q[39;49m[0m
+drwxr-xr-x@  6 _mbsetupuser            _mbsetupuser             192 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000z000007r[39;49m[0m
+drwxr-xr-x@  6 _datadetectors          _datadetectors           192 May 17  2022 [1m[36mzyxvpxvq6csfxvn_n0000104000081[39;49m[0m
+drwxr-xr-x@  6 _captiveagent           _captiveagent            192 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n0000108000082[39;49m[0m
+drwxr-xr-x@  6 _ctkd                   _ctkd                    192 May 17  2022 [1m[36mzyxvpxvq6csfxvn_n000010c000083[39;49m[0m
+drwxr-xr-x@  6 _applepay               _applepay                192 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000010h000084[39;49m[0m
+drwxr-xr-x@  6 _hidd                   _hidd                    192 May 17  2022 [1m[36mzyxvpxvq6csfxvn_n000010m000085[39;49m[0m
+drwxr-xr-x@  6 _cmiodalassistants      _cmiodalassistants       192 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000010r000086[39;49m[0m
+drwxr-xr-x@  6 _analyticsd             _analyticsd              192 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000010w000087[39;49m[0m
+drwxr-xr-x@  6 _fpsd                   _fpsd                    192 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n0000114000089[39;49m[0m
+drwxr-xr-x@  6 _timed                  _timed                   192 May 12  2022 [1m[36mzyxvpxvq6csfxvn_n000011800008_[39;49m[0m
+drwxr-xr-x@  6 _nearbyd                _nearbyd                 192 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000011h00008c[39;49m[0m
+drwxr-xr-x@  6 _reportmemoryexception  _reportmemoryexception   192 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000011m00008d[39;49m[0m
+drwxr-xr-x@  6 _driverkit              _driverkit               192 May 12  2022 [1m[36mzyxvpxvq6csfxvn_n000011r00008f[39;49m[0m
+drwxr-xr-x@  6 _diskimagesiod          _diskimagesiod           192 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000011w00008g[39;49m[0m
+drwxr-xr-x@  6 _appinstalld            _appinstalld             192 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000012400008j[39;49m[0m
+drwxr-xr-x@  6 _installcoordinationd   _installcoordinationd    192 Apr 30  2022 [1m[36mzyxvpxvq6csfxvn_n000012800008k[39;49m[0m
+drwxr-xr-x@  6 _rmd                    _rmd                     192 Nov  5  2022 [1m[36mzyxvpxvq6csfxvn_n000012m00008n[39;49m[0m
+drwxr-xr-x@  6 _accessoryupdater       _accessoryupdater        192 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000012r00008p[39;49m[0m
+drwxr-xr-x@  6 _trustd                 _trustd                  192 Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000013800008t[39;49m[0m
+drwxr-xr-x@  6 _biome                  _biome                   192 Nov  5  2022 [1m[36mzyxvpxvq6csfxvn_n0000144000091[39;49m[0m
+drwxr-xr-x@  6 _audiomxd               _audiomxd                192 Dec  5  2023 [1m[36mzyxvpxvq6csfxvn_n000014r000096[39;49m[0m
+drwxr-xr-x@  6 _neuralengine           _neuralengine            192 Dec  9  2023 [1m[36mzyxvpxvq6csfxvn_n0000150000098[39;49m[0m
+drwxr-xr-x@  6 _oahd                   _oahd                    192 May 12  2022 [1m[36mzyxvpxvq6csfxvn_n00001q40000ds[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/var/folders/zz]1;/var/folders/zz[0m[27m[24m[J[1m[34mzz[1m[34m[32m[1m[32m[35m [00m[K[?1h=[?2004hl[32ml[39m[32ml[39m[90ms -la [39m[32ml[32ml[39m[39m [39m [39m [39m [39m [32ml[32ml[32m [39m[32ml[32ml[39m[39m [?1l>[?2004l
+]2;ls -G -lh]1;lltotal 0
+drwxr-xr-x@ 7 root                    wheel                    224B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n0000000000000[39;49m[0m
+drwxr-xr-x@ 6 _networkd               _networkd                192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000003000000r[39;49m[0m
+drwxr-xr-x@ 6 _lp                     _lp                      192B May 31  2022 [1m[36mzyxvpxvq6csfxvn_n000003800000t[39;49m[0m
+drwxr-xr-x@ 6 _appleevents            _appleevents             192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000006w00001q[39;49m[0m
+drwxr-xr-x@ 6 _mdnsresponder          _mdnsresponder           192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n0000084000021[39;49m[0m
+drwxr-xr-x@ 6 _windowserver           _windowserver            192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000b000002r[39;49m[0m
+drwxr-xr-x@ 6 _spotlight              _spotlight               192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000b400002s[39;49m[0m
+drwxr-xr-x@ 6 _securityagent          _securityagent           192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000bh00002w[39;49m[0m
+drwxr-xr-x@ 6 _softwareupdate         _softwareupdate          192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000s0000068[39;49m[0m
+drwxr-xr-x@ 6 _coreaudiod             _coreaudiod              192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000s800006_[39;49m[0m
+drwxr-xr-x@ 5 _locationd              _locationd               160B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000sm00006d[39;49m[0m
+drwxr-xr-x@ 6 _cvmsroot               _cvms                    192B May  2  2022 [1m[36mzyxvpxvq6csfxvn_n00000th00006m[39;49m[0m
+drwxr-xr-x@ 6 _usbmuxd                _usbmuxd                 192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000tm00006n[39;49m[0m
+drwxr-xr-x@ 6 _netbios                _netbios                 192B May 12  2022 [1m[36mzyxvpxvq6csfxvn_n00000vr00006y[39;49m[0m
+drwxr-xr-x@ 6 _assetcache             _assetcache              192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000xc00007b[39;49m[0m
+drwxr-xr-x@ 6 _iconservices           _iconservices            192B Apr 29  2022 [1m[36mzyxvpxvq6csfxvn_n00000y000007h[39;49m[0m
+drwxr-xr-x@ 6 _distnote               _distnote                192B May 12  2022 [1m[36mzyxvpxvq6csfxvn_n00000y400007j[39;49m[0m
+drwxr-xr-x@ 6 _nsurlsessiond          _nsurlsessiond           192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000y800007k[39;49m[0m
+drwxr-xr-x@ 6 _gamecontrollerd        _gamecontrollerd         192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000yw00007q[39;49m[0m
+drwxr-xr-x@ 6 _mbsetupuser            _mbsetupuser             192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000z000007r[39;49m[0m
+drwxr-xr-x@ 6 _datadetectors          _datadetectors           192B May 17  2022 [1m[36mzyxvpxvq6csfxvn_n0000104000081[39;49m[0m
+drwxr-xr-x@ 6 _captiveagent           _captiveagent            192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n0000108000082[39;49m[0m
+drwxr-xr-x@ 6 _ctkd                   _ctkd                    192B May 17  2022 [1m[36mzyxvpxvq6csfxvn_n000010c000083[39;49m[0m
+drwxr-xr-x@ 6 _applepay               _applepay                192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000010h000084[39;49m[0m
+drwxr-xr-x@ 6 _hidd                   _hidd                    192B May 17  2022 [1m[36mzyxvpxvq6csfxvn_n000010m000085[39;49m[0m
+drwxr-xr-x@ 6 _cmiodalassistants      _cmiodalassistants       192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000010r000086[39;49m[0m
+drwxr-xr-x@ 6 _analyticsd             _analyticsd              192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000010w000087[39;49m[0m
+drwxr-xr-x@ 6 _fpsd                   _fpsd                    192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n0000114000089[39;49m[0m
+drwxr-xr-x@ 6 _timed                  _timed                   192B May 12  2022 [1m[36mzyxvpxvq6csfxvn_n000011800008_[39;49m[0m
+drwxr-xr-x@ 6 _nearbyd                _nearbyd                 192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000011h00008c[39;49m[0m
+drwxr-xr-x@ 6 _reportmemoryexception  _reportmemoryexception   192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000011m00008d[39;49m[0m
+drwxr-xr-x@ 6 _driverkit              _driverkit               192B May 12  2022 [1m[36mzyxvpxvq6csfxvn_n000011r00008f[39;49m[0m
+drwxr-xr-x@ 6 _diskimagesiod          _diskimagesiod           192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000011w00008g[39;49m[0m
+drwxr-xr-x@ 6 _appinstalld            _appinstalld             192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000012400008j[39;49m[0m
+drwxr-xr-x@ 6 _installcoordinationd   _installcoordinationd    192B Apr 30  2022 [1m[36mzyxvpxvq6csfxvn_n000012800008k[39;49m[0m
+drwxr-xr-x@ 6 _rmd                    _rmd                     192B Nov  5  2022 [1m[36mzyxvpxvq6csfxvn_n000012m00008n[39;49m[0m
+drwxr-xr-x@ 6 _accessoryupdater       _accessoryupdater        192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000012r00008p[39;49m[0m
+drwxr-xr-x@ 6 _trustd                 _trustd                  192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000013800008t[39;49m[0m
+drwxr-xr-x@ 6 _biome                  _biome                   192B Nov  5  2022 [1m[36mzyxvpxvq6csfxvn_n0000144000091[39;49m[0m
+drwxr-xr-x@ 6 _audiomxd               _audiomxd                192B Dec  5  2023 [1m[36mzyxvpxvq6csfxvn_n000014r000096[39;49m[0m
+drwxr-xr-x@ 6 _neuralengine           _neuralengine            192B Dec  9  2023 [1m[36mzyxvpxvq6csfxvn_n0000150000098[39;49m[0m
+drwxr-xr-x@ 6 _oahd                   _oahd                    192B May 12  2022 [1m[36mzyxvpxvq6csfxvn_n00001q40000ds[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/var/folders/zz]1;/var/folders/zz[0m[27m[24m[J[1m[34mzz[1m[34m[32m[1m[32m[35m [00m[K[?1h=[?2004hd[32md[39m[32md[39m[90mate '+START %F %T'; \[39m
+[90mrsync -avz --progress --stats \[39m[K
+[90m /www/feibian/wcs-starter/dist/release-prod-20261021/wcs-gateway-prod-linux-amd64-09f46d8.zip  \[39m[K
+[90m  root@10.251.206.19:/www/new_1021_1.zip; \[39m[K
+[90mdate '+END   %F %T' [39m[K[4A[16D[32md[32md[39m[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [1B[K[1B[K[1B[K[1B[K[4A[5C[32md[32md[32m [39m[32md[32md[39m[39m [39mz[39m zyxvpxvq6csfxvn_n00001q40000ds[30Ddd [7mz[7my[7mx[7mv[7mp[7mx[7mv[7mq[7m6[7mc[7ms[7mf[7mx[7mv[7mn[7m_[7mn[7m0[7m0[7m0[7m0[7m1[7mq[7m4[7m0[7m0[7m0[7m0ds[27m[30D[27mz[27my[27mx[27mv[27mp[27mx[27mv[27mq[27m6[27mc[27ms[27mf[27mx[27mv[27mn[27m_[27mn[27m0[27m0[27m0[27m0[27m1[27mq[27m4[27m0[27m0[27m0[27m0[27md[27ms[33D[32md[32md[39m [4mz[4my[4mx[4mv[4mp[4mx[4mv[4mq[4m6[4mc[4ms[4mf[4mx[4mv[4mn[4m_[4mn[4m0[4m0[4m0[4m0[4m1[4mq[4m4[4m0[4m0[4m0[4m0[4md[4ms[24m[?1l>[?2004l[1B]2;dd zyxvpxvq6csfxvn_n00001q40000ds]1;dddd: unknown operand zyxvpxvq6csfxvn_n00001q40000ds
+[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/var/folders/zz]1;/var/folders/zz[0m[27m[24m[J[1m[34mzz[1m[34m[32m[1m[32m[35m [00m[K[?1h=[?2004hl[32ml[39m[32ml[39m[90ml [39m[32ml[32ml[39m[39m [?1l>[?2004l
+]2;ls -G -lh]1;lltotal 0
+drwxr-xr-x@ 7 root                    wheel                    224B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n0000000000000[39;49m[0m
+drwxr-xr-x@ 6 _networkd               _networkd                192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000003000000r[39;49m[0m
+drwxr-xr-x@ 6 _lp                     _lp                      192B May 31  2022 [1m[36mzyxvpxvq6csfxvn_n000003800000t[39;49m[0m
+drwxr-xr-x@ 6 _appleevents            _appleevents             192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000006w00001q[39;49m[0m
+drwxr-xr-x@ 6 _mdnsresponder          _mdnsresponder           192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n0000084000021[39;49m[0m
+drwxr-xr-x@ 6 _windowserver           _windowserver            192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000b000002r[39;49m[0m
+drwxr-xr-x@ 6 _spotlight              _spotlight               192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000b400002s[39;49m[0m
+drwxr-xr-x@ 6 _securityagent          _securityagent           192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000bh00002w[39;49m[0m
+drwxr-xr-x@ 6 _softwareupdate         _softwareupdate          192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000s0000068[39;49m[0m
+drwxr-xr-x@ 6 _coreaudiod             _coreaudiod              192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000s800006_[39;49m[0m
+drwxr-xr-x@ 5 _locationd              _locationd               160B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000sm00006d[39;49m[0m
+drwxr-xr-x@ 6 _cvmsroot               _cvms                    192B May  2  2022 [1m[36mzyxvpxvq6csfxvn_n00000th00006m[39;49m[0m
+drwxr-xr-x@ 6 _usbmuxd                _usbmuxd                 192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000tm00006n[39;49m[0m
+drwxr-xr-x@ 6 _netbios                _netbios                 192B May 12  2022 [1m[36mzyxvpxvq6csfxvn_n00000vr00006y[39;49m[0m
+drwxr-xr-x@ 6 _assetcache             _assetcache              192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000xc00007b[39;49m[0m
+drwxr-xr-x@ 6 _iconservices           _iconservices            192B Apr 29  2022 [1m[36mzyxvpxvq6csfxvn_n00000y000007h[39;49m[0m
+drwxr-xr-x@ 6 _distnote               _distnote                192B May 12  2022 [1m[36mzyxvpxvq6csfxvn_n00000y400007j[39;49m[0m
+drwxr-xr-x@ 6 _nsurlsessiond          _nsurlsessiond           192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000y800007k[39;49m[0m
+drwxr-xr-x@ 6 _gamecontrollerd        _gamecontrollerd         192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000yw00007q[39;49m[0m
+drwxr-xr-x@ 6 _mbsetupuser            _mbsetupuser             192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n00000z000007r[39;49m[0m
+drwxr-xr-x@ 6 _datadetectors          _datadetectors           192B May 17  2022 [1m[36mzyxvpxvq6csfxvn_n0000104000081[39;49m[0m
+drwxr-xr-x@ 6 _captiveagent           _captiveagent            192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n0000108000082[39;49m[0m
+drwxr-xr-x@ 6 _ctkd                   _ctkd                    192B May 17  2022 [1m[36mzyxvpxvq6csfxvn_n000010c000083[39;49m[0m
+drwxr-xr-x@ 6 _applepay               _applepay                192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000010h000084[39;49m[0m
+drwxr-xr-x@ 6 _hidd                   _hidd                    192B May 17  2022 [1m[36mzyxvpxvq6csfxvn_n000010m000085[39;49m[0m
+drwxr-xr-x@ 6 _cmiodalassistants      _cmiodalassistants       192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000010r000086[39;49m[0m
+drwxr-xr-x@ 6 _analyticsd             _analyticsd              192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000010w000087[39;49m[0m
+drwxr-xr-x@ 6 _fpsd                   _fpsd                    192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n0000114000089[39;49m[0m
+drwxr-xr-x@ 6 _timed                  _timed                   192B May 12  2022 [1m[36mzyxvpxvq6csfxvn_n000011800008_[39;49m[0m
+drwxr-xr-x@ 6 _nearbyd                _nearbyd                 192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000011h00008c[39;49m[0m
+drwxr-xr-x@ 6 _reportmemoryexception  _reportmemoryexception   192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000011m00008d[39;49m[0m
+drwxr-xr-x@ 6 _driverkit              _driverkit               192B May 12  2022 [1m[36mzyxvpxvq6csfxvn_n000011r00008f[39;49m[0m
+drwxr-xr-x@ 6 _diskimagesiod          _diskimagesiod           192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000011w00008g[39;49m[0m
+drwxr-xr-x@ 6 _appinstalld            _appinstalld             192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000012400008j[39;49m[0m
+drwxr-xr-x@ 6 _installcoordinationd   _installcoordinationd    192B Apr 30  2022 [1m[36mzyxvpxvq6csfxvn_n000012800008k[39;49m[0m
+drwxr-xr-x@ 6 _rmd                    _rmd                     192B Nov  5  2022 [1m[36mzyxvpxvq6csfxvn_n000012m00008n[39;49m[0m
+drwxr-xr-x@ 6 _accessoryupdater       _accessoryupdater        192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000012r00008p[39;49m[0m
+drwxr-xr-x@ 6 _trustd                 _trustd                  192B Apr 28  2022 [1m[36mzyxvpxvq6csfxvn_n000013800008t[39;49m[0m
+drwxr-xr-x@ 6 _biome                  _biome                   192B Nov  5  2022 [1m[36mzyxvpxvq6csfxvn_n0000144000091[39;49m[0m
+drwxr-xr-x@ 6 _audiomxd               _audiomxd                192B Dec  5  2023 [1m[36mzyxvpxvq6csfxvn_n000014r000096[39;49m[0m
+drwxr-xr-x@ 6 _neuralengine           _neuralengine            192B Dec  9  2023 [1m[36mzyxvpxvq6csfxvn_n0000150000098[39;49m[0m
+drwxr-xr-x@ 6 _oahd                   _oahd                    192B May 12  2022 [1m[36mzyxvpxvq6csfxvn_n00001q40000ds[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/var/folders/zz]1;/var/folders/zz[0m[27m[24m[J[1m[34mzz[1m[34m[32m[1m[32m[35m [00m[K[?1h=[?2004hc[1m[31mc[0m[39m[1m[31mc[0m[39m[90md ../zz[39m[1m[31mc[1m[31md[0m[39m[0m[32mc[0m[32md[39m[32mc[32md[32m [39m[32mc[32md[39m[39m [39mz[39m  [39m [39m [39m [39m [39m zyxvpxvq6csfxvn_n000012400008j[30Dcd [7mz[7my[7mx[7mv[7mp[7mx[7mv[7mq[7m6[7mc[7ms[7mf[7mx[7mv[7mn[7m_[7mn[7m0[7m0[7m0[7m0[7m1[7m2[7m4[7m0[7m0[7m0[7m08j[27m[30D[27mz[27my[27mx[27mv[27mp[27mx[27mv[27mq[27m6[27mc[27ms[27mf[27mx[27mv[27mn[27m_[27mn[27m0[27m0[27m0[27m0[27m1[27m2[27m4[27m0[27m0[27m0[27m0[27m8[27mj[90m..[39m[90m/zz[39m[39m [39m [39m [39m [39m [33D[32mc[32md[39m [4mz[4my[4mx[4mv[4mp[4mx[4mv[4mq[4m6[4mc[4ms[4mf[4mx[4mv[4mn[4m_[4mn[4m0[4m0[4m0[4m0[4m1[4m2[4m4[4m0[4m0[4m0[4m0[4m8[4mj[24m[?1l>[?2004l
+]2;cd zyxvpxvq6csfxvn_n000012400008j]1;cd[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/var/folders/zz/zyxvpxvq6csfxvn_n000012400008j]1;..000012400008j[0m[27m[24m[J[1m[34mzyxvpxvq6csfxvn_n000012400008j[1m[34m[32m[1m[32m[35m [00m[K[?1h=[?2004hl[32ml[39m[32ml[39m[90ml[39m[32ml[32ml[39m[?1l>[?2004l
+]2;ls -G -lh]1;lltotal 0
+drwxr-xr-x@ 2 _appinstalld  _appinstalld    64B Apr 28  2022 [1m[36m0[39;49m[0m
+drwx------  3 _appinstalld  _appinstalld    96B Apr 28  2022 [1m[36mC[39;49m[0m
+drwx------  2 _appinstalld  _appinstalld    64B Oct 19  2024 [1m[36mT[39;49m[0m
+drwxr-xr-x@ 2 _appinstalld  _appinstalld    64B Apr 28  2022 [1m[36mX[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/var/folders/zz/zyxvpxvq6csfxvn_n000012400008j]1;..000012400008j[0m[27m[24m[J[1m[34mzyxvpxvq6csfxvn_n000012400008j[1m[34m[32m[1m[32m[35m [00m[K[?1h=[?2004hc[1m[31mc[0m[39m[1m[31mc[0m[39m[90md zyxvpxvq6csfxvn_n000012400008j[39m[32D[1m[31mc[1m[31md[0m[39m[0m[32mc[0m[32md[39m[32mc[32md[32m [39m[32mc[32md[39m[39m [39mT[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [29D[4mT[24m[90mask[39m[39m [39m [39m [?1l>[?2004l
+]2;cd T]1;cdcd: permission denied: T
+[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/var/folders/zz/zyxvpxvq6csfxvn_n000012400008j]1;..000012400008j[0m[27m[24m[J[1m[34mzyxvpxvq6csfxvn_n000012400008j[1m[34m[32m[1m[32m[35m [00m[K[?1h=[?2004hl[32ml[39m[32ml[39m[90ml[39m[32ml[32ml[39m[?1l>[?2004l
+]2;ls -G -lh]1;lltotal 0
+drwxr-xr-x@ 2 _appinstalld  _appinstalld    64B Apr 28  2022 [1m[36m0[39;49m[0m
+drwx------  3 _appinstalld  _appinstalld    96B Apr 28  2022 [1m[36mC[39;49m[0m
+drwx------  2 _appinstalld  _appinstalld    64B Oct 19  2024 [1m[36mT[39;49m[0m
+drwxr-xr-x@ 2 _appinstalld  _appinstalld    64B Apr 28  2022 [1m[36mX[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/var/folders/zz/zyxvpxvq6csfxvn_n000012400008j]1;..000012400008j[0m[27m[24m[J[1m[34mzyxvpxvq6csfxvn_n000012400008j[1m[34m[32m[1m[32m[35m [00m[K[?1h=[?2004hc[1m[31mc[0m[39m[1m[31mc[0m[39m[90md T[39m[1m[31mc[1m[31md[0m[39m[0m[32mc[0m[32md[39m[32mc[32md[32m [39m[32mc[32md[39m[39m [39mT[4mT[24m[4mT[1m[4m/[0m[24m[39mc[39md [24mT[24m[1m/[0m[32mc[32md[39m [4mT[1m[4m/[0m[24m[4mT[24m[0m[24m [?1l>[?2004l
+]2;cd T]1;cdcd: permission denied: T
+[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/var/folders/zz/zyxvpxvq6csfxvn_n000012400008j]1;..000012400008j[0m[27m[24m[J[1m[34mzyxvpxvq6csfxvn_n000012400008j[1m[34m[32m[1m[32m[35m [00m[K[?1h=[?2004hl[32ml[39m[32ml[39m[90ml[39m[32ml[32ms[39m[90m -la [39m[39m [39m [39m [39m [39m [?1l>[?2004l
+]2;ls -G]1;ls[1m[36m0[39;49m[0m [1m[36mC[39;49m[0m [1m[36mT[39;49m[0m [1m[36mX[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/var/folders/zz/zyxvpxvq6csfxvn_n000012400008j]1;..000012400008j[0m[27m[24m[J[1m[34mzyxvpxvq6csfxvn_n000012400008j[1m[34m[32m[1m[32m[35m [00m[K[?1h=[?2004hc[1m[31mc[0m[39m[1m[31mc[0m[39m[90md T[39m[1m[31mc[1m[31mh[0m[39m[39m [39m [90mmod +x check_script.sh[39m[22D[1m[31mc[1m[31mh[1m[31mm[0m[39m[1m[31mm[1m[31mo[0m[39m[0m[32mc[0m[32mh[0m[32mm[0m[32mo[32md[39m[39m[1m [0m[1m [39m[1m+[0m[0m [0m+[39mx[39m [39mT[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [14D[4mT[24m[4mT[1m[4m/[0m[24m[4mT[24m[0m[24m [?1l>[?2004l
+]2;chmod +x T]1;chmodchmod: Unable to change file mode on T: Operation not permitted
+[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/var/folders/zz/zyxvpxvq6csfxvn_n000012400008j]1;..000012400008j[0m[27m[24m[J[1m[34mzyxvpxvq6csfxvn_n000012400008j[1m[34m[32m[1m[32m[35m [00m[K[?1h=[?2004hl[32ml[39m[32ml[39m[90ms[39m[32ml[32ml[39m[?1l>[?2004l
+]2;ls -G -lh]1;lltotal 0
+drwxr-xr-x@ 2 _appinstalld  _appinstalld    64B Apr 28  2022 [1m[36m0[39;49m[0m
+drwx------  3 _appinstalld  _appinstalld    96B Apr 28  2022 [1m[36mC[39;49m[0m
+drwx------  2 _appinstalld  _appinstalld    64B Oct 19  2024 [1m[36mT[39;49m[0m
+drwxr-xr-x@ 2 _appinstalld  _appinstalld    64B Apr 28  2022 [1m[36mX[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/var/folders/zz/zyxvpxvq6csfxvn_n000012400008j]1;..000012400008j[0m[27m[24m[J[1m[34mzyxvpxvq6csfxvn_n000012400008j[1m[34m[32m[1m[32m[35m [00m[K[?1h=[?2004hc[1m[31mc[0m[39m[1m[31mc[0m[39m[90mhmod +x T[39m[9D[1m[31mc[1m[31md[0m[39m[39m [39m [39m [39m [39m [39m [39m [39m [8D[0m[32mc[0m[32md[39m[90m T[39m[32mc[32md[32m [39m[32mc[32md[39m[39m [39m/[39m  [39m /var/folders/kk/33p4s99s5mb7fljktj62lpt40000gn/T/64EE4B3C-0B07-43C4-8 [K4494-E6415BB3E456/[A[14Ccd [7m/[7mv[7ma[7mr[7m/[7mf[7mo[7ml[7md[7me[7mr[7ms[7m/[7mk[7mk[7m/[7m3[7m3[7mp[7m4[7ms[7m9[7m9[7ms[7m5[7mm[7mb[7m7[7mf[7ml[7mj[7mk[7mt[7mj[7m6[7m2[7ml[7mp[7mt[7m4[7m0[7m0[7m0[7m0[7mg[7mn[7m/[7mT[7m/[7m6[7m4[7mE[7mE[7m4[7mB[7m3[7mC[7m-[7m0[7mB[7m0[7m7[7m-[7m4[7m3[7mC[7m4[7m-[7m8[7m4[7m9[7m4[7m-[7mE[7m6[7m4[7m1[7m5[7mB[7mB[7m3[7mE[7m4[7m56/[27m[A[14C[27m/[27mv[27ma[27mr[27m/[27mf[27mo[27ml[27md[27me[27mr[27ms[27m/[27mk[27mk[27m/[27m3[27m3[27mp[27m4[27ms[27m9[27m9[27ms[27m5[27mm[27mb[27m7[27mf[27ml[27mj[27mk[27mt[27mj[27m6[27m2[27ml[27mp[27mt[27m4[27m0[27m0[27m0[27m0[27mg[27mn[27m/[27mT[27m/[27m6[27m4[27mE[27mE[27m4[27mB[27m3[27mC[27m-[27m0[27mB[27m0[27m7[27m-[27m4[27m3[27mC4[27m-[27m8[27m4[27m9[27m4[27m-[27mE[27m6[27m4[27m1[27m5[27mB[27mB[27m3[27mE[27m4[27m5[27m6[27m/[90mT[39m[39m [A[11C[32mc[32md[39m [4m/[4mv[4ma[4mr[4m/[4mf[4mo[4ml[4md[4me[4mr[4ms[4m/[4mk[4mk[4m/[4m3[4m3[4mp[4m4[4ms[4m9[4m9[4ms[4m5[4mm[4mb[4m7[4mf[4ml[4mj[4mk[4mt[4mj[4m6[4m2[4ml[4mp[4mt[4m4[4m0[4m0[4m0[4m0[4mg[4mn[4m/[4mT[4m/[4m6[4m4[4mE[4mE[4m4[4mB[4m3[4mC[4m-[4m0[4mB[4m0[4m7[4m-[4m4[4m3[4mC[4m4[4m-[4m8[4m4[4m9[4m4[4m-[4mE[4m6[4m4[4m1[4m5[4mB[4mB[4m3[4mE[4m4[4m5[4m6[4m/[24m[?1l>[?2004l
+]2;cd ]1;cd[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/var/folders/kk/33p4s99s5mb7fljktj62lpt40000gn/T/64EE4B3C-0B07-43C4-8494-E6415BB3E456]1;..-E6415BB3E456[0m[27m[24m[J[1m[34m64EE4B3C-0B07-43C4-8494-E6415BB3E456[1m[34m[32m[1m[32m[35m [00m[K[?1h=[?2004hl[32ml[39m[32ml[39m[90ml[39m[32ml[32ms[39m[32ml[32ms[32m [39m[32ml[32ms[39m[39m [90m-la [39m[39m-[39ml[39ma[39m [?1l>[?2004l
+]2;ls -G -la]1;lstotal 0
+drwxr-xr-x    3 jay  staff     96 Oct 28 17:54 [1m[36m.[39;49m[0m
+drwx------@ 736 jay  staff  23552 Oct 29 09:41 [1m[36m..[39;49m[0m
+drwxr-xr-x    3 jay  staff     96 Sep 14 17:40 [1m[36mNutstore.app[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/var/folders/kk/33p4s99s5mb7fljktj62lpt40000gn/T/64EE4B3C-0B07-43C4-8494-E6415BB3E456]1;..-E6415BB3E456[0m[27m[24m[J[1m[34m64EE4B3C-0B07-43C4-8494-E6415BB3E456[1m[34m[32m[1m[32m[35m [00m[K[?1h=[?2004ho[1m[31mo[0m[39m[1m[31mo[0m[39m[90mpen ./[39m[1m[31mo[1m[31mp[0m[39m[1m[31mo[1m[31mp[1m[31m [0m[39m[39m [39m [39m [39m [1m[31mo[1m[31mp[0m[39m[0m[39m [90men ./[39m[1m[31mo[1m[31mp[1m[31me[0m[39m[1m[31me[1m[31mn[0m[39m[0m[32mo[0m[32mp[0m[32me[0m[32mn[39m[32mn[32m [39m[32mn[39m[39m [39m.[4m.[24m[4m.[39m[4m/[24m[?1l>[?2004l
+]2;open ./]1;open[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/var/folders/kk/33p4s99s5mb7fljktj62lpt40000gn/T/64EE4B3C-0B07-43C4-8494-E6415BB3E456]1;..-E6415BB3E456[0m[27m[24m[J[1m[34m64EE4B3C-0B07-43C4-8494-E6415BB3E456[1m[34m[32m[1m[32m[35m [00m[K[?1h=[?2004hc[1m[31mc[0m[39m[1m[31mc[0m[39m[90md /var/folders/kk/33p4s99s5mb7fljktj62lpt40000gn/T/64EE4B3C-0B[90m0[90m7-43C4-8494-E6415BB3E456/[39m[K[A[12C[1m[31mc[1m[31md[0m[39m[0m[32mc[0m[32md[39m[32mc[32md[32m [39m[32mc[32md[39m[39m [39m/[4m/[24m[K[1B[K[A[41C[?1l>[?2004l[1B]2;cd /]1;cd[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/]1;/[0m[27m[24m[J[1m[34m/[1m[34m[32m[1m[32m[35m [00m[K[?1h=[?2004hc[4mc[24m[4mc[24m[90md /[39m[4mc[39m[4md[24m[24m[32mc[24m[32md[39m[32mc[32md[32m [39m[32mc[32md[39m[39m [39m/[4m/[24m[24m [90m/[39m[39m [90m /[39m[32mc[39m[39m [39m [39m [39m[4mc[24m[4mc[24m[90md /[39m[24m [39m [39m [39m l[32ml[39m[32ml[39m[90ms -la [39m[32ml[32ml[39m[39m [39m [39m [39m [39m [?1l>[?2004l
+]2;ls -G -lh]1;lltotal 11
+drwxr-xr-x  72 root  admin   2.3K Oct 29 09:45 [1m[36mApplications[39;49m[0m
+drwxr-xr-x  69 root  wheel   2.2K Sep  2 11:20 [1m[36mLibrary[39;49m[0m
+drwxr-xr-x@ 10 root  wheel   320B Dec 15  2023 [1m[36mSystem[39;49m[0m
+drwxr-xr-x   5 root  admin   160B Jan 14  2024 [1m[36mUsers[39;49m[0m
+drwxr-xr-x  10 root  wheel   320B Oct 29 09:46 [1m[36mVolumes[39;49m[0m
+drwxr-xr-x@ 39 root  wheel   1.2K Dec 15  2023 [1m[36mbin[39;49m[0m
+drwxr-xr-x   2 root  wheel    64B Mar 26  2022 [1m[36mcores[39;49m[0m
+dr-xr-xr-x   4 root  wheel   5.1K Oct 26 13:57 [1m[36mdev[39;49m[0m
+lrwxr-xr-x@  1 root  wheel    11B Dec 15  2023 [35metc[39;49m[0m -> private/etc
+lrwxr-xr-x   1 root  wheel    25B Oct 26 13:57 [35mhome[39;49m[0m -> /System/Volumes/Data/home
+drwxr-xr-x   4 root  wheel   128B May 14  2025 [1m[36mopt[39;49m[0m
+drwxr-xr-x   6 root  wheel   192B Oct 26 13:57 [1m[36mprivate[39;49m[0m
+drwxr-xr-x@ 64 root  wheel   2.0K Dec 15  2023 [1m[36msbin[39;49m[0m
+lrwxr-xr-x@  1 root  wheel    11B Dec 15  2023 [35mtmp[39;49m[0m -> private/tmp
+drwxr-xr-x@ 11 root  wheel   352B Dec 15  2023 [1m[36musr[39;49m[0m
+lrwxr-xr-x@  1 root  wheel    11B Dec 15  2023 [35mvar[39;49m[0m -> private/var
+lrwxr-xr-x   1 root  wheel    17B Oct 26 13:57 [35mwww[39;49m[0m -> Users/jay/Project
+[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/]1;/[0m[27m[24m[J[1m[34m/[1m[34m[32m[1m[32m[35m [00m[K[?1h=[?2004hcchmod g+w /Applications[23D[7mc[7mh[7mm[7mo[7md[7m [7mg[7m+[7mw[7m [7m/[7mA[7mp[7mp[7ml[7mi[7mc[7ma[7mt[7mi[7mo[7mn[7ms[27m[23D[27mc[27mh[27mm[27mo[27md[27m [27mg[27m+[27mw[27m [27m/[27mA[27mp[27mp[27ml[27mi[27mc[27ma[27mt[27mi[27mo[27mn[27ms [24D[32mc[32mh[32mm[32mo[32md[39m[5C[4m/[4mA[4mp[4mp[4ml[4mi[4mc[4ma[4mt[4mi[4mo[4mn[4ms[24m[1C[?1l>[?2004l
+]2;chmod g+w /Applications]1;chmodchmod: Unable to change file mode on /Applications: Operation not permitted
+[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/]1;/[0m[27m[24m[J[1m[34m/[1m[34m[32m[1m[32m[35m [00m[K[?1h=[?2004hs[4ms[24m[4ms[24m[90mcript[39m
