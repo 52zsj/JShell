@@ -1093,9 +1093,9 @@ body.is-resizing {
   align-self: flex-start;
   padding: 1px 6px;
   border-radius: 5px;
-  background: var(--accent-soft, rgba(80, 160, 255, 0.16));
-  color: var(--accent, #4a9eff);
-  font-family: var(--font-mono, monospace);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-family: var(--mono-font);
   font-size: 11px;
   line-height: 1.6;
 }
@@ -1112,7 +1112,7 @@ body.is-resizing {
   padding: 4px 10px;
   border: 1px solid var(--border);
   border-radius: 7px;
-  background: var(--bg-elevated, rgba(22, 24, 30, 0.94));
+  background: var(--bg-elev);
   color: var(--text);
   font-size: 12px;
   pointer-events: none;
@@ -1120,8 +1120,8 @@ body.is-resizing {
 }
 
 .snippet-suggest-from {
-  font-family: var(--font-mono, monospace);
-  color: var(--accent, #4a9eff);
+  font-family: var(--mono-font);
+  color: var(--accent);
 }
 
 .snippet-suggest-arrow {
@@ -1129,7 +1129,7 @@ body.is-resizing {
 }
 
 .snippet-suggest code {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--mono-font);
   color: var(--text);
 }
 

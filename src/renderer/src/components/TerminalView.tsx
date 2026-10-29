@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import '@xterm/xterm/css/xterm.css'
-import type { AppSettings } from '@shared/types'
+import type { AppSettings, Snippet } from '@shared/types'
 import { acquireTerminal, fitTerminal, getTerminal, hiddenScrollback, setFocusedSession, setTerminalVisible } from '../terminal-registry'
 import { useAppStore } from '../store'
 import { acceptanceSequence, matchSuggestion, type SnippetSuggestion } from '../snippet-suggest'
@@ -78,24 +78,34 @@ export function TerminalView({ sessionId, active, settings, onContextMenu }: Pro
       suggestionRef.current = next
       setSuggestion(next)
     }
-    const updateSuggestion = (): void => {
-      const term = getTerminal(sessionId)
-      if (!term) return
-      const buffer = term.buffer.active
+    // 两路输入源：
+    //  - onData：用户按键的瞬间，用自己跟踪的输入缓冲算，提示条**立刻**出现，
+    //    不等 pty 回显（SSH 那种几十上百毫秒的回显延迟会让「按 Tab 没反应」）
+    //  - onRender：回显到了之后用 buffer 的真实内容校正（粘贴、光标移动都算得准）
+    let localInput = ''
+    const localToken = (): string => localInput.match(/[^\s]*$/)?.[0] ?? ''
+    const snippetsNow = (): Snippet[] => useAppStore.getState().snippets
+
+    const dataDisposable = entry.term.onData((data) => {
+      if (data === '\r' || data === '\n') localInput = ''
+      else if (data === '\u007f') localInput = localInput.slice(0, -1)
+      else if (data === '\u0015' || data === '\u001b') localInput = ''
+      else if (data >= ' ' && data !== '\u007f') localInput += data
+      else localInput = ''
+      applySuggestion(matchSuggestion(snippetsNow(), localToken()))
+    })
+
+    const renderDisposable = entry.term.onRender(() => {
+      const buffer = entry.term.buffer.active
       const line = buffer.getLine(buffer.cursorY)
-      if (!line) {
-        applySuggestion(null)
-        return
-      }
-      // 只看光标处的最后一个词：整行里还带着 shell 提示符（`~ gps`），
-      // 而且触发词就是命令名所在的那个词
+      if (!line) return
       const before = line.translateToString(true).slice(0, buffer.cursorX)
       const token = before.match(/[^\s]*$/)?.[0] ?? ''
-      applySuggestion(matchSuggestion(useAppStore.getState().snippets, token))
-    }
-    // 必须用 onRender（渲染完成后）而不是 onData（用户输入时）：
-    // onData 触发时 pty 还没回显，xterm buffer 里还是旧内容，匹配不到触发词
-    const renderDisposable = entry.term.onRender(() => updateSuggestion())
+      const local = localToken()
+      // 回显还没追上时以本地输入为准，避免提示条闪一下又消失
+      if (local && token !== local && !token.startsWith(local)) return
+      applySuggestion(matchSuggestion(snippetsNow(), token || local))
+    })
     // xterm 的 attachCustomKeyEventHandler 返回 void，没有 dispose
     entry.term.attachCustomKeyEventHandler((event) => {
       if (event.type !== 'keydown' || event.key !== 'Tab') return true
@@ -117,6 +127,7 @@ export function TerminalView({ sessionId, active, settings, onContextMenu }: Pro
       textarea?.removeEventListener('focus', handleFocus)
       textarea?.removeEventListener('blur', handleBlur)
       renderDisposable.dispose()
+      dataDisposable.dispose()
       // 只摘除宿主节点，不销毁终端（终端生命周期由会话决定）
       if (entry.host.parentElement === container) container.removeChild(entry.host)
     }

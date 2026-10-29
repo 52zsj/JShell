@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAppStore } from '../store'
 import { errorMessage } from '../utils'
 import { IconClose, IconCode, IconPlus, IconTrash, IconEdit, IconClipboard } from '../icons'
-import { getFocusedSession } from '../terminal-registry'
+import { getFocusedSession, getTerminal } from '../terminal-registry'
 
 interface Props {
   onClose: () => void
@@ -45,14 +45,21 @@ export function SnippetPanel({ onClose }: Props) {
     return tab?.activeSessionId ?? null
   }
 
-  const send = (text: string): void => {
+  /**
+   * 把命令**填进**终端，不代为回车。
+   *
+   * 一来避免误触（点一下就把命令执行了），二来有些命令执行前用户想改个参数。
+   * 填完聚焦终端，用户自己回车。
+   */
+  const fill = (text: string): void => {
     const sessionId = resolveSessionId()
     if (!sessionId) {
       pushToast('请先打开一个会话', 'error')
       return
     }
-    window.jshell.sessions.write(sessionId, `${text}\r`)
-    pushToast('已发送到当前会话', 'success')
+    window.jshell.sessions.write(sessionId, text)
+    getTerminal(sessionId)?.focus()
+    pushToast('已填入终端，按回车执行', 'success')
   }
 
   const copy = async (text: string): Promise<void> => {
@@ -172,8 +179,8 @@ export function SnippetPanel({ onClose }: Props) {
           <div key={snippet.id} className="snippet-item">
             <button
               className="snippet-send"
-              onClick={() => send(snippet.command)}
-              title="发送到当前会话"
+              onClick={() => fill(snippet.command)}
+              title="填入当前会话（不自动执行）"
             >
               <span className="snippet-name">{snippet.name}</span>
               {snippet.alias && <span className="snippet-alias">{snippet.alias}</span>}

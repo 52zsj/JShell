@@ -32,6 +32,12 @@ test('触发词后多打的字符会保留在命令后面', () => {
   assert.equal(hit.full, 'git push --force')
 })
 
+test('触发词后面跟的不是参数时不补全（避免拼出莫名其妙的结果）', () => {
+  const list = [snippet('s1', { command: 'git push', alias: 'gps' })]
+  // `gpsugps` 不该被补成 `git pushugps`
+  assert.equal(matchSuggestion(list, 'gpsugps'), null)
+})
+
 test('没有触发词时，命令前缀也能补全', () => {
   const list = [snippet('s1', { command: 'docker compose ps' })]
   const hit = matchSuggestion(list, 'docker comp')

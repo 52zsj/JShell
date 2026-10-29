@@ -70,15 +70,20 @@ export function matchSuggestion(
         continue
       }
       if (typed.startsWith(alias)) {
-        // 已经打了完整触发词又补了些字符 → 命令 + 余下的字符
-        consider({
-          snippet,
-          typed,
-          full: command + typed.slice(alias.length),
-          matchedAlias: alias,
-          rank: 'alias',
-          aliasLen: alias.length
-        })
+        // 已经打了完整触发词，后面还跟着内容：只有「空格 + 参数」这种才算
+        // （`gps --force` → `git push --force`）。
+        // 否则不补全——否则 `gpsugps` 会被补成 `git pushugps` 这种莫名其妙的东西
+        const rest = typed.slice(alias.length)
+        if (rest.startsWith(' ')) {
+          consider({
+            snippet,
+            typed,
+            full: command + rest,
+            matchedAlias: alias,
+            rank: 'alias',
+            aliasLen: alias.length
+          })
+        }
         continue
       }
     }
