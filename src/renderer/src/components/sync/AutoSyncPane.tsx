@@ -5,7 +5,8 @@ import {
   SYNC_SCOPES,
   type AutoSyncPatch,
   type SyncScope,
-  type SyncTarget
+  type SyncTarget,
+  pickDefaultTarget
 } from '@shared/sync'
 import { useAppStore } from '../../store'
 import { cx, errorMessage } from '../../utils'
@@ -59,6 +60,20 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
         ? auto.webdavUrl
         : auto?.dir
   )
+
+  /**
+   * 自动挑一个网盘目录：上次用过的 → 唯一检测到的 → 最近活跃的。
+   * 只在当前选择失效时改，避免覆盖用户手动指定的自定义目录。
+   */
+  useEffect(() => {
+    if ((auto?.transport ?? 'folder') !== 'folder') return
+    const current = auto?.targetId
+    if (current && (current === 'custom' || targets.some((t) => t.id === current))) return
+    const picked = pickDefaultTarget(targets, current)
+    if (!picked) return
+    void patchAuto({ targetId: picked.id })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targets, auto?.transport, auto?.targetId])
 
   /** 每个开关都是即时生效（与设置面板一致，没有「保存」按钮） */
   const patchAuto = useCallback(
@@ -166,7 +181,7 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                     disabled={autoBusy}
                     onClick={() => void patchAuto({ transport: 'folder' })}
                   >
-                    文件夹 / 云盘
+                    云盘
                   </button>
                   <button
                     className={cx('segmented-item', auto?.transport === 'sftp' && 'is-active')}
@@ -188,26 +203,34 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                   <>
                     {targets.length === 0 ? (
                       <p className="sync-hint warn">
-                        没有检测到云盘目录。可以直接用下面的「选择文件夹…」指定任意目录
-                        （网络共享、加密盘、U 盘都行）。
+                        没有检测到 iCloud、OneDrive、Dropbox、Google 云端硬盘、坚果云等网盘目录。
+                        这不影响使用：点下面的「选择文件夹…」指定任意目录即可
+                        （网络共享、自建网盘、U 盘都行）。
                       </p>
                     ) : (
-                      <select
-                        className="input"
-                        value={auto?.targetId ?? ''}
-                        disabled={autoBusy}
-                        onChange={(event) => void patchAuto({ targetId: event.target.value })}
-                      >
-                        <option value="">（未选择）</option>
-                        {auto?.targetId === 'custom' && auto.dir && (
-                          <option value="custom">{auto.targetLabel ?? '自定义目录'}</option>
-                        )}
-                        {targets.map((target) => (
-                          <option key={target.id} value={target.id}>
-                            {target.label} — {target.dir}
-                          </option>
-                        ))}
-                      </select>
+                      <>
+                        <select
+                          className="input"
+                          value={auto?.targetId ?? ''}
+                          disabled={autoBusy}
+                          onChange={(event) => void patchAuto({ targetId: event.target.value })}
+                        >
+                          <option value="">（未选择）</option>
+                          {auto?.targetId === 'custom' && auto.dir && (
+                            <option value="custom">{auto.targetLabel ?? '自定义目录'}</option>
+                          )}
+                          {targets.map((target) => (
+                            <option key={target.id} value={target.id}>
+                              {target.label} — {target.dir}
+                            </option>
+                          ))}
+                        </select>
+                        <p className="sync-hint">
+                          这些目录是<strong>自动探测</strong>出来的（打开面板就扫一遍本机），
+                          只有一个时直接选中；多个时优先用你上次选过的，再按最近活跃排序。
+                          列表里没有你的网盘？用下面的「选择文件夹…」指到它的同步目录即可。
+                        </p>
+                      </>
                     )}
                     <div className="settings-actions">
                       <button

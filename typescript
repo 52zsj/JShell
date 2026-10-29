@@ -1,0 +1,138 @@
+Script started on Thu Oct 29 09:16:10 2026
+ls
+cd [1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/www/Jshell]1;/www/Jshell[0m[27m[24m[J[1m[34mJshell[1m[34m[32m [main[1m[32m[31m●[32m][1m[32m[35m [00m[K[?1h=[?2004hlls[?1l>[?2004l
+]2;ls -G]1;lsCHANGELOG.md                   [1m[36mnode_modules[39;49m[0m                   [1m[36mscripts[39;49m[0m
+LICENSE                        [31mnvm-2.1.0-beta.4-x64-setup.exe[39;49m[0m [1m[36msrc[39;49m[0m
+README.md                      [1m[36mout[39;49m[0m                            [1m[36mtests[39;49m[0m
+[1m[36mbuild[39;49m[0m                          package-lock.json              tsconfig.json
+[1m[36mdocs[39;49m[0m                           package.json                   tsconfig.node.json
+electron-builder.yml           [1m[36mrelease[39;49m[0m                        tsconfig.web.json
+electron.vite.config.ts        release-notes.md               typescript
+[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/www/Jshell]1;/www/Jshell[0m[27m[24m[J[1m[34mJshell[1m[34m[32m [main[1m[32m[31m●[32m][1m[32m[35m [00m[K[?1h=[?2004hccd [32mc[32md[39m[1C[90m/www/Jshell[39m[11D[39ms[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [10D[4ms[24m[90mcripts[39m[4ms[39m[4mc[24m[4mc[39m[4mr[24m[4mr[39m[4mi[39m[4mp[39m[4mt[39m[4ms[1m[4m/[0m[24m[4ms[24m[0m[24m [?1l>[?2004l
+]2;cd scripts]1;cd[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/www/Jshell/scripts]1;..shell/scripts[0m[27m[24m[J[1m[34mscripts[1m[34m[32m [main[1m[32m[32m][1m[32m[35m [00m[K[?1h=[?2004hl[32ml[39m[32ml[39m[90ms[39m[32ml[32ms[39m[?1l>[?2004l
+]2;ls -G]1;lsbuild-all.mjs           fix-native-perms.mjs    measure-startup.mjs     write-release-notes.mjs
+[31mbuild-release.sh[39;49m[0m        fix-windows-icon.bat    tag-release.mjs
+changelog-section.mjs   make-release-meta.mjs   [31mupload-release.sh[39;49m[0m
+check-icons.mjs         measure-memory.mjs      [1m[36mwindows[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/www/Jshell/scripts]1;..shell/scripts[0m[27m[24m[J[1m[34mscripts[1m[34m[32m [main[1m[32m[32m][1m[32m[35m [00m[K[?1h=[?2004hl[32ml[39m[32ml[39m[90ms[39m[32ml[32ms[39m[32ml[32ms[32m [39m[32ml[32ms[39m[39m [90m-la [39m[39m-[39ml[39ma[39m [?1l>[?2004l
+]2;ls -G -la]1;lstotal 168
+drwxr-xr-x  16 jay  staff    512 Oct 28 16:43 [1m[36m.[39;49m[0m
+drwxr-xr-x  30 jay  staff    960 Oct 29 09:16 [1m[36m..[39;49m[0m
+-rw-r--r--@  1 jay  staff   6148 Oct 28 17:27 .DS_Store
+-rw-r--r--   1 jay  staff  10523 Oct 28 11:32 build-all.mjs
+-rwxr-xr-x   1 jay  staff   2959 Oct 28 13:34 [31mbuild-release.sh[39;49m[0m
+-rw-r--r--   1 jay  staff   2441 Oct 28 16:11 changelog-section.mjs
+-rw-r--r--   1 jay  staff   4534 Oct 28 11:33 check-icons.mjs
+-rw-r--r--   1 jay  staff   1091 Oct 23 19:57 fix-native-perms.mjs
+-rw-r--r--@  1 jay  staff    725 Oct 27 18:08 fix-windows-icon.bat
+-rw-r--r--   1 jay  staff   2077 Oct 23 20:57 make-release-meta.mjs
+-rw-r--r--   1 jay  staff   7614 Oct 28 11:24 measure-memory.mjs
+-rw-r--r--   1 jay  staff   5324 Oct 28 11:28 measure-startup.mjs
+-rw-r--r--   1 jay  staff   2500 Oct 28 16:11 tag-release.mjs
+-rwxr-xr-x   1 jay  staff   4524 Oct 28 19:02 [31mupload-release.sh[39;49m[0m
+drwxr-xr-x   6 jay  staff    192 Oct 28 15:51 [1m[36mwindows[39;49m[0m
+-rw-r--r--   1 jay  staff   4455 Oct 23 21:05 write-release-notes.mjs
+[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/www/Jshell/scripts]1;..shell/scripts[0m[27m[24m[J[1m[34mscripts[1m[34m[32m [main[1m[32m[32m][1m[32m[35m [00m[K[?1h=[?2004h.[32m.[39m[32m.[39m[90m/scripts/build-release.sh --mac [39m[32D[32m.[32m/[39m[4m[32m.[4m[32m/[24m[39m[4m[32m.[24m[39m[24m[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [32D[24m[32m.[39m[32m.[39m[90m/scripts/build-release.sh --mac [39m[32D[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [33D.[32m.[39m[32m.[39m[90m/scripts/build-release.sh --mac [39m[32D[32m.[32m/[39m[4m[32m.[4m[32m/[24m[39m[4m[32m.[4m[32m/[4m[32mb[24m[39m[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [30D[39m[4m.[39m[4m/[39m[4mb[24m[90muild-release.sh [39m[16D[4mb[39m[4mu[24m[4mu[39m[4mi[24m[24m[32m.[24m[32m/[24m[32mb[24m[32mu[24m[32mi[32ml[32md[32m-[32mr[32me[32ml[32me[32ma[32ms[32me[32m.[32ms[32mh[39m[39m[1m [0m[1m [1m-[0m[0m [0m-[90mh [39m[39m-[39m  [90mh [39m [39m [39m [90m [39m[32mh[32m [39m[32mh[39m[39m [?1l>[?2004l
+]2;./build-release.sh]1;./build-release.sh==> 版本 0.11.9
+==> 构建（typecheck + electron-vite build）
+
+> jshell@0.11.9 build
+> npm run typecheck && electron-vite build
+
+[1G[0K
+> jshell@0.11.9 typecheck
+> tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json
+
+[1G[0K[1G[0K⠙[1G[0K[36mvite v5.4.21 [32mbuilding SSR bundle for production...[36m[39m
+[2K[1Gtransforming (1) [2msrc/main/index.ts[22m[2K[1G[32m✓[39m 44 modules transformed.
+[2K[1Grendering chunks (1)...[2K[1G[2K[1G[2mout/main/[22m[36mindex.js  [39m[1m[2m209.36 kB[22m[1m[22m
+[32m✓ built in 265ms[39m
+[36mvite v5.4.21 [32mbuilding SSR bundle for production...[36m[39m
+[2K[1Gtransforming (1) [2msrc/preload/index.ts[22m[2K[1G[32m✓[39m 2 modules transformed.
+[2K[1Grendering chunks (1)...[2K[1G[2K[1G[2mout/preload/[22m[36mindex.js  [39m[1m[2m10.36 kB[22m[1m[22m
+[32m✓ built in 12ms[39m
+[36mvite v5.4.21 [32mbuilding for production...[36m[39m
+[2K[1Gtransforming (1) [2mindex.html[22m[2K[1Gtransforming (31) [2msrc/components/PaneTree.tsx[22m[2K[1Gtransforming (58) [2m../../node_modules/@xterm/xterm/css/xterm.css[22m[2K[1G[32m✓[39m 74 modules transformed.
+[2K[1Grendering chunks (1)...[2K[1G[2K[1G[2m../../out/renderer/[22m[32mindex.html                 [39m[1m[2m  0.53 kB[22m[1m[22m
+[2m../../out/renderer/[22m[2massets/[22m[35mindex-o3UCmRzh.css  [39m[1m[2m 59.63 kB[22m[1m[22m
+[2m../../out/renderer/[22m[2massets/[22m[36mindex-eh6TvR3w.js   [39m[1m[33m909.73 kB[39m[22m
+[32m✓ built in 885ms[39m
+[1G[0K⠙[1G[0K==> 打包 macOS（arm64 + x64）
+
+[36m▸ 生成发布元信息（渠道 / 构建时间）[0m
+已写入 build/release-meta.json（渠道：内部渠道）
+[33m▸ 跳过编译，复用现有 out/[0m
+
+[36m▸ 打包 mac (--arm64 --x64)[0m
+  [34m•[39m electron-builder  [34mversion[39m=25.1.8 [34mos[39m=23.2.0
+  [34m•[39m loaded configuration  [34mfile[39m=/Users/jay/Project/Jshell/electron-builder.yml
+  [34m•[39m writing effective config  [34mfile[39m=release/0.11.9/builder-effective-config.yaml
+  [34m•[39m skipped dependencies rebuild  [34mreason[39m=npmRebuild is set to false
+  [34m•[39m packaging       [34mplatform[39m=darwin [34march[39m=arm64 [34melectron[39m=45.0.0 [34mappOutDir[39m=release/0.11.9/mac-arm64
+┌────────────────────────────────────────────┐
+│ New version of electron-builder available! │
+│ Current Version: 25.1.8                    │
+│ Latest Version: 26.18.0                    │
+└────────────────────────────────────────────┘
+  [33m•[39m skipped macOS application code signing  [33mreason[39m=, see https://electron.build/code-signing [33mCSC_IDENTITY_AUTO_DISCOVERY[39m=false
+未配置 Apple 公证凭据，跳过公证（内部渠道产物为未签名/自签名包）
+  [34m•[39m building        [34mtarget[39m=DMG [34march[39m=arm64 [34mfile[39m=release/0.11.9/JShell-0.11.9-arm64.dmg
+  [34m•[39m building        [34mtarget[39m=macOS zip [34march[39m=arm64 [34mfile[39m=release/0.11.9/JShell-0.11.9-arm64.zip
+  [33m•[39m Detected arm64 process, HFS+ is unavailable. Creating dmg with APFS - supports Mac OSX 10.12+
+  [34m•[39m building block map  [34mblockMapFile[39m=release/0.11.9/JShell-0.11.9-arm64.dmg.blockmap
+  [34m•[39m building block map  [34mblockMapFile[39m=release/0.11.9/JShell-0.11.9-arm64.zip.blockmap
+  [34m•[39m electron-builder  [34mversion[39m=25.1.8 [34mos[39m=23.2.0
+  [34m•[39m loaded configuration  [34mfile[39m=/Users/jay/Project/Jshell/electron-builder.yml
+  [34m•[39m writing effective config  [34mfile[39m=release/0.11.9/builder-effective-config.yaml
+  [34m•[39m skipped dependencies rebuild  [34mreason[39m=npmRebuild is set to false
+  [34m•[39m packaging       [34mplatform[39m=darwin [34march[39m=x64 [34melectron[39m=45.0.0 [34mappOutDir[39m=release/0.11.9/mac
+  [33m•[39m skipped macOS application code signing  [33mreason[39m=, see https://electron.build/code-signing [33mCSC_IDENTITY_AUTO_DISCOVERY[39m=false
+未配置 Apple 公证凭据，跳过公证（内部渠道产物为未签名/自签名包）
+  [34m•[39m building        [34mtarget[39m=DMG [34march[39m=x64 [34mfile[39m=release/0.11.9/JShell-0.11.9-x64.dmg
+  [34m•[39m building        [34mtarget[39m=macOS zip [34march[39m=x64 [34mfile[39m=release/0.11.9/JShell-0.11.9-x64.zip
+  [33m•[39m Detected arm64 process, HFS+ is unavailable. Creating dmg with APFS - supports Mac OSX 10.12+
+  [34m•[39m building block map  [34mblockMapFile[39m=release/0.11.9/JShell-0.11.9-x64.dmg.blockmap
+  [34m•[39m building block map  [34mblockMapFile[39m=release/0.11.9/JShell-0.11.9-x64.zip.blockmap
+
+[36m▸ 生成 macOS 便携版（解压即用）[0m
+  · JShell-0.11.9-arm64-portable.zip
+  · JShell-0.11.9-x64-portable.zip
+
+[36m▸ 生成中文安装说明与校验值[0m
+已生成：release/0.11.9/安装说明.txt 与 SHA256SUMS.txt（6 个产物）
+
+────────────────────────────────────────────────────────────────
+[32m✓[0m mac
+
+产物目录: release/0.11.9
+  · JShell-0.11.9-arm64-portable.zip  116.0 MB
+  · JShell-0.11.9-arm64.dmg  116.2 MB
+  · JShell-0.11.9-arm64.zip  112.7 MB
+  · JShell-0.11.9-x64-portable.zip  120.2 MB
+  · JShell-0.11.9-x64.dmg  120.2 MB
+  · JShell-0.11.9-x64.zip  116.7 MB
+
+提示：内部渠道产物未签名，首次打开需按系统提示放行；
+      公开下载前请配置 CSC_LINK 与 Apple 公证凭据，详见 docs/06-distribution.md。
+
+[32m全部完成[0m
+==> 跳过 Windows：macOS 上交叉打包无法写入 exe 图标与版本资源
+    请推送到 main 由 CI 的 windows-latest 产出，或用 --docker（需 Docker）
+==> 冒烟测试 macOS 打包版
+    冒烟通过
+
+==> 完成，产物目录 release/0.11.9/
+    JShell-0.11.9-arm64-portable.zip           116M
+    JShell-0.11.9-arm64.dmg                    116M
+    JShell-0.11.9-arm64.zip                    113M
+    JShell-0.11.9-x64-portable.zip             120M
+    JShell-0.11.9-x64.dmg                      120M
+    JShell-0.11.9-x64.zip                      117M
+    SHA256SUMS.txt                             552B
+    安装说明.txt                           3.3K
+[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/www/Jshell/scripts]1;..shell/scripts[0m[27m[24m[J[1m[34mscripts[1m[34m[32m [main[1m[32m[32m][1m[32m[35m [00m[K[?1h=[?2004hc[1m[31mc[0m[39m[1m[31mc[0m[39m[90md scripts[39m[9D[1m[31mc[1m[31md[0m[39m[0m[32mc[0m[32md[39m[32mc[32md[32m [39m[32mc[32md[39m[39m [39m/[39m [39m [39m [39m [39m [39m [4m/[24m[90mwww/Jshell[39m[10D[4m/[39m[4m/[24m[39m [39m [39m [39m [39m [39m [39m [39m [39m [9D[90mtmp/ledger_demo[39m[15D[4m/[39m[4mr[24m[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [14D[24m/[24m/[24mre[4m/[4mL[4mi[4mb[4mrary/Receipts[1m[4m/[0m[24m[4ms[24m[0m[24m [4mt[24m[24m [4mp[24m[24m [4mi[24m[24m [4me[24m[24m [4mc[24m[24m [4me[24m[24m [4mR[24m[24m [4m/[24m[24m [4my[24m[24m [4mr[24m[24m [4ma[24m[24m [4mr[24m[24m [4mb[24m[24m [4mi[24m[24m [4mL[24m[24m [4m/[24m[24m [90mwww/Jshell[39m[10D[24m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [11D[90mscripts[39m[39m.[39m [39m [39m [39m [39m [39m [4m.[24m[90m./../[39m[4m.[39m[4m.[24m[4m.[39m[4m/[24m[4m/[39m[4mr[24m[39m [39m [90med_note_mini[39m[12D[4mr[39m[4me[24m[4me[39m[4ml[39m[4me[39m[4ma[39m[4ms[39m[4me[39m[1m[4m/[0m[24m[39m [39m [39m [39m [39m [4me[24m[0m[24m [?1l>[?2004l
+]2;cd ../release]1;cd[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/www/Jshell/release]1;..shell/release[0m[27m[24m[J[1m[34mrelease[1m[34m[32m [main[1m[32m[32m][1m[32m[35m [00m[K[?1h=[?2004hl[32ml[39m[32ml[39m[90ms -la [39m[32ml[32ms[39m[39m [39m [39m [39m [39m [?1l>[?2004l
+]2;ls -G]1;ls[1m[36m0.10.1[39;49m[0m [1m[36m0.11.0[39;49m[0m [1m[36m0.11.1[39;49m[0m [1m[36m0.11.2[39;49m[0m [1m[36m0.11.3[39;49m[0m [1m[36m0.11.5[39;49m[0m [1m[36m0.11.6[39;49m[0m [1m[36m0.11.7[39;49m[0m [1m[36m0.11.8[39;49m[0m [1m[36m0.11.9[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/www/Jshell/release]1;..shell/release[0m[27m[24m[J[1m[34mrelease[1m[34m[32m [main[1m[32m[32m][1m[32m[35m [00m[K[?1h=[?2004hc[1m[31mc[0m[39m[1m[31mc[0m[39m[90md ../release[39m[12D[1m[31mc[1m[31md[0m[39m[0m[32mc[0m[32md[39m[32mc[32md[32m [39m[32mc[32md[39m[39m [39m.[4m.[24m[4m.[39m[4m0[24m[39m [39m [39m [39m [39m [39m [39m [39m [8D[24m.[24m011   [4m.[24m[90m./release[39m[9D[24m [39m [39m [39m [39m [39m [39m [39m [39m [39m [10D[90m../release[39m[10D[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [11D[90m ../release[39m[11D[32mc[39m[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [12D[1m[31mc[0m[39m[1m[31mc[0m[39m[90md ../release[39m[12D[0m[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [13Dc[1m[31mc[0m[39m[1m[31mc[0m[39m[90md ../release[39m[12D[1m[31mc[1m[31md[0m[39m[0m[32mc[0m[32md[39m[32mc[32md[32m [39m[32mc[32md[39m[39m [39m.[4m.[24m[4m.[39m[4m.[24m[4m.[39m[4m/[24m[39m [39m [39m [39m [39m [39m [39m [?1l>[?2004l
+]2;cd ../]1;cd[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/www/Jshell]1;/www/Jshell[0m[27m[24m[J[1m[34mJshell[1m[34m[32m [main[1m[32m[31m●[32m][1m[32m[35m [00m[K[?1h=[?2004ho[4mo[24m[4mo[24m[90mpen ./[39m[4mo[39m[4mp[24m[24m[1m[31mo[24m[1m[31mp[0m[39m[1m[31mo[1m[31mp[1m[31me[0m[39m[1m[31me[1m[31mn[0m[39m[0m[32mo[0m[32mp[0m[32me[0m[32mn[39m[32mn[32m [39m[32mn[39m[39m [39m.[4m.[24m[4m.[39m[4m/[24m[?1l>[?2004l
+]2;open ./]1;open[1m[7m%[27m[1m[0m                                                                                                    ]2;jay@MacBook-Pro-2:/www/Jshell]1;/www/Jshell[0m[27m[24m[J[1m[34mJshell[1m[34m[32m [main[1m[32m[31m●[32m][1m[32m[35m [00m[K[?1h=[?2004h

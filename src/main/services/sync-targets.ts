@@ -25,6 +25,15 @@ function expandHome(home: string, relative: string): string {
   return path.join(home, relative)
 }
 
+/** 目录最近修改时间（毫秒）：网盘客户端同步/下载时会更新，可用来判断哪个网盘在活跃使用 */
+function mtimeOf(dir: string): number {
+  try {
+    return fs.statSync(dir).mtimeMs
+  } catch {
+    return 0
+  }
+}
+
 function isDirectory(target: string | undefined): target is string {
   if (!target) return false
   try {
@@ -108,7 +117,7 @@ export function detectSyncTargets(options?: {
     const resolved = path.resolve(target.dir)
     if (seen.has(resolved) || !isDirectory(resolved)) return
     seen.add(resolved)
-    result.push({ ...target, dir: resolved })
+    result.push({ ...target, dir: resolved, mtimeMs: mtimeOf(resolved) })
   }
 
   for (const item of candidates(home, platform, env)) {

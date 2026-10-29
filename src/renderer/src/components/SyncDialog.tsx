@@ -36,7 +36,7 @@ interface Props {
 }
 
 type Tab = 'export' | 'import' | 'auto'
-type DestKind = 'file' | 'folder' | 'clipboard'
+type DestKind = 'file' | 'clipboard'
 
 const DEFAULT_SCOPES: SyncScope[] = SYNC_SCOPES.filter((item) => item.defaultOn).map((item) => item.id)
 
@@ -72,7 +72,6 @@ export function SyncDialog({ onClose }: Props) {
   // ------------------------------------------------------------------ 导出
   const [targets, setTargets] = useState<SyncTarget[]>([])
   const [dest, setDest] = useState<DestKind>('file')
-  const [targetId, setTargetId] = useState('')
   const [scopes, setScopes] = useState<SyncScope[]>(DEFAULT_SCOPES)
   const [usePassword, setUsePassword] = useState(true)
   const [password, setPassword] = useState('')
@@ -105,7 +104,6 @@ export function SyncDialog({ onClose }: Props) {
       .then((list) => {
         if (!alive) return
         setTargets(list)
-        if (list.length > 0) setTargetId((current) => current || list[0].id)
       })
       .catch((err) => pushToast(errorMessage(err), 'error'))
     return () => {
@@ -183,10 +181,6 @@ export function SyncDialog({ onClose }: Props) {
       pushToast('请至少选择一项要同步的内容', 'error')
       return
     }
-    if (dest === 'folder' && !targetId) {
-      pushToast('请选择一个云盘目录', 'error')
-      return
-    }
     if (usePassword) {
       if (password.length < MIN_PASSWORD_LENGTH) {
         pushToast(`口令至少 ${MIN_PASSWORD_LENGTH} 位`, 'error')
@@ -199,12 +193,7 @@ export function SyncDialog({ onClose }: Props) {
       const result = await window.jshell.sync.exportBundle({
         scopes,
         password: usePassword ? password : undefined,
-        destination:
-          dest === 'file'
-            ? { kind: 'dialog' }
-            : dest === 'folder'
-              ? { kind: 'folder', targetId }
-              : { kind: 'clipboard' }
+        destination: dest === 'file' ? { kind: 'dialog' } : { kind: 'clipboard' }
       })
       if (result.canceled) return
       setExported(result)
@@ -328,12 +317,10 @@ export function SyncDialog({ onClose }: Props) {
   const preview = inspect?.preview
   const needsPassword = Boolean(inspect?.encrypted && !inspect.preview)
   const pendingChanges = diff ? diff.counts.add + diff.counts.update + diff.counts.delete : 0
-  const destinationLabel = useMemo(() => {
-    if (dest === 'clipboard') return '剪贴板'
-    if (dest === 'file') return '系统文件对话框'
-    const hit = targets.find((item) => item.id === targetId)
-    return hit ? hit.label : '云盘目录'
-  }, [dest, targetId, targets])
+  const destinationLabel = useMemo(
+    () => (dest === 'clipboard' ? '剪贴板' : '系统文件对话框'),
+    [dest]
+  )
 
   return (
     <div className="modal-mask" onClick={close}>
@@ -388,7 +375,7 @@ export function SyncDialog({ onClose }: Props) {
               <section className="sync-section">
                 <h3>保存到哪里</h3>
                 <p className="sync-hint">
-                  配置包就是一个普通文件，放哪儿都行。默认存成文件；放进云盘目录可以自动同步，
+                  配置包就是一个普通文件。存成文件最通用——网盘目录、U 盘、局域网共享都能选；
                   复制到剪贴板适合临时传给另一台设备。
                 </p>
                 <div className="sync-dest-row">
@@ -399,43 +386,16 @@ export function SyncDialog({ onClose }: Props) {
                     <IconSave /> 保存到文件…
                   </button>
                   <button
-                    className={cx('btn', dest === 'folder' ? 'btn-primary' : 'btn-ghost')}
-                    onClick={() => setDest('folder')}
-                  >
-                    <IconCloud /> 云盘目录
-                    {targets.length > 0 && <span className="sync-badge">{targets.length}</span>}
-                  </button>
-                  <button
                     className={cx('btn', dest === 'clipboard' ? 'btn-primary' : 'btn-ghost')}
                     onClick={() => setDest('clipboard')}
                   >
                     <IconClipboard /> 复制到剪贴板
                   </button>
                 </div>
+                <p className="sync-hint">
+                  想让它长期跟着多台机器一致，用下面的「自动同步」——它会自己写进网盘目录，不用手动搬。
+                </p>
 
-                {dest === 'folder' && (
-                  <div className="sync-targets">
-                    {targets.length === 0 ? (
-                      <p className="sync-hint warn">
-                        没有检测到 iCloud、OneDrive、Dropbox、坚果云等目录。这不影响使用：
-                        选择「选择文件…」保存到任意路径，或先用剪贴板传递。
-                      </p>
-                    ) : (
-                      targets.map((target) => (
-                        <label className="sync-target" key={target.id}>
-                          <input
-                            type="radio"
-                            name="sync-target"
-                            checked={targetId === target.id}
-                            onChange={() => setTargetId(target.id)}
-                          />
-                          <span className="sync-target-name">{target.label}</span>
-                          <span className="sync-target-path mono">{target.dir}</span>
-                        </label>
-                      ))
-                    )}
-                  </div>
-                )}
               </section>
 
               <section className="sync-section">
@@ -605,7 +565,7 @@ export function SyncDialog({ onClose }: Props) {
                           if (id) void loadFolder(id)
                         }}
                       >
-                        <IconCloud /> 云盘目录
+                        <IconCloud /> 网盘里的历史包
                         <IconChevronDown />
                       </button>
                       <button
