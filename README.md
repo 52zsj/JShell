@@ -101,9 +101,9 @@ node scripts/build-all.mjs --dir                       # 只产出免安装目�
 
 | 平台 | 安装版 | 便携版 |
 | --- | --- | --- |
-| macOS | `JShell-0.11.12-arm64.dmg` / `.zip`、`x64` 同名文件 | `JShell-0.11.12-<架构>-portable.zip`（解压即用） |
-| Windows | `JShell-0.11.12-x64-setup.exe`（简体中文 NSIS 向导） | `JShell-0.11.12-x64-portable.exe`（单文件） |
-| Linux | `JShell-0.11.12-x64.AppImage` / `.deb` | — |
+| macOS | `JShell-0.11.13-arm64.dmg` / `.zip`、`x64` 同名文件 | `JShell-0.11.13-<架构>-portable.zip`（解压即用） |
+| Windows | `JShell-0.11.13-x64-setup.exe`（简体中文 NSIS 向导） | `JShell-0.11.13-x64-portable.exe`（单文件） |
+| Linux | `JShell-0.11.13-x64.AppImage` / `.deb` | — |
 
 ### 发版（推 GitHub Release）
 
