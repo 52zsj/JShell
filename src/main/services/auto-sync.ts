@@ -25,7 +25,14 @@ import {
 } from './sync-crypto'
 import { diffBundle } from './sync-diff'
 import { passwordChanged, passwordTag } from './sync-password'
-import { changedCount, decidePull, shouldPush, summarizeReport } from './sync-auto-plan'
+import {
+  changedCount,
+  decidePull,
+  decidePushGate,
+  isLocalEmpty,
+  shouldPush,
+  summarizeReport
+} from './sync-auto-plan'
 import { mergeBundle } from './sync-merge'
 import { createSftpTransport, normalizeRemoteDir } from './sftp-transport'
 import { createWebdavTransport, normalizeWebdavUrl } from './webdav-transport'
@@ -62,6 +69,8 @@ export class AutoSyncService {
   /** 应用远端变更期间不要把自己的写盘当成「用户改动」再推回去 */
   private suppressLocal = false
   private pending?: AutoSyncState['pending']
+  /** 用户一次性同意「把云端的明文包变成密文」 */
+  private allowPlaintextUpgrade = false
   private readonly listeners = new Set<StatusListener>()
 
   constructor(private readonly store: StoreService) {}
@@ -465,8 +474,12 @@ export class AutoSyncService {
     let pulled = false
     let pushed = false
     let recreated = false
-    /** 远端口令与本机不一致：需要用本机口令重写远端 */
+    /** 远端口令与本机不一致：本机和云端都不动，等人来决定 */
     let passwordMismatch = false
+    /** 云端包是否加密（undefined 表示云端还没有文件） */
+    let remoteEncrypted: boolean | undefined
+    /** 本机在拉取前是否空空如也（决定要不要说「已用云端内容填充」） */
+    let localWasEmpty = false
     let report: DiffReport | undefined
     let pulledCount = 0
 
@@ -478,11 +491,12 @@ export class AutoSyncService {
       if (text) {
         let payload: SyncBundlePayload | null = null
         try {
-          payload = this.decode(text, password)
+          const decoded = this.decode(text, password)
+          payload = decoded.payload
+          remoteEncrypted = decoded.encrypted
         } catch (err) {
-          // 口令对不上不是致命错误：多半是本机刚换了口令，
-          // 或者另一台机器用了不同的口令。继续往下走，用本机口令把远端重写一遍，
-          // 否则用户改完口令就再也推不上去（拉取先抛错 → 推送执行不到）。
+          // 口令对不上不是致命错误，但**绝不能自作主张覆盖云端**：
+          // 记下来，等人来决定（见 push 前的 decidePushGate）。
           if (err instanceof SyncError && err.code === 'password-mismatch') {
             passwordMismatch = true
           } else {
@@ -505,7 +519,12 @@ export class AutoSyncService {
         } else if (decision === 'record') {
           this.store.saveAutoSync({ lastPulledHash: hash })
         } else if (decision === 'pause') {
-          this.pending = { at: Date.now(), summary: summarizeReport(diff), report: diff }
+          this.pending = {
+            at: Date.now(),
+            kind: 'risky',
+            summary: summarizeReport(diff),
+            report: diff
+          }
           // 状态栏要和暂停状态一致，不能停在上一轮的「已是最新」
           this.store.saveAutoSync({ lastResult: this.pending.summary, lastError: undefined })
           this.emit()
@@ -517,6 +536,8 @@ export class AutoSyncService {
             report
           }
         } else {
+          // 本机什么都没有时，就是「用云端的内容填充本机」
+          localWasEmpty = isLocalEmpty(this.store.snapshot())
           this.applyRemote(payload, hash)
           pulled = true
           pulledCount = changedCount(diff)
@@ -534,8 +555,37 @@ export class AutoSyncService {
       // 于是远端还挂着旧口令的密文，本机却已经换口令了 —— 之后必然解不开
       const needPush =
         shouldPush(hash, current.lastPushedHash, remoteExists) ||
-        passwordChanged(password, current.lastPushedPasswordTag) ||
-        passwordMismatch
+        passwordChanged(password, current.lastPushedPasswordTag)
+
+      // 人工闸门：破坏性的事交给人决定，机器不自己替人做主
+      const gate = decidePushGate({
+        needPush,
+        passwordMismatch,
+        password,
+        remoteEncrypted,
+        allowPlaintextUpgrade: this.allowPlaintextUpgrade
+      })
+
+      if (gate === 'need-password') {
+        // 两端口令对不上：既不拉也不推，本机和云端都保持原样
+        const summary =
+          '云端的同步口令与本机不一致，已暂停同步：本机和云端都没有被改动。需要你确认怎么处理。'
+        this.pending = { at: Date.now(), kind: 'password', summary }
+        this.store.saveAutoSync({ lastResult: summary, lastError: undefined })
+        this.emit()
+        return { ok: true, action: 'paused', message: summary, at: Date.now() }
+      }
+
+      if (gate === 'need-plaintext-confirm') {
+        // 云端现在是明文包，本机有口令：推上去云端就变密文，对方设备会读不了
+        const summary =
+          '云端当前是明文包。本机设了同步口令，同步后云端会变成加密包——对方设备需要同样的口令才能读取。'
+        this.pending = { at: Date.now(), kind: 'plaintext', summary }
+        this.store.saveAutoSync({ lastResult: summary, lastError: undefined })
+        this.emit()
+        return { ok: true, action: 'paused', message: summary, at: Date.now() }
+      }
+
       if (needPush) {
         const envelope = password
           ? encryptBundle(payload, meta, password)
@@ -547,6 +597,8 @@ export class AutoSyncService {
         })
         pushed = true
         recreated = !remoteExists
+        // 「允许把云端变成密文」是一次性许可，用完即止
+        this.allowPlaintextUpgrade = false
       }
     }
 
@@ -554,7 +606,9 @@ export class AutoSyncService {
     const action = pulled && pushed ? 'both' : pulled ? 'pulled' : pushed ? 'pushed' : 'idle'
     const message = passwordMismatch
       ? '远端的同步口令与本机不一致，已用本机口令重写同步位置（远端原内容被覆盖）'
-      : recreated
+      : pulled && localWasEmpty
+        ? '本机还没有配置，已用同步位置的内容填充'
+        : recreated
         ? '同步位置的文件已不存在，已按本机配置重新创建'
         : !remoteExists && !wantsPush
           ? '同步位置的文件不存在；已关闭「本机改动后写回」，无法自动重建'
@@ -568,16 +622,27 @@ export class AutoSyncService {
     return { ok: true, action, message, at, report }
   }
 
-  private decode(text: string, password: string | undefined): SyncBundlePayload {
+  /**
+   * 解析远端的同步包。
+   *
+   * 同时告诉调用方「这份包是不是加密的」——本机有口令而云端是明文时，
+   * 推送会��云端变成密文，这种情况要问过人才能做。
+   */
+  private decode(
+    text: string,
+    password: string | undefined
+  ): { payload: SyncBundlePayload; encrypted: boolean } {
     const parsed = parseSyncText(text)
     if (parsed.legacy) {
       throw new SyncError(`自动同步目录里的 ${SYNC_AUTO_FILE} 不是有效的同步包`)
     }
     const envelope = parsed.envelope
-    if (!envelope.encrypted) return envelope.payload ?? {}
-    if (!password) throw new SyncError('同步包已加密，但本机没有保存口令')
+    if (!envelope.encrypted) return { payload: envelope.payload ?? {}, encrypted: false }
+    if (!password) {
+      throw new SyncError('同步包已加密，但本机没有保存口令', 'password-mismatch')
+    }
     try {
-      return decryptBundle(envelope, password)
+      return { payload: decryptBundle(envelope, password), encrypted: true }
     } catch (err) {
       throw new SyncError(
         '同步口令不对：另一台机器用的口令可能和你这台不同。',
@@ -608,6 +673,82 @@ export class AutoSyncService {
   }
 
   /** 供界面「去处理」使用：把被暂停的远端变更应用到本机 */
+  /**
+   * 用户输入了云端的同步口令。
+   *
+   * 用它解开云端的包 → 合并进本机 → 并把这个口令记为本机口令
+   * （能解开就说明对方用的就是它，两台机器从此一致）。
+   */
+  async resolveWithPassword(password: string): Promise<AutoSyncState> {
+    const trimmed = password.trim()
+    if (!trimmed) throw new SyncError('请输入云端口令')
+    const transport = this.transport ?? this.buildTransport()
+    if (!transport) throw new SyncError('同步位置尚未配置完整')
+    const text = (await transport.exists()) ? await transport.read() : null
+    if (!text) throw new SyncError('同步位置里已经没有文件了')
+
+    let payload: SyncBundlePayload
+    try {
+      payload = this.decode(text, trimmed).payload
+    } catch {
+      throw new SyncError('这个口令还是解不开云端的包，请和另一台设备核对')
+    }
+
+    const hash = contentHash(payload)
+    this.applyRemote(payload, hash)
+    // 记为本机口令，两台机器从此一致
+    this.store.setSyncPassword(trimmed)
+    this.store.saveAutoSync({
+      lastPushedHash: hash,
+      lastPushedPasswordTag: passwordTag(trimmed)
+    })
+    this.pending = undefined
+    this.emit()
+    return this.state()
+  }
+
+  /**
+   * 用户确认：用本机配置覆盖云端。
+   *
+   * 云端原本的内容会丢失——这是用户明确同意后才做的事。
+   */
+  async overwriteRemote(): Promise<AutoSyncState> {
+    const config = this.store.getAutoSync()
+    const transport = this.transport ?? this.buildTransport()
+    if (!transport) throw new SyncError('同步位置尚未配置完整')
+    const password = this.store.syncPassword()
+    const { payload, meta } = composeLocalBundle(this.store, config.scopes)
+    if (!password) delete payload.credentials
+    const envelope = password
+      ? encryptBundle(payload, meta, password)
+      : plainBundle(payload, meta)
+    await transport.write(serializeBundle(envelope))
+    this.store.saveAutoSync({
+      lastPushedHash: contentHash(payload),
+      lastPushedPasswordTag: passwordTag(password)
+    })
+    this.pending = undefined
+    this.allowPlaintextUpgrade = false
+    this.emit()
+    return this.state()
+  }
+
+  /** 用户确认：允许把云端的明文包变成密文，然后立刻同步一次 */
+  confirmPlaintextUpgrade(): AutoSyncState {
+    this.allowPlaintextUpgrade = true
+    this.pending = undefined
+    this.emit()
+    void this.run('manual')
+    return this.state()
+  }
+
+  /** 用户选择暂不处理：保持现状，本机和云端都不动 */
+  dismissPending(): AutoSyncState {
+    this.pending = undefined
+    this.emit()
+    return this.state()
+  }
+
   async applyPending(): Promise<AutoSyncRunResult> {
     const pending = this.pending
     if (!pending) {
@@ -622,7 +763,7 @@ export class AutoSyncService {
       this.pending = undefined
       return { ok: false, action: 'error', message: '同步文件已被移除', at: Date.now() }
     }
-    const payload = this.decode(text, this.store.syncPassword())
+    const { payload } = this.decode(text, this.store.syncPassword())
     this.applyRemote(payload, contentHash(payload))
     const message = `已按远端覆盖本机（${pending.summary}）`
     this.store.saveAutoSync({ lastSyncedAt: Date.now(), lastResult: message, lastError: undefined })

@@ -5,17 +5,17 @@
 
 ## 1. 产物清单
 
-版本号来自 `package.json`（当前 `0.11.18`），所有文件名统一为 `JShell-<版本>-<架构>[-类型].<扩展名>`。
+版本号来自 `package.json`（当前 `0.11.19`），所有文件名统一为 `JShell-<版本>-<架构>[-类型].<扩展名>`。
 
 | 平台 | 产物 | 用途 | 说明 |
 | --- | --- | --- | --- |
-| macOS（Apple Silicon） | `JShell-0.11.18-arm64.dmg` | 安装版 | 拖入「应用程序」 |
-| macOS（Apple Silicon） | `JShell-0.11.18-arm64.zip` | 安装版备份 | 适合脚本分发 |
-| macOS（Apple Silicon） | `JShell-0.11.18-arm64-portable.zip` | **便携版** | 解压即用，数据写在 `JShell-Data` |
-| macOS（Intel） | `JShell-0.11.18-x64.dmg` / `.zip` / `-portable.zip` | 同上 | 同一套配置产出 |
-| Windows x64 | `JShell-0.11.18-x64-setup.exe` | 安装版 | NSIS 向导，**仅简体中文** |
-| Windows x64 | `JShell-0.11.18-x64-portable.exe` | **便携版** | 单文件，双击即用，数据写在 exe 同级 `JShell-Data` |
-| Linux（可选） | `JShell-0.11.18-x64.AppImage` / `.deb` | 非重点平台 | 保留能力，未做重点验证 |
+| macOS（Apple Silicon） | `JShell-0.11.19-arm64.dmg` | 安装版 | 拖入「应用程序」 |
+| macOS（Apple Silicon） | `JShell-0.11.19-arm64.zip` | 安装版备份 | 适合脚本分发 |
+| macOS（Apple Silicon） | `JShell-0.11.19-arm64-portable.zip` | **便携版** | 解压即用，数据写在 `JShell-Data` |
+| macOS（Intel） | `JShell-0.11.19-x64.dmg` / `.zip` / `-portable.zip` | 同上 | 同一套配置产出 |
+| Windows x64 | `JShell-0.11.19-x64-setup.exe` | 安装版 | NSIS 向导，**仅简体中文** |
+| Windows x64 | `JShell-0.11.19-x64-portable.exe` | **便携版** | 单文件，双击即用，数据写在 exe 同级 `JShell-Data` |
+| Linux（可选） | `JShell-0.11.19-x64.AppImage` / `.deb` | 非重点平台 | 保留能力，未做重点验证 |
 
 产物目录还会生成两份中文文件：
 
@@ -62,7 +62,7 @@ node scripts/build-all.mjs --win --docker
 - Windows：SmartScreen 提示时点击「更多信息」→「仍要运行」。
 - 建议在内网分发页附上 SHA-256 校验值：
   ```bash
-  shasum -a 256 release/0.11.18/*
+  shasum -a 256 release/0.11.19/*
   ```
 
 ### 3.2 macOS 自签名（ad-hoc）
@@ -81,7 +81,7 @@ codesign --force --deep --sign - /path/to/JShell.app
 ```powershell
 $cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject "CN=JShell Internal" `
   -CertStoreLocation Cert:\CurrentUser\My
-signtool sign /sha1 $cert.Thumbprint /fd SHA256 JShell-0.11.18-x64-setup.exe
+signtool sign /sha1 $cert.Thumbprint /fd SHA256 JShell-0.11.19-x64-setup.exe
 ```
 
 自签名证书需要导入到目标机器的「受信任的根证书颁发机构」，否则仍会提示未知发布者。
@@ -138,9 +138,9 @@ node scripts/build-all.mjs --mac --win
 
 ```json
 {
-  "version": "0.11.18",
+  "version": "0.11.19",
   "notes": "修复 SFTP 大文件传输偶发中断；新增端口转发面板。",
-  "url": "https://dl.example.com/jshell/JShell-0.11.18-arm64.dmg",
+  "url": "https://dl.example.com/jshell/JShell-0.11.19-arm64.dmg",
   "publishedAt": "2026-11-01T10:00:00Z"
 }
 ```

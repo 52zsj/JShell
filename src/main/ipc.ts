@@ -532,6 +532,12 @@ export function registerIpc(ctx: AppContext, getWindow: () => BrowserWindow | nu
   handle(IPC.syncAutoApply, () => autoSync.applyPending())
   handle(IPC.syncAutoPick, () => autoSync.pickDirectory(getWindow()))
   handle(IPC.syncAutoTest, () => autoSync.test())
+  handle(IPC.syncAutoResolvePassword, (password: string) =>
+    autoSync.resolveWithPassword(password)
+  )
+  handle(IPC.syncAutoOverwriteRemote, () => autoSync.overwriteRemote())
+  handle(IPC.syncAutoConfirmPlaintext, () => autoSync.confirmPlaintextUpgrade())
+  handle(IPC.syncAutoDismissPending, () => autoSync.dismissPending())
   handle(IPC.syncAutoPathAdd, () => autoSync.addCustomPath(getWindow()))
   // 注意：handle 的封装不传 _event，业务参数就是第一个参数
   handle(IPC.syncAutoPathRename, (id: string, label: string) =>

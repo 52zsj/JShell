@@ -1,6 +1,14 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { changedCount, decidePull, riskyCount, shouldPush, summarizeReport } from '../src/main/services/sync-auto-plan.ts'
+import {
+  changedCount,
+  decidePull,
+  decidePushGate,
+  isLocalEmpty,
+  riskyCount,
+  shouldPush,
+  summarizeReport
+} from '../src/main/services/sync-auto-plan.ts'
 import { contentHash } from '../src/main/services/sync-crypto.ts'
 
 function report({ add = 0, update = 0, deleteCount = 0, riskyNewer = 0, riskyDelete = 0 } = {}) {
@@ -108,4 +116,74 @@ test('内容指纹与键顺序无关，内容变化才变化', () => {
   const c = contentHash({ hosts: [{ id: 'h1', name: 'B' }], snippets: [] })
   assert.notEqual(a, c)
   assert.equal(a.length, 64)
+})
+
+test('口令对不上时必须先问人，绝不能直接覆盖云端', () => {
+  assert.equal(
+    decidePushGate({ needPush: true, passwordMismatch: true, password: 'a' }),
+    'need-password'
+  )
+  // 即使没有内容变化要推，也一样要先问
+  assert.equal(
+    decidePushGate({ needPush: false, passwordMismatch: true, password: 'a' }),
+    'need-password'
+  )
+})
+
+test('云端是明文包而本机有口令：推上去云端会变密文，要先确认', () => {
+  assert.equal(
+    decidePushGate({
+      needPush: true,
+      passwordMismatch: false,
+      password: 'a',
+      remoteEncrypted: false,
+      allowPlaintextUpgrade: false
+    }),
+    'need-plaintext-confirm'
+  )
+  // 用户确认过就直接推
+  assert.equal(
+    decidePushGate({
+      needPush: true,
+      passwordMismatch: false,
+      password: 'a',
+      remoteEncrypted: false,
+      allowPlaintextUpgrade: true
+    }),
+    'push'
+  )
+})
+
+test('本机没设口令时云端保持明文，直接推即可', () => {
+  assert.equal(
+    decidePushGate({
+      needPush: true,
+      passwordMismatch: false,
+      password: undefined,
+      remoteEncrypted: false,
+      allowPlaintextUpgrade: false
+    }),
+    'push'
+  )
+})
+
+test('云端是密文且口令能解开：正常推', () => {
+  assert.equal(
+    decidePushGate({
+      needPush: true,
+      passwordMismatch: false,
+      password: 'a',
+      remoteEncrypted: true,
+      allowPlaintextUpgrade: false
+    }),
+    'push'
+  )
+})
+
+test('本机空判定：主机/片段/转发规则都没有才算空', () => {
+  assert.equal(isLocalEmpty({ hosts: [], snippets: [], tunnels: [] }), true)
+  assert.equal(isLocalEmpty({}), true)
+  assert.equal(isLocalEmpty({ hosts: [], snippets: [{ id: 's1' }], tunnels: [] }), false)
+  assert.equal(isLocalEmpty({ hosts: [{ id: 'h1' }], snippets: [], tunnels: [] }), false)
+  assert.equal(isLocalEmpty({ hosts: [], snippets: [], tunnels: [{ id: 't1' }] }), false)
 })

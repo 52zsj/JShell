@@ -146,6 +146,14 @@ export interface JShellApi {
     run(): Promise<AutoSyncRunResult>
     /** 把被暂停的远端变更强制应用到本机 */
     applyPending(): Promise<AutoSyncRunResult>
+    /** 输入云端的同步口令：解开云端的包并合并到本机，同时记住这个口令 */
+    resolvePassword(password: string): Promise<AutoSyncState>
+    /** 确认用本机配置覆盖同步位置（云端原内容会丢失） */
+    overwriteRemote(): Promise<AutoSyncState>
+    /** 确认把云端的明文包变成密文 */
+    confirmPlaintext(): Promise<AutoSyncState>
+    /** 暂不处理，保持现状 */
+    dismissPending(): Promise<AutoSyncState>
     /** 系统对话框选择任意目录（网络共享、加密盘等不在探测列表里的位置） */
     pick(): Promise<AutoSyncState>
     /** 弹目录选择器，添加一个自定义同步路径（本机私有，不随配置包同步） */

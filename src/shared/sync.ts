@@ -415,11 +415,22 @@ export interface AutoSyncConfig {
   hasWebdavPassword: boolean
 }
 
+/**
+ * 待人工处理的原因。
+ *
+ * - risky：远端会覆盖本机较新的改动（内容层面的冲突）
+ * - password：云端的包是加密的，但本机口令解不开（多半是两台设备口令不一致）
+ * - plaintext：云端现在是明文包，本机有口令，同步后云端会变成密文
+ */
+export type AutoSyncPendingKind = 'risky' | 'password' | 'plaintext'
+
 export interface AutoSyncPending {
   at: number
   /** 人类可读摘要：几项会被覆盖、几项会被删除 */
   summary: string
-  report: DiffReport
+  kind: AutoSyncPendingKind
+  /** 内容冲突时的明细；口令类问题没有 diff */
+  report?: DiffReport
 }
 
 export interface AutoSyncState extends AutoSyncConfig {

@@ -42,6 +42,8 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
   const [webdavUserDraft, setWebdavUserDraft] = useState('')
   const [webdavPasswordDraft, setWebdavPasswordDraft] = useState('')
   const [autoTest, setAutoTest] = useState<{ ok: boolean; message: string } | null>(null)
+  /** 待处理：用户输入的云端口令 */
+  const [pendingPassword, setPendingPassword] = useState('')
   const [testing, setTesting] = useState(false)
 
   // 远端目录是手输的，本地草稿跟随已保存值
@@ -79,6 +81,9 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
 
   /** 用户手动添加的同步路径（本机私有） */
   const customPaths = auto?.paths ?? []
+
+  /** 待处理的类型；旧数据没有 kind，按内容冲突处理 */
+  const pendingKind = auto?.pending?.kind ?? 'risky'
 
   /** 自动挑一个网盘目录：上次用过的 → 唯一检测到的 → 最近活跃的 */
   const defaultTarget = useMemo(
@@ -148,6 +153,73 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
       const result = await window.jshell.autoSync.applyPending()
       pushToast(result.message, result.ok ? 'success' : 'error')
       await Promise.all([reloadHosts(), reloadSnippets(), reloadSettings()])
+    } catch (err) {
+      pushToast(errorMessage(err), 'error')
+    } finally {
+      setAutoBusy(false)
+    }
+  }
+
+  /** 用用户输入的云端口令解开云端的包，合并到本机 */
+  const resolveWithPassword = async (): Promise<void> => {
+    if (!pendingPassword.trim()) {
+      pushToast('请输入云端口令', 'error')
+      return
+    }
+    setAutoBusy(true)
+    try {
+      setAutoSync(await window.jshell.autoSync.resolvePassword(pendingPassword))
+      setPendingPassword('')
+      pushToast('已用云端口令解锁并合并到本机', 'success')
+      await Promise.all([reloadHosts(), reloadSnippets(), reloadSettings()])
+    } catch (err) {
+      pushToast(errorMessage(err), 'error')
+    } finally {
+      setAutoBusy(false)
+    }
+  }
+
+  /** 用户明确同意：用本机配置覆盖云端（云端原内容会丢） */
+  const overwriteRemote = async (): Promise<void> => {
+    const ok = await window.jshell.dialog.confirm({
+      title: '用本机配置覆盖云端？',
+      message: '云端现有的同步包会被本机的配置替换掉。',
+      detail:
+        '云端那份内容会丢失，而且另一台设备之后就看不到它了。这台机器的口令也会被用于加密新的云端内容。',
+      danger: true
+    })
+    if (!ok) return
+    setAutoBusy(true)
+    try {
+      setAutoSync(await window.jshell.autoSync.overwriteRemote())
+      pushToast('已用本机配置覆盖云端', 'success')
+    } catch (err) {
+      pushToast(errorMessage(err), 'error')
+    } finally {
+      setAutoBusy(false)
+    }
+  }
+
+  /** 用户确认：允许把云端的明文包变成密文（按钮本身就是确认动作，不再二次弹窗） */
+  const confirmPlaintext = async (): Promise<void> => {
+    setAutoBusy(true)
+    try {
+      setAutoSync(await window.jshell.autoSync.confirmPlaintext())
+      pushToast('已确认，云端将变成加密包', 'success')
+    } catch (err) {
+      pushToast(errorMessage(err), 'error')
+    } finally {
+      setAutoBusy(false)
+    }
+  }
+
+  /** 暂不处理：保持现状，本机和云端都不动 */
+  const dismissPending = async (): Promise<void> => {
+    setAutoBusy(true)
+    try {
+      setAutoSync(await window.jshell.autoSync.dismissPending())
+      setPendingPassword('')
+      pushToast('已跳过，本机与云端都没有改动', 'success')
     } catch (err) {
       pushToast(errorMessage(err), 'error')
     } finally {
@@ -627,19 +699,79 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                   <div className="sync-risk">
                     <span>{auto.pending.summary}</span>
                     <div className="sync-pending-actions">
-                      <button
-                        className="btn btn-ghost"
-                        disabled={autoBusy}
-                        onClick={() => void applyAutoPending()}
-                      >
-                        按远端覆盖本机
-                      </button>
-                      <button
-                        className="btn btn-ghost"
-                        onClick={() => onOpenImport(auto?.targetId ?? '')}
-                      >
-                        手动检查
-                      </button>
+                      {pendingKind === 'risky' && (
+                        <>
+                          <button
+                            className="btn btn-ghost"
+                            disabled={autoBusy}
+                            onClick={() => void applyAutoPending()}
+                          >
+                            按远端覆盖本机
+                          </button>
+                          <button
+                            className="btn btn-ghost"
+                            disabled={autoBusy}
+                            onClick={() => onOpenImport(auto?.targetId ?? '')}
+                          >
+                            手动检查
+                          </button>
+                        </>
+                      )}
+                      {pendingKind === 'password' && (
+                        <>
+                          <input
+                            className="input"
+                            type="password"
+                            autoComplete="new-password"
+                            placeholder="输入云端口令"
+                            value={pendingPassword}
+                            disabled={autoBusy}
+                            onChange={(event) => setPendingPassword(event.target.value)}
+                            onKeyDown={(event) => {
+                              if (event.key === 'Enter') void resolveWithPassword()
+                            }}
+                          />
+                          <button
+                            className="btn btn-primary"
+                            disabled={autoBusy || !pendingPassword.trim()}
+                            onClick={() => void resolveWithPassword()}
+                          >
+                            用它解锁并合并
+                          </button>
+                          <button
+                            className="btn btn-ghost"
+                            disabled={autoBusy}
+                            onClick={() => void overwriteRemote()}
+                          >
+                            用本机覆盖云端
+                          </button>
+                          <button
+                            className="btn btn-ghost"
+                            disabled={autoBusy}
+                            onClick={() => void dismissPending()}
+                          >
+                            暂不处理
+                          </button>
+                        </>
+                      )}
+                      {pendingKind === 'plaintext' && (
+                        <>
+                          <button
+                            className="btn btn-primary"
+                            disabled={autoBusy}
+                            onClick={() => void confirmPlaintext()}
+                          >
+                            确认：云端会变成密文
+                          </button>
+                          <button
+                            className="btn btn-ghost"
+                            disabled={autoBusy}
+                            onClick={() => void dismissPending()}
+                          >
+                            取消：云端保持明文
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 )}

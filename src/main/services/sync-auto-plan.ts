@@ -66,3 +66,56 @@ export function summarizeReport(report: DiffReport): string {
   }
   return risky > 0 ? parts.join('，') : parts[0]
 }
+
+/**
+ * 推送到同步位置之前，要不要先问人一句。
+ *
+ * 原则：**破坏性操作由人决定，机器不自己替人做主**。
+ *  - 口令对不上：云端那份解不开，本机配置不该去覆盖它 → 交给人
+ *  - 云端是明文包而本机有口令：推上去会把云端变成密文，对方设备就读不到了 → 也要问
+ */
+export type PushGate = 'push' | 'need-password' | 'need-plaintext-confirm'
+
+export interface PushGateInput {
+  /** 本机内容是否有变化需要推送 */
+  needPush: boolean
+  /** 云端是加密包，但本机口令解不开 */
+  passwordMismatch: boolean
+  /** 本机是否设了口令 */
+  password?: string
+  /** 云端包是否加密（undefined 表示云端还没有文件） */
+  remoteEncrypted?: boolean
+  /** 用户已经确认过「允许把云端变成密文」 */
+  allowPlaintextUpgrade: boolean
+}
+
+export function decidePushGate(input: PushGateInput): PushGate {
+  if (input.passwordMismatch) return 'need-password'
+  if (
+    input.needPush &&
+    input.password &&
+    input.remoteEncrypted === false &&
+    !input.allowPlaintextUpgrade
+  ) {
+    return 'need-plaintext-confirm'
+  }
+  return 'push'
+}
+
+/**
+ * 本机是否「什么都没有」。
+ *
+ * 只有主机、片段、转发规则都为空才算空——光有偏好设置差异不算，
+ * 说明这台机器已经用过了，不该被云端内容整个覆盖。
+ */
+export function isLocalEmpty(snapshot: {
+  hosts?: unknown[]
+  snippets?: unknown[]
+  tunnels?: unknown[]
+}): boolean {
+  return (
+    (snapshot.hosts?.length ?? 0) === 0 &&
+    (snapshot.snippets?.length ?? 0) === 0 &&
+    (snapshot.tunnels?.length ?? 0) === 0
+  )
+}
