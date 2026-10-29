@@ -66,6 +66,8 @@ export interface StoredAutoSync {
   lastError?: string
   /** 上次由本机写入的内容指纹，避免自己的写入又触发一次拉取 */
   lastPushedHash?: string
+  /** 上次推送时用的同步口令指纹（不含明文）：口令变了就重新写一份远端 */
+  lastPushedPasswordTag?: string
   /** 上次成功应用的远端指纹 */
   lastPulledHash?: string
 }

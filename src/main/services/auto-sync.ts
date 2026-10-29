@@ -24,6 +24,7 @@ import {
   SyncError
 } from './sync-crypto'
 import { diffBundle } from './sync-diff'
+import { passwordChanged, passwordTag } from './sync-password'
 import { changedCount, decidePull, shouldPush, summarizeReport } from './sync-auto-plan'
 import { mergeBundle } from './sync-merge'
 import { createSftpTransport, normalizeRemoteDir } from './sftp-transport'
@@ -464,6 +465,8 @@ export class AutoSyncService {
     let pulled = false
     let pushed = false
     let recreated = false
+    /** 远端口令与本机不一致：需要用本机口令重写远端 */
+    let passwordMismatch = false
     let report: DiffReport | undefined
     let pulledCount = 0
 
@@ -473,7 +476,20 @@ export class AutoSyncService {
     if (wantsPull && remoteExists) {
       const text = await transport.read()
       if (text) {
-        const payload = this.decode(text, password)
+        let payload: SyncBundlePayload | null = null
+        try {
+          payload = this.decode(text, password)
+        } catch (err) {
+          // 口令对不上不是致命错误：多半是本机刚换了口令，
+          // 或者另一台机器用了不同的口令。继续往下走，用本机口令把远端重写一遍，
+          // 否则用户改完口令就再也推不上去（拉取先抛错 → 推送执行不到）。
+          if (err instanceof SyncError && err.code === 'password-mismatch') {
+            passwordMismatch = true
+          } else {
+            throw err
+          }
+        }
+        if (payload) {
         const hash = contentHash(payload)
         const diff = diffBundle(this.store.snapshot(), payload, 'overwrite')
         const decision = decidePull({
@@ -505,6 +521,7 @@ export class AutoSyncService {
           pulled = true
           pulledCount = changedCount(diff)
         }
+        }
       }
     }
 
@@ -512,12 +529,22 @@ export class AutoSyncService {
       const { payload, meta } = composeLocalBundle(this.store, config.scopes)
       if (!password) delete payload.credentials
       const hash = contentHash(payload)
-      if (shouldPush(hash, this.store.getAutoSync().lastPushedHash, remoteExists)) {
+      const current = this.store.getAutoSync()
+      // 口令变了也必须重写：内容没变时哈希相同，只看哈希会判定「没变化」，
+      // 于是远端还挂着旧口令的密文，本机却已经换口令了 —— 之后必然解不开
+      const needPush =
+        shouldPush(hash, current.lastPushedHash, remoteExists) ||
+        passwordChanged(password, current.lastPushedPasswordTag) ||
+        passwordMismatch
+      if (needPush) {
         const envelope = password
           ? encryptBundle(payload, meta, password)
           : plainBundle(payload, meta)
         await transport.write(serializeBundle(envelope))
-        this.store.saveAutoSync({ lastPushedHash: hash })
+        this.store.saveAutoSync({
+          lastPushedHash: hash,
+          lastPushedPasswordTag: passwordTag(password)
+        })
         pushed = true
         recreated = !remoteExists
       }
@@ -525,11 +552,13 @@ export class AutoSyncService {
 
     const at = Date.now()
     const action = pulled && pushed ? 'both' : pulled ? 'pulled' : pushed ? 'pushed' : 'idle'
-    const message = recreated
-      ? '同步位置的文件已不存在，已按本机配置重新创建'
-      : !remoteExists && !wantsPush
-        ? '同步位置的文件不存在；已关闭「本机改动后写回」，无法自动重建'
-        : this.describe(action, pulledCount)
+    const message = passwordMismatch
+      ? '远端的同步口令与本机不一致，已用本机口令重写同步位置（远端原内容被覆盖）'
+      : recreated
+        ? '同步位置的文件已不存在，已按本机配置重新创建'
+        : !remoteExists && !wantsPush
+          ? '同步位置的文件不存在；已关闭「本机改动后写回」，无法自动重建'
+          : this.describe(action, pulledCount)
     if (action !== 'idle' || trigger === 'manual') {
       // 后台空转不覆盖上一轮有意义的结果，否则状态栏永远显示「已是最新」
       this.store.saveAutoSync({ lastSyncedAt: at, lastResult: message, lastError: undefined })
@@ -547,7 +576,14 @@ export class AutoSyncService {
     const envelope = parsed.envelope
     if (!envelope.encrypted) return envelope.payload ?? {}
     if (!password) throw new SyncError('同步包已加密，但本机没有保存口令')
-    return decryptBundle(envelope, password)
+    try {
+      return decryptBundle(envelope, password)
+    } catch (err) {
+      throw new SyncError(
+        '同步口令不对：另一台机器用的口令可能和你这台不同。',
+        'password-mismatch'
+      )
+    }
   }
 
   private applyRemote(payload: SyncBundlePayload, hash: string): void {

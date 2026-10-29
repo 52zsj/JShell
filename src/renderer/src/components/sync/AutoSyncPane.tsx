@@ -94,7 +94,8 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
         return
       }
       const current = auto?.targetId
-      const keep = current && current.startsWith(CUSTOM_PATH_PREFIX) ? current : ''
+      const keep =
+        current && (current === 'custom' || current.startsWith(CUSTOM_PATH_PREFIX)) ? current : ''
       const picked = pickDefaultTarget(targets, keep || undefined)
       await patchAuto({ transport: 'folder', targetId: picked?.id ?? keep })
     },
@@ -105,8 +106,15 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
   useEffect(() => {
     if ((auto?.transport ?? 'folder') !== 'folder') return
     const current = auto?.targetId
-    // 手动添加的路径也算「已经选好了」，别用自动挑选把它覆盖掉
-    if (current && (current.startsWith(CUSTOM_PATH_PREFIX) || targets.some((t) => t.id === current))) {
+    // 手动指定的路径也算「已经选好了」，别用自动挑选把它覆盖掉。
+    // 'custom' 是 0.11.15 之前的旧写法（那时用系统对话框选目录），也要认，
+    // 否则升级后用户自己指定的同步目录会被悄悄换成 iCloud。
+    if (
+      current &&
+      (current === 'custom' ||
+        current.startsWith(CUSTOM_PATH_PREFIX) ||
+        targets.some((t) => t.id === current))
+    ) {
       return
     }
     if (!defaultTarget) return
@@ -172,6 +180,19 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                 <p className="sync-hint">
                   拉取前仍然会做检测，遇到「会覆盖本机较新改动」默认先暂停。
                 </p>
+                <ol className="sync-steps">
+                  <li>
+                    <strong>选一个共享位置</strong>：iCloud 云盘目录、你的服务器（SFTP）或 WebDAV。
+                    几台机器要指向<strong>同一个位置</strong>。
+                  </li>
+                  <li>
+                    <strong>设一个同步口令</strong>：各机器填同一个，包会被加密，落在云盘里只有密文。
+                  </li>
+                  <li>
+                    <strong>打开「自动同步」开关</strong>：本机一改就写回那儿，
+                    那边的变化也会自动拉回来。也可以随时点「立即同步」手动来一次。
+                  </li>
+                </ol>
                 <label className="sync-scope">
                   <input
                     type="checkbox"
@@ -506,7 +527,13 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                   </button>
                 </div>
                 <p className="sync-hint">
-                  口令经系统安全存储保存在本机，不会写进同步包；换设备后需要在那边重新输入一次。
+                  口令用来<strong>加密同步包</strong>，只有知道口令的设备才能读出里面的内容。
+                  口令经系统安全存储保存在本机，不会写进同步包本身。
+                </p>
+                <p className="sync-hint">
+                  <strong>几台机器之间必须用同一个口令</strong>，否则互相解不开。
+                  换口令的顺序：先在一台机器上改，然后点「立即同步」把新口令的包写上去，
+                  再到其余机器上改成同样的口令并各点一次「立即同步」。
                 </p>
               </section>
 

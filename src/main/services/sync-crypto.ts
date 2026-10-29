@@ -20,7 +20,8 @@ import {
  */
 
 export class SyncError extends Error {
-  constructor(message: string) {
+  /** 可选的错误码，方便调用方区分「口令不对」这类可处理的错误 */
+  constructor(message: string, readonly code?: string) {
     super(message)
     this.name = 'SyncError'
   }

@@ -2690,6 +2690,22 @@ input[type='range'] {
   gap: 16px;
 }
 
+/* 自动同步：三步说明 */
+.sync-steps {
+  margin: 8px 0 2px;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--text-dim);
+}
+
+.sync-steps strong {
+  color: var(--text);
+}
+
 .sync-section {
   display: flex;
   flex-direction: column;
