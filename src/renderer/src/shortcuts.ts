@@ -13,24 +13,123 @@ export interface ShortcutDef {
   id: string
   label: string
   group: string
+  /** macOS 默认：⌘ 系。macOS 的 ⌘ 不会被 shell 占用，可以放心用单字母 */
   defaultKeys: string
+  /**
+   * Windows / Linux 默认，不填表示与 macOS 相同（仅限不含字母的键，如 Ctrl+,）。
+   *
+   * 为什么不能简单把 ⌘ 换成 Ctrl：在 readline 系 shell 里，**裸 Ctrl + 字母几乎全被占用**
+   * （Ctrl+A 行首、Ctrl+B 后退、Ctrl+D EOF、Ctrl+E 行尾、Ctrl+F 前进、Ctrl+K 删到行尾、
+   * Ctrl+L 清屏、Ctrl+N 下一条历史、Ctrl+T 交换字符、Ctrl+W 删前一个词…）。
+   * 抢了这些键，用户在 shell 里就没法正常编辑命令行。所以 Windows 端的字母类快捷键
+   * 统一退到 Ctrl+Shift+<字母>（这也是 Windows Terminal / VS Code 的做法），
+   * 分屏切换这类导航键用 Alt+方向键（避开 Intel 显卡驱动的 Ctrl+Alt+方向键旋转屏幕热键）。
+   */
+  defaultKeysWin?: string
 }
 
 export const SHORTCUTS: ShortcutDef[] = [
-  { id: 'session.local', label: '新建本地终端', group: '会话', defaultKeys: 'Mod+T' },
-  { id: 'session.host', label: '新建主机', group: '会话', defaultKeys: 'Mod+N' },
-  { id: 'pane.splitRight', label: '向右分屏', group: '分屏', defaultKeys: 'Mod+D' },
-  { id: 'pane.splitDown', label: '向下分屏', group: '分屏', defaultKeys: 'Mod+Shift+D' },
-  { id: 'pane.close', label: '关闭当前分屏', group: '分屏', defaultKeys: 'Mod+Shift+W' },
-  { id: 'pane.next', label: '下一个分屏', group: '分屏', defaultKeys: 'Mod+Alt+ArrowRight' },
-  { id: 'pane.prev', label: '上一个分屏', group: '分屏', defaultKeys: 'Mod+Alt+ArrowLeft' },
-  { id: 'pane.toggleFiles', label: '切换 终端 / 文件', group: '分屏', defaultKeys: 'Mod+E' },
-  { id: 'pane.find', label: '在终端中搜索', group: '分屏', defaultKeys: 'Mod+F' },
-  { id: 'files.path', label: '跳转到路径（文件面板）', group: '分屏', defaultKeys: 'Mod+L' },
-  { id: 'tab.close', label: '关闭标签页', group: '标签页', defaultKeys: 'Mod+W' },
-  { id: 'tab.reopen', label: '重新打开关闭的标签', group: '标签页', defaultKeys: 'Mod+Shift+T' },
-  { id: 'snippets.toggle', label: '命令片段', group: '视图', defaultKeys: 'Mod+B' },
-  { id: 'settings.open', label: '打开设置', group: '窗口', defaultKeys: 'Mod+,' }
+  {
+    id: 'session.local',
+    label: '新建本地终端',
+    group: '会话',
+    defaultKeys: 'Mod+T',
+    defaultKeysWin: 'Ctrl+Shift+T'
+  },
+  {
+    id: 'session.host',
+    label: '新建主机',
+    group: '会话',
+    defaultKeys: 'Mod+N',
+    defaultKeysWin: 'Ctrl+Shift+N'
+  },
+  {
+    id: 'pane.splitRight',
+    label: '向右分屏',
+    group: '分屏',
+    defaultKeys: 'Mod+D',
+    defaultKeysWin: 'Ctrl+Shift+D'
+  },
+  {
+    id: 'pane.splitDown',
+    label: '向下分屏',
+    group: '分屏',
+    defaultKeys: 'Mod+Shift+D',
+    defaultKeysWin: 'Ctrl+Shift+E'
+  },
+  {
+    id: 'pane.close',
+    label: '关闭当前分屏',
+    group: '分屏',
+    defaultKeys: 'Mod+Shift+W',
+    defaultKeysWin: 'Ctrl+Shift+W'
+  },
+  {
+    id: 'pane.next',
+    label: '下一个分屏',
+    group: '分屏',
+    defaultKeys: 'Mod+Alt+ArrowRight',
+    // Ctrl+Alt+方向键在 Windows 上常被 Intel 显卡驱动抢去旋转屏幕，改用 Alt+方向键
+    defaultKeysWin: 'Alt+ArrowRight'
+  },
+  {
+    id: 'pane.prev',
+    label: '上一个分屏',
+    group: '分屏',
+    defaultKeys: 'Mod+Alt+ArrowLeft',
+    defaultKeysWin: 'Alt+ArrowLeft'
+  },
+  {
+    id: 'pane.toggleFiles',
+    label: '切换 终端 / 文件',
+    group: '分屏',
+    defaultKeys: 'Mod+E',
+    defaultKeysWin: 'Ctrl+Shift+B'
+  },
+  {
+    id: 'pane.find',
+    label: '在终端中搜索',
+    group: '分屏',
+    defaultKeys: 'Mod+F',
+    defaultKeysWin: 'Ctrl+Shift+F'
+  },
+  {
+    id: 'files.path',
+    label: '跳转到路径（文件面板）',
+    group: '分屏',
+    defaultKeys: 'Mod+L',
+    defaultKeysWin: 'Ctrl+Shift+L'
+  },
+  {
+    id: 'tab.close',
+    label: '关闭标签页',
+    group: '标签页',
+    defaultKeys: 'Mod+W',
+    // Ctrl+W 在 readline 里是「删掉前一个词」，Windows 上改用系统惯例 Ctrl+F4
+    defaultKeysWin: 'Ctrl+F4'
+  },
+  {
+    id: 'tab.reopen',
+    label: '重新打开关闭的标签',
+    group: '标签页',
+    defaultKeys: 'Mod+Shift+T',
+    defaultKeysWin: 'Alt+Shift+T'
+  },
+  {
+    id: 'snippets.toggle',
+    label: '命令片段',
+    group: '视图',
+    defaultKeys: 'Mod+B',
+    defaultKeysWin: 'Ctrl+Shift+K'
+  },
+  {
+    id: 'settings.open',
+    label: '打开设置',
+    group: '窗口',
+    defaultKeys: 'Mod+,',
+    // Ctrl+, 无 readline 冲突，按 Windows 应用惯例保留
+    defaultKeysWin: 'Ctrl+,'
+  }
 ]
 
 export type Bindings = Record<string, string>
@@ -78,13 +177,29 @@ function normalizeKeyToken(token: string): string {
   return t.charAt(0).toUpperCase() + t.slice(1)
 }
 
-/** 合并默认值与用户自定义 */
-export function resolveBindings(custom: Record<string, string> | undefined): Bindings {
+/** 某个动作在当前平台上的默认键位（未归一化） */
+export function defaultKeysFor(def: ShortcutDef, isMac: boolean): string {
+  return isMac ? def.defaultKeys : (def.defaultKeysWin ?? def.defaultKeys)
+}
+
+/**
+ * 合并默认值与用户自定义。
+ *
+ * 默认值按平台取（macOS 用 ⌘ 系、Windows/Linux 用 Ctrl+Shift 系）；
+ * 用户改过的项优先，跨平台共用同一份 keybindings —— 用户是两套机器的话，
+ * 各自平台只会在「没改过」的项上落到自己的默认值。
+ */
+export function resolveBindings(
+  custom: Record<string, string> | undefined,
+  isMac: boolean
+): Bindings {
   const result: Bindings = {}
   for (const def of SHORTCUTS) {
     const override = custom?.[def.id]
     // 默认值也走一次归一化，保证表内所有绑定格式一致（键名小写、修饰键定序）
-    result[def.id] = override && override.trim() ? normalizeSpec(override) : normalizeSpec(def.defaultKeys)
+    result[def.id] = override && override.trim()
+      ? normalizeSpec(override)
+      : normalizeSpec(defaultKeysFor(def, isMac))
   }
   return result
 }
@@ -143,6 +258,48 @@ export function matchesBinding(event: KeyboardEvent, spec: string, isMac: boolea
     event.altKey === wantAlt &&
     event.shiftKey === wantShift
   )
+}
+
+export type ClipboardAction = 'copy' | 'paste' | 'selectAll'
+
+/**
+ * 识别剪贴板快捷键，按各平台终端惯例。
+ *
+ * macOS：
+ *   ⌘C 复制、⌘V 粘贴、⌘A 全选（⌘ 不被 shell 占用，可以直给）
+ *
+ * Windows / Linux：
+ *   · Ctrl+C：**有选区时复制，没有选区则放行**给终端发 SIGINT
+ *     —— 这是 Windows Terminal / VS Code 终端的行为，既保住「复制」，也没抢走「中断」
+ *   · Ctrl+Shift+C 始终复制（无视选区），Ctrl+Shift+V 也可以粘贴
+ *   · Ctrl+V 粘贴（Windows Terminal 的默认）
+ *   · Ctrl+Shift+A 全选；裸 Ctrl+A 是 readline 的「移到行首」，必须放行
+ *
+ * @param hasSelection 终端当前是否有选区（决定裸 Ctrl+C 的去向）
+ */
+export function matchClipboardAction(
+  event: KeyboardEvent,
+  isMac: boolean,
+  hasSelection: boolean
+): ClipboardAction | null {
+  const key = keyTokenFromEvent(event)
+  if (!key) return null
+  const k = key.toLowerCase()
+
+  if (isMac) {
+    // 只认 ⌘，⌃ 组合留给终端（Ctrl+C 中断等）
+    if (!event.metaKey || event.ctrlKey || event.altKey) return null
+    if (k === 'c' && !event.shiftKey) return 'copy'
+    if (k === 'v' && !event.shiftKey) return 'paste'
+    if (k === 'a' && !event.shiftKey) return 'selectAll'
+    return null
+  }
+
+  if (!event.ctrlKey || event.altKey || event.metaKey) return null
+  if (k === 'c') return event.shiftKey || hasSelection ? 'copy' : null
+  if (k === 'v') return 'paste'
+  if (k === 'a') return event.shiftKey ? 'selectAll' : null
+  return null
 }
 
 /** 找到命中的动作 id */

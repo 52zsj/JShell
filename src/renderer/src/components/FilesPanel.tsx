@@ -15,6 +15,7 @@ import {
   IconUpload
 } from '../icons'
 import { TextEditor } from './TextEditor'
+import { useShortcutHint } from '../use-shortcut-hint'
 
 interface Props {
   sessionId: string
@@ -36,6 +37,7 @@ interface PromptState {
  */
 export function FilesPanel({ sessionId, active }: Props) {
   const pushToast = useAppStore((s) => s.pushToast)
+  const pathHint = useShortcutHint('files.path')
   const [cwd, setCwd] = useState('')
   const [entries, setEntries] = useState<FileEntry[]>([])
   const [loading, setLoading] = useState(false)
@@ -225,7 +227,7 @@ export function FilesPanel({ sessionId, active }: Props) {
           value={pathDraft}
           spellCheck={false}
           placeholder="粘贴路径后回车跳转（支持 ~ 与 ..）"
-          title="路径（⌘/Ctrl + L 聚焦）"
+          title={`路径（${pathHint} 聚焦）`}
           onChange={(e) => setPathDraft(e.target.value)}
           onFocus={(e) => e.currentTarget.select()}
           onBlur={() => setPathDraft(cwd)}

@@ -182,6 +182,17 @@ function walkLocal(root: string, limit = 5000): LocalEntry[] {
  * 约定：所有 ipcMain.handle 都经过 handle() 包装，保证异常统一转为 reject，
  * 渲染进程侧可以 try/catch 拿到中文错误提示。
  */
+/**
+ * 仅供自动化测试：`JSHELL_E2E=1 JSHELL_FORCE_PLATFORM=win32` 时让渲染层以为自己在别的平台。
+ * 用来在 macOS 上验证 Windows 的默认键位（Ctrl 组合）是否真的生效 —— 否则这类
+ * 「只在某个平台上坏」的问题永远只能靠猜。
+ */
+function e2ePlatform(): NodeJS.Platform | null {
+  if (process.env.JSHELL_E2E !== '1') return null
+  const forced = process.env.JSHELL_FORCE_PLATFORM
+  return forced === 'win32' || forced === 'darwin' || forced === 'linux' ? forced : null
+}
+
 export function registerIpc(ctx: AppContext, getWindow: () => BrowserWindow | null): void {
   const { store, sessions, sftp, tunnels, sync, autoSync } = ctx
 
@@ -590,7 +601,9 @@ export function registerIpc(ctx: AppContext, getWindow: () => BrowserWindow | nu
       version: appVersion(),
       electron: process.versions.electron,
       node: process.versions.node,
-      platform: process.platform,
+      // E2E 钩子：仅在 JSHELL_E2E=1 时允许覆盖平台，用于在 macOS 上验证 Windows 的键位与交互。
+      // 正常运行（无该环境变量）永远是真实平台。
+      platform: e2ePlatform() ?? process.platform,
       arch: process.arch,
       userDataPath: app.getPath('userData'),
       safeStorageAvailable: safeStorage.isEncryptionAvailable(),

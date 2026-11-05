@@ -222,26 +222,41 @@ function buildMenu(): void {
     {
       label: '编辑',
       submenu: [
-        { role: 'undo', label: '撤销' },
-        { role: 'redo', label: '重做' },
+        // 这三个系统 role 自带 CmdOrCtrl+Z / Shift+CmdOrCtrl+Z / CmdOrCtrl+X。
+        // Windows 上注册它们等于把 Ctrl+Z（shell 的挂起信号 SIGTSTP）和 Ctrl+X 从终端抢走，
+        // 所以和下面的复制粘贴一样：Windows 只显示、不注册，按键交给页面（输入框里 Chromium
+        // 自己就能撤销 / 剪切；终端里就该原样送给 shell）。
+        { role: 'undo', label: '撤销', registerAccelerator: isMac },
+        { role: 'redo', label: '重做', registerAccelerator: isMac },
         { type: 'separator' },
-        { role: 'cut', label: '剪切' },
+        { role: 'cut', label: '剪切', registerAccelerator: isMac },
         // 复制/粘贴/全选不用系统 role：终端聚焦时要转给 xterm 的选区，而不是 DOM 选区。
         // 也不能靠 before-input-event 拦：macOS 的菜单快捷键会先于页面键盘事件生效。
+        //
+        // 平台差异（重要）：
+        //  - macOS：菜单快捷键是 ⌘C/⌘V/⌘A，与 shell 不冲突，保持注册（系统级菜单最稳）。
+        //  - Windows：这些键必须**落到页面**才做得出「有选区才复制、否则发中断」的语义，
+        //    所以标 registerAccelerator: false —— 菜单里照旧显示键位（可发现性），
+        //    但不向系统注册，按键交给渲染层的 capture 监听处理。
+        //    以前注册了 Ctrl+V / Ctrl+A，页面根本收不到，粘贴只能走主进程轮询
+        //    「终端是否聚焦」的标志位，那条路又依赖 IPC 时序，正是粘贴异常的来源之一。
         {
           label: '复制',
           // Windows / Linux 的 Ctrl+C 必须留给终端发中断信号，复制走 Ctrl+Shift+C
           accelerator: isMac ? 'CommandOrControl+C' : 'CommandOrControl+Shift+C',
+          registerAccelerator: isMac,
           click: () => copySelection(mainWindow)
         },
         {
           label: '粘贴',
           accelerator: 'CommandOrControl+V',
+          registerAccelerator: isMac,
           click: () => pasteInto(mainWindow)
         },
         {
           label: '全选',
-          accelerator: 'CommandOrControl+A',
+          accelerator: isMac ? 'CommandOrControl+A' : 'CommandOrControl+Shift+A',
+          registerAccelerator: isMac,
           click: () => selectAll(mainWindow)
         }
       ]

@@ -2,6 +2,108 @@
 
 本文件随安装包一同分发（设置 → 关于 → 更新记录 可直接打开）。
 
+## 0.11.28（2026-11-05）
+
+### 修掉 Windows 上所有快捷键失效，并按两端惯例重做默认键位
+
+用户反馈：Windows 上粘贴异常、选中后 Ctrl+C / Ctrl+V 都不工作、分屏等快捷键全部无效，
+而同样的键在 macOS 上正常。
+
+#### 根因：xterm 把 Ctrl 组合「就地吞掉」了
+
+不是绑定没配上，是事件根本没到我们的监听器。xterm 的键盘处理
+（`Keyboard.ts → _keyDown → evaluateKeyboardEvent`）对它能识别的组合会调用
+`cancel(event, true)`，而 `cancel` 的实现就是：
+
+```js
+cancel(e, t) { if (this.options.cancelEvents || t) return e.preventDefault(), e.stopPropagation(), !1 }
+```
+
+- **macOS**：`⌘` 组合会先命中 `_isThirdLevelShift()` 提前 `return`，从不 `cancel`
+  → 事件照常冒泡到 `window`，所以 `⌘` 系快捷键一直是好的；
+- **Windows / Linux**：`Ctrl+字母`（以及多数 `Ctrl+Shift+字母`）都会走 `cancel`
+  → `stopPropagation()` 把事件掐在 textarea 上，挂在 `window` 上的冒泡监听**永远收不到**，
+  而 shell 那头照样收到了控制字符（比如 `Ctrl+D` 直接变成 EOF）。
+
+所以症状是「两个平台都注册了，只有一个平台能用」。修法是把全局键盘监听改成
+**capture 阶段**，命中后自己 `stopPropagation()`，xterm 就收不到这个键了。
+
+实验对照（同一次按键，在终端聚焦时）：
+
+| 监听阶段 | 是否收到 Ctrl+Shift+D |
+| --- | --- |
+| bubble（原实现） | 0 次 |
+| capture（现在） | 1 次 |
+
+#### 默认键位：两端各一套，都按各自习惯来
+
+不能简单把 `⌘` 换成 `Ctrl` —— bash / zsh 的 readline 把 `Ctrl + 字母` 几乎占满了
+（`Ctrl+A` 行首、`Ctrl+D` EOF、`Ctrl+E` 行尾、`Ctrl+W` 删词、`Ctrl+K` 删到行尾…）。
+抢了这些键，命令行就没法编辑。所以 Windows 端字母类快捷键一律让到 `Ctrl+Shift+字母`：
+
+| 动作 | macOS | Windows（原值 → 新值） |
+| --- | --- | --- |
+| 新建本地终端 | `⌘T` | `Ctrl+T` → **`Ctrl+Shift+T`** |
+| 新建主机 | `⌘N` | `Ctrl+N` → **`Ctrl+Shift+N`** |
+| 向右分屏 | `⌘D` | `Ctrl+D` → **`Ctrl+Shift+D`** |
+| 向下分屏 | `⌘⇧D` | `Ctrl+Shift+D` → **`Ctrl+Shift+E`** |
+| 关闭当前分屏 | `⌘⇧W` | `Ctrl+Shift+W`（不变） |
+| 下一个 / 上一个分屏 | `⌘⌥→` / `⌘⌥←` | `Ctrl+Alt+→` → **`Alt+→`**（避开 Intel 显卡驱动的转屏热键） |
+| 切换 终端 / 文件 | `⌘E` | `Ctrl+E` → **`Ctrl+Shift+B`** |
+| 在终端中搜索 | `⌘F` | `Ctrl+F` → **`Ctrl+Shift+F`** |
+| 跳转到路径 | `⌘L` | `Ctrl+L` → **`Ctrl+Shift+L`** |
+| 关闭标签页 | `⌘W` | `Ctrl+W` → **`Ctrl+F4`**（Windows 惯例） |
+| 重新打开关闭的标签 | `⌘⇧T` | `Ctrl+Shift+T` → **`Alt+Shift+T`** |
+| 命令片段 | `⌘B` | `Ctrl+B` → **`Ctrl+Shift+K`** |
+| 打开设置 | `⌘,` | `Ctrl+,`（不变） |
+
+macOS 默认值一个都没动。
+
+#### 复制 / 粘贴：Windows 上改成「有选区才复制」
+
+以前 Windows 的复制只能走 `Ctrl+Shift+C`，因为 `Ctrl+C` 得留给中断信号 —— 体验很别扭。
+现在按 Windows Terminal / VS Code 终端的做法：
+
+| 操作 | Windows 行为 |
+| --- | --- |
+| `Ctrl+C` 且有选区 | **复制**（不会打断正在跑的程序） |
+| `Ctrl+C` 且无选区 | 放行给终端，照常发 SIGINT |
+| `Ctrl+Shift+C` | 无视选区始终复制 |
+| `Ctrl+V` / `Ctrl+Shift+V` | 粘贴 |
+| `Ctrl+Shift+A` | 选中全部输出（裸 `Ctrl+A` 是 readline 的「行首」，必须放行） |
+
+macOS 保持 `⌘C` / `⌘V` / `⌘A`；`⌃C` 在 mac 上始终归终端。
+
+顺带修掉粘贴链路的一个隐患：Windows 上 `Ctrl+V` / `Ctrl+A` 原来作为**菜单加速键注册**，
+按键被系统菜单先吃掉，页面根本收不到，只能靠主进程轮询「终端是否聚焦」的标志位再回投 ——
+那条路依赖 IPC 时序，正是「粘贴时好时坏」的来源。现在 Windows 上这两个加速键标了
+`registerAccelerator: false`：菜单里照旧显示键位（可发现性保留），但不注册，按键直接落到页面。
+
+#### 其它一起修掉的
+
+- **编辑菜单里的「撤销 / 重做 / 剪切」在 Windows 上不再注册加速键**：它们自带 `Ctrl+Z`、
+  `Ctrl+Shift+Z`、`Ctrl+X`，注册了就把 shell 的挂起信号（`Ctrl+Z` → SIGTSTP）从终端抢走，
+  「`sleep 30` 后按 `Ctrl+Z` 挂起」会变成撤销页面内容。现在 Windows 上只显示不注册，
+  输入框里仍是浏览器原生撤销，终端里按键原样送到 shell。
+- **右键菜单的键位提示直接读绑定表**（含用户自定义），不再写死。以前改了快捷键、提示不跟着变。
+- **右键菜单按 Esc 关不掉**：监听的也是冒泡阶段，被 xterm 同样掐断 → 改成 capture。
+- 界面里 `⌘/Ctrl + X` 这类双写文案（文件面板提示、空状态页、设置页）改为只显示当前平台的键。
+
+#### 验证
+
+新增 `tests/shortcuts.test.mjs`（19 条）：平台默认值不重复、Windows 端不出现裸 `Ctrl+字母`、
+不用 `Ctrl+Alt+方向键`、匹配的精确定义、剪贴板在各平台/有无选区下的分支、展示格式。
+
+端到端在 macOS 上用 `JSHELL_E2E=1 JSHELL_FORCE_PLATFORM=win32` 让渲染层以为自己在 Windows，
+逐条按 Windows 默认键位操作：
+
+- 18/18 通过：`Ctrl+Shift+D/E/W` 分屏三连、`Ctrl+Shift+T` 新建、`Ctrl+F4` 关闭、
+  `Ctrl+,` 设置、有选区 `Ctrl+C` 复制、无选区 `Ctrl+C` 发出 `^C`、
+  `Ctrl+V` 粘贴、`Ctrl+Shift+A` 全选、**`Ctrl+D` 仍作为 EOF 送达 shell**（`wc -c` 读到 EOF 才继续）、
+  `Ctrl+Z` 仍能挂起前台程序、输入框里的 `Ctrl+Z` 未被应用拦截
+- macOS 回归 11/11 通过：`⌘C/⌘V/⌘A`、`⌘V` 只粘一次（菜单与页面不重复触发）、
+  `⌃C` 仍归终端、`⌘D/⌘⇧D/⌘⇧W/⌘W/⌘,`
+
 ## 0.11.27（2026-11-04）
 
 ### 修掉终端尺寸对不上：内容只占一屏的一部分、光标错位、文字重叠

@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useAppStore } from '../store'
 import { fitTerminal, getTerminal } from '../terminal-registry'
+import { formatBinding, resolveBindings } from '../shortcuts'
 
 export interface TerminalMenuTarget {
   x: number
@@ -36,9 +37,12 @@ export function TerminalContextMenu({ target, onClose }: Props) {
   const openFind = useAppStore((s) => s.openFind)
 
   const info = useAppStore((s) => s.info)
-  // 键位提示必须跟着平台走：Windows 上显示 ⌘C 会让人以为快捷键坏了
+  const keybindings = useAppStore((s) => s.settings.keybindings)
+  // 键位提示必须跟着平台走：Windows 上显示 ⌘C 会让人以为快捷键坏了。
+  // 也不写字面量，直接从绑定表推（含用户自定义），避免菜单和实际绑定再次脱节。
   const isMac = (info?.platform ?? 'darwin') === 'darwin'
-  const key = (mac: string, other: string): string => (isMac ? mac : other)
+  const bindings = resolveBindings(keybindings, isMac)
+  const hintOf = (id: string): string => formatBinding(bindings[id] ?? '', isMac)
 
   const term = getTerminal(target.sessionId)
   const hasSelection = Boolean(term?.hasSelection())
@@ -62,12 +66,14 @@ export function TerminalContextMenu({ target, onClose }: Props) {
       if (event.key === 'Escape') onClose()
     }
     window.addEventListener('mousedown', onPointerDown, true)
-    window.addEventListener('keydown', onKeyDown)
+    // 必须 capture：终端聚焦时 xterm 对 Escape 也会 cancel（preventDefault + stopPropagation），
+    // 冒泡阶段的监听收不到，表现就是「菜单开着按 Esc 没反应」
+    window.addEventListener('keydown', onKeyDown, true)
     window.addEventListener('blur', onClose)
     window.addEventListener('resize', onClose)
     return () => {
       window.removeEventListener('mousedown', onPointerDown, true)
-      window.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('keydown', onKeyDown, true)
       window.removeEventListener('blur', onClose)
       window.removeEventListener('resize', onClose)
     }
@@ -91,16 +97,20 @@ export function TerminalContextMenu({ target, onClose }: Props) {
   const items: MenuItem[] = [
     {
       label: '复制',
-      // Windows 上 Ctrl+C 要留给终端发 SIGINT，复制走 Ctrl+Shift+C（与菜单 accelerator 一致）
-      hint: key('⌘C', 'Ctrl+Shift+C'),
+      // Windows 上 Ctrl+C 要留给终端发 SIGINT（有选区时才复制），复制同时支持 Ctrl+Shift+C
+      hint: isMac ? '⌘C' : 'Ctrl+Shift+C',
       disabled: !hasSelection,
       onClick: copy
     },
-    { label: '粘贴', hint: key('⌘V', 'Ctrl+V'), onClick: paste },
-    { label: '全选', hint: key('⌘A', 'Ctrl+A'), onClick: () => { term?.selectAll(); onClose() } },
+    { label: '粘贴', hint: isMac ? '⌘V' : 'Ctrl+V', onClick: paste },
+    {
+      label: '全选',
+      hint: isMac ? '⌘A' : 'Ctrl+Shift+A',
+      onClick: () => { term?.selectAll(); onClose() }
+    },
     {
       label: '在终端中搜索…',
-      hint: key('⌘F', 'Ctrl+F'),
+      hint: hintOf('pane.find'),
       onClick: () => { openFind(target.sessionId); onClose() }
     },
     {
@@ -126,18 +136,18 @@ export function TerminalContextMenu({ target, onClose }: Props) {
     { divider: true, label: '' },
     {
       label: '向右分屏',
-      hint: key('⌘D', 'Ctrl+D'),
+      hint: hintOf('pane.splitRight'),
       onClick: () => { focusSession(target.sessionId); void splitPane('row'); onClose() }
     },
     {
       label: '向下分屏',
-      hint: key('⌘⇧D', 'Ctrl+Shift+D'),
+      hint: hintOf('pane.splitDown'),
       onClick: () => { focusSession(target.sessionId); void splitPane('column'); onClose() }
     },
     { divider: true, label: '' },
     {
       label: '关闭当前分屏',
-      hint: key('⌘⇧W', 'Ctrl+Shift+W'),
+      hint: hintOf('pane.close'),
       danger: true,
       onClick: () => { void closeSession(target.sessionId); onClose() }
     }

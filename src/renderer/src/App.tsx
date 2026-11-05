@@ -4,8 +4,15 @@ import { useAppStore, tabPaneCount, type TerminalTab } from './store'
 import { findLeaf, firstLeaf } from './pane-tree'
 import { serializeTabs } from './layout'
 import { cx, errorMessage, platformLabel, modKey } from './utils'
-import { findAction, formatBinding, resolveBindings } from './shortcuts'
-import { getFocusedSession, getTerminal } from './terminal-registry'
+import { findAction, formatBinding, matchClipboardAction, resolveBindings } from './shortcuts'
+import { getTerminal } from './terminal-registry'
+import {
+  activeTerminal,
+  copyTerminalSelection,
+  hasTerminalSelection,
+  pasteIntoTerminal,
+  selectAllTerminal
+} from './terminal-clipboard'
 import { Sidebar } from './components/Sidebar'
 import { TabBar } from './components/TabBar'
 import { PaneTree } from './components/PaneTree'
@@ -139,7 +146,10 @@ export default function App() {
 
   const platform = info?.platform ?? 'darwin'
   const isMac = platform === 'darwin'
-  const bindings = useMemo(() => resolveBindings(settings.keybindings), [settings.keybindings])
+  const bindings = useMemo(
+    () => resolveBindings(settings.keybindings, isMac),
+    [settings.keybindings, isMac]
+  )
 
   useEffect(() => {
     void bootstrap()
@@ -202,23 +212,12 @@ export default function App() {
   // 终端剪贴板：菜单快捷键按焦点路由后回投到这里执行
   useEffect(() => {
     window.jshell.clipboard.onCommand(({ action, text }) => {
-      const state = useAppStore.getState()
-      const tab = state.tabs.find((t) => t.id === state.activeTabId)
-      // 优先用焦点所在终端，取不到时回退到当前选中分屏
-      const sessionId = getFocusedSession() ?? tab?.activeSessionId ?? null
-      if (!sessionId) return
-      const term = getTerminal(sessionId)
-      if (!term) return
-      if (action === 'copy') {
-        const selection = term.getSelection()
-        if (!selection) return
-        void window.jshell.clipboard
-          .writeText(selection)
-          .catch((err) => state.pushToast(errorMessage(err), 'error'))
-      } else if (action === 'selectAll') {
-        term.selectAll()
-      } else if (text) {
-        term.paste(text)
+      // 与键盘触发共用同一份实现，避免「菜单能复制、快捷键不能」这类语义分叉
+      if (action === 'copy') copyTerminalSelection()
+      else if (action === 'selectAll') selectAllTerminal()
+      else if (text) {
+        const term = activeTerminal()
+        if (term) term.paste(text)
       }
     })
     return () => window.jshell.clipboard.unsubscribe()
@@ -251,14 +250,31 @@ export default function App() {
         const target = state.tabs[Number(event.key) - 1]
         if (target) {
           event.preventDefault()
+          // 同样要 stopPropagation：否则终端还会把 Ctrl+数字 当作控制字符发给 shell
+          event.stopPropagation()
           state.setActiveTab(target.id)
         }
+        return
+      }
+
+      // 剪贴板：平台惯例不同（mac ⌘C / Windows Ctrl+C 有选区才复制），单独处理。
+      // 必须在 xterm 之前拿到事件 —— 见下方 capture 监听的说明。
+      const clipboard = matchClipboardAction(event, isMac, hasTerminalSelection())
+      if (clipboard) {
+        event.preventDefault()
+        event.stopPropagation()
+        if (clipboard === 'copy') copyTerminalSelection()
+        else if (clipboard === 'paste') pasteIntoTerminal()
+        else selectAllTerminal()
         return
       }
 
       const action = findAction(bindings, event, isMac)
       if (!action) return
       event.preventDefault()
+      // 关键：必须 stopPropagation，否则 xterm 仍会把这个键发给 shell。
+      // 例如 Windows 上 Ctrl+Shift+D 若只 preventDefault，分屏会开、shell 那边也可能收到控制字符。
+      event.stopPropagation()
 
       switch (action) {
         case 'session.local':
@@ -315,8 +331,24 @@ export default function App() {
           break
       }
     }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
+    /*
+     * 必须用 **capture 阶段**，不能用默认的冒泡。
+     *
+     * xterm 的键盘处理（Keyboard.ts → _keyDown → evaluateKeyboardEvent）对
+     * 「Ctrl + 字母」这类它认得的组合会调用 `cancel(event, true)`，而 cancel 的实现是
+     * `preventDefault() + stopPropagation()`：
+     *
+     *   · macOS 上 ⌘ 组合会先命中 `_isThirdLevelShift()` 提前 return，从不 cancel
+     *     → 事件能冒泡到 window，所以 ⌘ 系快捷键一直是好的；
+     *   · Windows / Linux 上所有 Ctrl+字母（以及多数 Ctrl+Shift+字母）都会被 cancel
+     *     → 事件到不了 window，冒泡监听的全局快捷键就**全部失效**，
+     *       而 shell 那头照样收到了控制字符（Ctrl+D 变成 EOF）。
+     *
+     * 这正是「同样的快捷键 mac 能用、Windows 全废」的根因。capture 阶段先于
+     * textarea 上的监听执行，命中后 stopPropagation，xterm 就不会再处理这个键。
+     */
+    window.addEventListener('keydown', handler, true)
+    return () => window.removeEventListener('keydown', handler, true)
   }, [bindings, isMac])
 
   if (!ready) {
