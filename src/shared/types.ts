@@ -388,6 +388,15 @@ export interface PersistedTab {
 }
 
 /** 本地 shell 探测结果 */
+/**
+ * WSL 发行版的虚拟路径前缀（如 `wsl://Ubuntu`）。
+ *
+ * 发行版不是磁盘上的文件，但 `path` 同时被用作侧边栏的 key、隐藏列表的判定、
+ * 以及「默认终端程序」的存储值，所以需要一条**稳定且唯一**的字符串来代表它。
+ * 启动时由主进程解析成 `wsl.exe -d <发行版>`。
+ */
+export const WSL_SHELL_PREFIX = 'wsl://'
+
 export interface ShellInfo {
   path: string
   name: string

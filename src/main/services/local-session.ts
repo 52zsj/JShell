@@ -2,9 +2,10 @@ import os from 'node:os'
 import path from 'node:path'
 import * as pty from 'node-pty'
 import { mapErrorToChinese } from '../../shared/errors'
+import { WSL_SHELL_PREFIX } from '../../shared/types'
 import type { SessionCloseReason, SessionEvent, SessionStatus } from '../../shared/types'
 import { OutputBuffer } from './output-buffer'
-import { buildEnv, shellArgs } from './shells'
+import { buildEnv, resolveLocalCommand } from './shells'
 import type { TerminalSession } from './types'
 
 export interface LocalSessionDeps {
@@ -40,7 +41,9 @@ export class LocalSession implements TerminalSession {
     this.id = id
     this.shellPath = shellPath
     this.deps = deps
-    this.title = path.basename(shellPath).replace(/\.exe$/i, '') || '终端'
+    this.title = shellPath.startsWith(WSL_SHELL_PREFIX)
+      ? `WSL · ${shellPath.slice(WSL_SHELL_PREFIX.length)}`
+      : path.basename(shellPath).replace(/\.exe$/i, '') || '终端'
     this.subtitle = `本地 · ${os.homedir()}`
     this.output = new OutputBuffer((data) =>
       this.deps.emit({ type: 'data', sessionId: this.id, data })
@@ -60,7 +63,9 @@ export class LocalSession implements TerminalSession {
     this.emitStatus('connecting')
 
     try {
-      const proc = pty.spawn(this.shellPath, shellArgs(this.shellPath), {
+      // WSL 条目是 `wsl://Ubuntu` 这种伪路径，要翻译成 `wsl.exe -d Ubuntu --cd ~`
+      const command = resolveLocalCommand(this.shellPath)
+      const proc = pty.spawn(command.file, command.args, {
         name: 'xterm-256color',
         cols: size.cols,
         rows: size.rows,

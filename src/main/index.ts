@@ -7,6 +7,7 @@ import { createContext, registerIpc, type AppContext } from './ipc'
 import { applyPortableDataDir, getPortableState, portableHint, appVersion } from './services/app-env'
 import { copySelection, isTerminalFocused, pasteInto, selectAll } from './services/clipboard'
 import { syncLaunchAtLogin } from './services/login-item'
+import { detectShells } from './services/shells'
 import { installProcessHandlers, log, openLogDir, pruneLogsOnStartup } from './services/logger'
 import { configureNotifications } from './services/notifications'
 import { TrayService } from './services/tray'
@@ -353,6 +354,16 @@ app.whenReady().then(() => {
   // Windows 首次要编译 askpass 组件（1~2 秒），放到窗口出来之后后台做，
   // 避免用户点「同步」时主线程卡一下
   void ctx.rsync.preheat()
+
+  // 枚举本机 shell 时在 Windows 上要同步调用一次 `wsl.exe -l -q`（冷启动几百毫秒），
+  // 放到窗口出来之后预热一次，用户打开侧边栏/设置时就已经命中缓存
+  setTimeout(() => {
+    try {
+      detectShells()
+    } catch {
+      /* 探测失败不影响任何功能，侧边栏/设置页会退回只有 cmd 与 PowerShell */
+    }
+  }, 1500)
 
   trayService = new TrayService({
     showWindow: showMainWindow,

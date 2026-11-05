@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { WSL_SHELL_PREFIX } from '@shared/types'
 import type { AppSettings, AppTheme } from '@shared/types'
 import { useAppStore } from '../store'
 import { TERMINAL_THEMES } from '../themes'
@@ -164,7 +165,9 @@ export function SettingsDialog({ isMac, bindings, onClose, onOpenSync }: Props) 
               >
                 {(shells?.shells ?? []).map((shell) => (
                   <option key={shell.path} value={shell.path}>
-                    {shell.label} — {shell.path}
+                    {/* WSL 的 path 是 `wsl://发行版` 伪路径，对它只显示名字 */}
+                    {shell.label}
+                    {shell.path.startsWith(WSL_SHELL_PREFIX) ? '' : ` — ${shell.path}`}
                   </option>
                 ))}
               </select>

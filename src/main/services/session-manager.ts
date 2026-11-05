@@ -3,6 +3,7 @@ import type { OpenSessionResult, SessionEvent } from '../../shared/types'
 import { FlowControl } from './flow-control'
 import { LocalSession } from './local-session'
 import { log } from './logger'
+import { WSL_SHELL_PREFIX } from '../../shared/types'
 import { detectShells } from './shells'
 import { SshSession } from './ssh-session'
 import type { StoreService } from './store'
@@ -119,9 +120,10 @@ export class SessionManager {
     if (this.sessions.has(sessionId)) throw new Error('会话 id 冲突，请重试')
 
     const configured = this.store.getSettings().localShell
-    const target = shellPath || configured || detectShells().defaultShell
+    const target = shellPath || configured || detectShells({ includeWsl: false }).defaultShell
 
-    if (/[\\/]/.test(target) && !fs.existsSync(target)) {
+    // WSL 条目是 `wsl://发行版` 的伪路径，不是真实文件，跳过存在性校验
+    if (!target.startsWith(WSL_SHELL_PREFIX) && /[\\/]/.test(target) && !fs.existsSync(target)) {
       throw new Error(`本地 shell 不存在：${target}，请在设置中重新选择`)
     }
 
