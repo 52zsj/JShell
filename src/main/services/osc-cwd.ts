@@ -75,11 +75,33 @@ export class OscCwdScanner {
       }
       out += combined.slice(i, esc)
 
+      // OSC 的编号只能是数字（7 / 9 / 133 / 8 ...）。后面不是数字就说明这不是 OSC，
+      // 把 ESC] 当普通文本吐出去——否则二进制输出里偶发的 ESC] 会把后面所有内容
+      // 一直扣在 tail 里，表现为「输出延迟、内容错位」。
+      if (!/^\d/.test(combined.slice(esc + 2, esc + 3))) {
+        out += '\x1b]'
+        i = esc + 2
+        continue
+      }
+
       // params 以 ';' 结束，payload 以 BEL 或 ESC\ 结束
       const semi = combined.indexOf(';', esc + 2)
       if (semi === -1) {
-        i = esc
-        break
+        // 可能是分块截断（编号还没读完），等下一块；但已经读了 8 个字符还没有 ';'，
+        // 就不可能是合法的 OSC 编号了，同样按普通文本处理
+        if (n - (esc + 2) <= 8) {
+          i = esc
+          break
+        }
+        out += '\x1b]'
+        i = esc + 2
+        continue
+      }
+      if (semi - (esc + 2) > 8) {
+        // 编号过长，不是 OSC
+        out += '\x1b]'
+        i = esc + 2
+        continue
       }
       const params = combined.slice(esc + 2, semi)
       const bel = combined.indexOf('\x07', semi + 1)

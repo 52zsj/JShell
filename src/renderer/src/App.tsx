@@ -3,7 +3,7 @@ import { SESSION_STATUS_TEXT, type HostProfile } from '@shared/types'
 import { useAppStore, tabPaneCount, type TerminalTab } from './store'
 import { findLeaf, firstLeaf } from './pane-tree'
 import { serializeTabs } from './layout'
-import { cx, errorMessage, platformLabel } from './utils'
+import { cx, errorMessage, platformLabel, modKey } from './utils'
 import { findAction, formatBinding, resolveBindings } from './shortcuts'
 import { getFocusedSession, getTerminal } from './terminal-registry'
 import { Sidebar } from './components/Sidebar'
@@ -82,6 +82,8 @@ function StatusBar() {
 
 function EmptyState({ onCreateHost, onLocal }: { onCreateHost: () => void; onLocal: () => void }) {
   const shells = useAppStore((s) => s.shells)
+  const info = useAppStore((s) => s.info)
+  const isMac = (info?.platform ?? 'darwin') === 'darwin'
   const shellName = shells?.shells.find((item) => item.isDefault)?.name ?? '终端'
 
   return (
@@ -104,7 +106,7 @@ function EmptyState({ onCreateHost, onLocal }: { onCreateHost: () => void; onLoc
           <IconTerminal /> 本地终端自动识别系统 shell，SSH 与本地会话统一管理
         </li>
         <li>
-          <IconArrowRight /> 分屏：⌘/Ctrl + D 向右、⌘/Ctrl + Shift + D 向下
+          <IconArrowRight /> 分屏：{modKey(isMac)} + D 向右、{modKey(isMac)} + Shift + D 向下
         </li>
         <li>
           <IconKey /> 密码 / 私钥 / ssh-agent，凭据本地加密

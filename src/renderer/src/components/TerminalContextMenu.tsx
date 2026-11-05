@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useAppStore } from '../store'
-import { getTerminal } from '../terminal-registry'
+import { fitTerminal, getTerminal } from '../terminal-registry'
 
 export interface TerminalMenuTarget {
   x: number
@@ -34,6 +34,11 @@ export function TerminalContextMenu({ target, onClose }: Props) {
   const closeSession = useAppStore((s) => s.closeSession)
   const focusSession = useAppStore((s) => s.focusSession)
   const openFind = useAppStore((s) => s.openFind)
+
+  const info = useAppStore((s) => s.info)
+  // 键位提示必须跟着平台走：Windows 上显示 ⌘C 会让人以为快捷键坏了
+  const isMac = (info?.platform ?? 'darwin') === 'darwin'
+  const key = (mac: string, other: string): string => (isMac ? mac : other)
 
   const term = getTerminal(target.sessionId)
   const hasSelection = Boolean(term?.hasSelection())
@@ -84,26 +89,55 @@ export function TerminalContextMenu({ target, onClose }: Props) {
   }
 
   const items: MenuItem[] = [
-    { label: '复制', hint: '⌘C', disabled: !hasSelection, onClick: copy },
-    { label: '粘贴', hint: '⌘V', onClick: paste },
-    { label: '全选', hint: '⌘A', onClick: () => { term?.selectAll(); onClose() } },
-    { label: '在终端中搜索…', hint: '⌘F', onClick: () => { openFind(target.sessionId); onClose() } },
-    { label: '清屏', hint: '⌘K', onClick: () => { term?.clear(); onClose() } },
+    {
+      label: '复制',
+      // Windows 上 Ctrl+C 要留给终端发 SIGINT，复制走 Ctrl+Shift+C（与菜单 accelerator 一致）
+      hint: key('⌘C', 'Ctrl+Shift+C'),
+      disabled: !hasSelection,
+      onClick: copy
+    },
+    { label: '粘贴', hint: key('⌘V', 'Ctrl+V'), onClick: paste },
+    { label: '全选', hint: key('⌘A', 'Ctrl+A'), onClick: () => { term?.selectAll(); onClose() } },
+    {
+      label: '在终端中搜索…',
+      hint: key('⌘F', 'Ctrl+F'),
+      onClick: () => { openFind(target.sessionId); onClose() }
+    },
+    {
+      // 清屏没有全局快捷键（⌘K 在 shell 里是 kill-line，不能抢），所以不显示 hint
+      label: '清屏',
+      onClick: () => {
+        term?.clear()
+        // clear() 之后视口可能还停在历史位置，看起来就像「清了但光标在中间」
+        term?.scrollToBottom()
+        onClose()
+      }
+    },
+    {
+      // 出现残影/文字叠在一起时的逃生口：只重绘，不动缓冲区内容与 shell 状态
+      label: '重绘终端（出现残影时用）',
+      onClick: () => {
+        fitTerminal(target.sessionId)
+        const current = getTerminal(target.sessionId)
+        if (current) current.refresh(0, Math.max(0, current.rows - 1))
+        onClose()
+      }
+    },
     { divider: true, label: '' },
     {
       label: '向右分屏',
-      hint: '⌘D',
+      hint: key('⌘D', 'Ctrl+D'),
       onClick: () => { focusSession(target.sessionId); void splitPane('row'); onClose() }
     },
     {
       label: '向下分屏',
-      hint: '⌘⇧D',
+      hint: key('⌘⇧D', 'Ctrl+Shift+D'),
       onClick: () => { focusSession(target.sessionId); void splitPane('column'); onClose() }
     },
     { divider: true, label: '' },
     {
       label: '关闭当前分屏',
-      hint: '⌘⇧W',
+      hint: key('⌘⇧W', 'Ctrl+Shift+W'),
       danger: true,
       onClick: () => { void closeSession(target.sessionId); onClose() }
     }

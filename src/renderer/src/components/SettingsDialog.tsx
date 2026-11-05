@@ -4,7 +4,7 @@ import type { AppSettings, AppTheme } from '@shared/types'
 import { useAppStore } from '../store'
 import { TERMINAL_THEMES } from '../themes'
 import { formatBinding, SHORTCUTS, specFromEvent, type Bindings } from '../shortcuts'
-import { cx, errorMessage, formatBuildTime, platformLabel } from '../utils'
+import { cx, errorMessage, formatBuildTime, modKey, platformLabel } from '../utils'
 import { IconClose, IconRotate } from '../icons'
 
 interface Props {
@@ -488,7 +488,7 @@ export function SettingsDialog({ isMac, bindings, onClose, onOpenSync }: Props) 
               <div className="tile is-static">
                 <span className="tile-body">
                   <strong>路径直达</strong>
-                  <em>文件面板地址栏粘贴路径回车即可跳转（⌘/Ctrl + L 聚焦，支持 ~ 与 ..）</em>
+                  <em>文件面板地址栏粘贴路径回车即可跳转（{modKey(isMac)} + L 聚焦，支持 ~ 与 ..）</em>
                 </span>
               </div>
             </div>

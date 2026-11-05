@@ -112,3 +112,8 @@ export function formatBuildTime(value?: string): string {
   if (Number.isNaN(date.getTime())) return value
   return formatDateTime(date.getTime())
 }
+
+/** 修饰键的展示写法：macOS 用 ⌘，其他平台用 Ctrl */
+export function modKey(isMac: boolean): string {
+  return isMac ? '⌘' : 'Ctrl'
+}

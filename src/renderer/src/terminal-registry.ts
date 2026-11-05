@@ -92,6 +92,25 @@ export function acquireTerminal(sessionId: string, settings: AppSettings): Termi
     void window.jshell.sessions.resize(sessionId, cols, rows)
   })
 
+  // 清屏（ED 2 = 清当前屏，ED 3 = 连 scrollback 一起清）之后把视口拉回底部。
+  // 用户向上翻过历史再清屏时，视口可能停在 scrollback 中间，看起来就像
+  // 「已经清了但光标卡在中间/底部」。这里只滚视口，不改光标位置、也不拦截序列。
+  term.parser.registerCsiHandler({ final: 'J' }, (params) => {
+    const raw = params[0]
+    const mode = typeof raw === 'number' ? raw : Array.isArray(raw) ? (raw[0] ?? 0) : 0
+    if (mode === 2 || mode === 3) {
+      // 放到下一个任务：此时 xterm 才把清屏处理完，视口滚动才不会被它自己覆盖
+      setTimeout(() => {
+        try {
+          term.scrollToBottom()
+        } catch {
+          /* 终端已销毁 */
+        }
+      }, 0)
+    }
+    return false // 不拦截，交给 xterm 默认处理
+  })
+
   const entry: TerminalEntry = { term, host, fit, search }
   entries.set(sessionId, entry)
   flushPending(sessionId, term)
