@@ -26,6 +26,7 @@ import {
 } from './components/TerminalContextMenu'
 import { HostKeyDialog } from './components/HostKeyDialog'
 import { RsyncWizard } from './components/RsyncWizard'
+import { InputSyncControl } from './components/InputSyncControl'
 import { IconArrowRight, IconKey, IconLaptop, IconSettings, IconSync, IconTerminal } from './icons'
 
 function StatusBar() {
@@ -54,6 +55,7 @@ function StatusBar() {
         )}
       </div>
       <div className="status-right">
+        <InputSyncControl />
         {running.map((task) => (
           <span key={task.id} className="transfer">
             <span className="transfer-name">
@@ -144,6 +146,7 @@ export default function App() {
   const [syncOpen, setSyncOpen] = useState(false)
   const [menu, setMenu] = useState<TerminalMenuTarget | null>(null)
 
+  const inputSyncEnabled = useAppStore((s) => s.inputSyncEnabled)
   const platform = info?.platform ?? 'darwin'
   const isMac = platform === 'darwin'
   const bindings = useMemo(
@@ -372,7 +375,11 @@ export default function App() {
   const activePane = activeTab ? findLeaf(activeTab.root, activeTab.activeSessionId)?.pane : null
 
   return (
-    <div className="app" data-platform={platform}>
+    <div
+      className="app"
+      data-platform={platform}
+      data-input-sync={inputSyncEnabled ? 'on' : 'off'}
+    >
       <header className="titlebar">
         <div className="titlebar-left">
           <span className="titlebar-sub">

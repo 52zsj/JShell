@@ -1612,6 +1612,228 @@ textarea.input {
   box-shadow: 0 0 0 1px var(--border);
 }
 
+/* ---------------------------------------------------------------- 批量编辑（同屏广播输入） */
+.batch-edit {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.batch-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.batch-toggle:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: var(--bg-hover);
+}
+
+/* 开启状态必须是"看起来就不安全"：红底 + 红字，扫一眼就知道自己在广播 */
+.batch-toggle.is-on {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 55%, transparent);
+  background: color-mix(in srgb, var(--danger) 16%, transparent);
+}
+
+.batch-toggle-icon {
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.batch-scope {
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--danger) 40%, transparent);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.batch-scope:hover {
+  color: var(--text);
+  background: var(--bg-hover);
+}
+
+.batch-scope.is-empty {
+  color: var(--text-faint);
+  border-color: var(--border);
+  cursor: default;
+}
+
+.batch-picker {
+  position: absolute;
+  right: 0;
+  bottom: 26px;
+  width: 268px;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-elev);
+  box-shadow: var(--shadow);
+  z-index: 40;
+}
+
+.batch-picker-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 4px 8px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.batch-picker-count {
+  color: var(--text-faint);
+}
+
+.batch-list {
+  max-height: 220px;
+  overflow: auto;
+  margin-top: 2px;
+}
+
+.batch-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 26px;
+  padding: 0 6px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 12px;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.batch-row:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.batch-row.is-checked {
+  color: var(--text);
+}
+
+.batch-row.is-disabled {
+  color: var(--text-faint);
+  cursor: default;
+}
+
+.batch-check {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+  border-radius: 3px;
+  border: 1px solid var(--border-strong);
+  position: relative;
+}
+
+.batch-check.is-on {
+  border-color: var(--danger);
+  background: var(--danger);
+}
+
+.batch-check.is-on::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 0.5px;
+  width: 4px;
+  height: 7px;
+  border: solid var(--bg-elev);
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+}
+
+.batch-row-index {
+  width: 12px;
+  flex: 0 0 12px;
+  text-align: center;
+  font-family: var(--mono-font);
+  font-size: 10px;
+  color: var(--text-faint);
+}
+
+.batch-row-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.batch-row-hint {
+  font-size: 10px;
+  color: var(--text-faint);
+  flex: 0 0 auto;
+}
+
+.batch-empty {
+  padding: 8px 6px;
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.batch-warn {
+  margin: 8px 2px 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: var(--warn);
+}
+
+/* 标签页上的序号（批量编辑开启时显示，与 Ctrl+1..9 对应） */
+.tab-batch-index {
+  flex: 0 0 auto;
+  min-width: 14px;
+  padding: 0 3px;
+  border-radius: 4px;
+  background: var(--bg-active);
+  color: var(--text-faint);
+  font-family: var(--mono-font);
+  font-size: 9.5px;
+  line-height: 13px;
+  text-align: center;
+}
+
+/* 正在接收广播的标签：右侧一个小红点 */
+.tab-batch-dot {
+  flex: 0 0 auto;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--danger);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger) 22%, transparent);
+}
+
+/* 广播期间给整个终端区加一圈红边：视线离开状态栏也能察觉 */
+.app[data-input-sync='on'] .panes {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger) 45%, transparent);
+}
+
 /* 可拖动的弹窗：头部当把手 */
 .modal.is-draggable .modal-head {
   cursor: grab;

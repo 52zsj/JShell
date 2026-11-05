@@ -5,6 +5,7 @@ import { acquireTerminal, fitTerminal, getTerminal, hiddenScrollback, setFocused
 import { useAppStore } from '../store'
 import { acceptanceSequence, matchSuggestion, type SnippetSuggestion } from '../snippet-suggest'
 import { getTerminalTheme } from '../themes'
+import { broadcastInput } from '../input-sync'
 
 interface Props {
   sessionId: string
@@ -87,6 +88,23 @@ export function TerminalView({ sessionId, active, settings, onContextMenu }: Pro
     const snippetsNow = (): Snippet[] => useAppStore.getState().snippets
 
     const dataDisposable = entry.term.onData((data) => {
+      // 批量编辑：这份输入再发给其它选中的终端。
+      // 放在 onData 里，按键 / 粘贴 / 片段补全都自动覆盖，不必在各处重复处理；
+      // 本身所在终端的写入由 terminal-registry 负责（先写自己，所以不会有"自己慢半拍"的感觉）。
+      {
+        const state = useAppStore.getState()
+        if (state.inputSyncEnabled) {
+          broadcastInput(
+            sessionId,
+            data,
+            { enabled: true, tabs: state.tabs, selected: state.inputSyncTabs },
+            (targetSessionId, payload) => {
+              window.jshell.sessions.write(targetSessionId, payload)
+            }
+          )
+        }
+      }
+
       if (data === '\r' || data === '\n') localInput = ''
       else if (data === '\u007f') localInput = localInput.slice(0, -1)
       else if (data === '\u0015' || data === '\u001b') localInput = ''

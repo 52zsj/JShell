@@ -79,6 +79,14 @@ interface AppState {
   cwdBySession: Record<string, string>
   /** 自动同步的运行状态（主进程推送，界面只读） */
   autoSync: AutoSyncState | null
+  /**
+   * 批量编辑：在任意终端里敲的字符同时发给其它终端。
+   * 刻意只放内存、不进 settings —— 重启后一定是关闭状态，
+   * 免得「上次开过、这次忘了」，一条 rm 广播到所有机器上。
+   */
+  inputSyncEnabled: boolean
+  /** 参与广播的标签页；空数组表示全部（用户约定的「不选即全部」） */
+  inputSyncTabs: string[]
 
   bootstrap: () => Promise<void>
   setAutoSync: (state: AutoSyncState) => void
@@ -107,6 +115,13 @@ interface AppState {
   resizeSplit: (splitId: string, ratio: number) => void
   /** 拖拽吸附：把标签或单个分屏并到目标分屏的某一侧 */
   dock: (request: DockRequest) => void
+
+  /** 开 / 关批量编辑；关闭时顺手清空选择，避免下次打开时沿用旧目标 */
+  setInputSync: (enabled: boolean) => void
+  /** 勾选 / 取消某个标签页；已是「全部」状态时先展开成显式列表再移除 */
+  toggleInputSyncTab: (tabId: string) => void
+  /** 回到「全部」（清空选择） */
+  selectAllInputSyncTabs: () => void
 
   reloadHosts: () => Promise<void>
   reloadSnippets: () => Promise<void>
@@ -246,6 +261,8 @@ export const useAppStore = create<AppState>()((set, get) => {
     updateResult: null,
     updateChecking: false,
     closedTabs: [],
+    inputSyncEnabled: false,
+    inputSyncTabs: [],
     treeOpen: true,
     treeHeight: 260,
     cwdBySession: {},
@@ -517,6 +534,12 @@ export const useAppStore = create<AppState>()((set, get) => {
       forgetCwd(sessionIds)
       rememberClosed(tab)
       removeTab(tabId)
+      // 标签没了就别再留它在广播列表里（否则「已选 N 个」会一直偏大）
+      set((state) =>
+        state.inputSyncTabs.includes(tabId)
+          ? { inputSyncTabs: state.inputSyncTabs.filter((id) => id !== tabId) }
+          : {}
+      )
     },
 
     async reconnect(sessionId) {
@@ -620,6 +643,30 @@ export const useAppStore = create<AppState>()((set, get) => {
           )
         }))
       }
+    },
+
+    setInputSync(enabled) {
+      set({ inputSyncEnabled: enabled, inputSyncTabs: [] })
+    },
+
+    toggleInputSyncTab(tabId) {
+      set((state) => {
+        // 空数组代表「全部」。第一次取消某项时，要先把全部展开成显式列表，
+        // 否则「全部 - 1」会被算成「空列表」= 又是全部，点不动。
+        const current = state.inputSyncTabs.length
+          ? state.inputSyncTabs
+          : state.tabs.map((tab) => tab.id)
+        const next = current.includes(tabId)
+          ? current.filter((id) => id !== tabId)
+          : [...current, tabId]
+        // 全部都被取消勾选 → 回到「全部」这一语义（这也是用户要的规则）
+        const allSelected = next.length === 0 || next.length === state.tabs.length
+        return { inputSyncTabs: allSelected ? [] : next }
+      })
+    },
+
+    selectAllInputSyncTabs() {
+      set({ inputSyncTabs: [] })
     },
 
     toggleTree() {

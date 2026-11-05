@@ -27,6 +27,8 @@ export function TabBar({ onToggleSnippets, snippetsOpen }: Props) {
   const setPaneMode = useAppStore((s) => s.setPaneMode)
   const splitPane = useAppStore((s) => s.splitPane)
   const moveTab = useAppStore((s) => s.moveTab)
+  const inputSyncEnabled = useAppStore((s) => s.inputSyncEnabled)
+  const inputSyncTabs = useAppStore((s) => s.inputSyncTabs)
 
   const activeTab = tabs.find((tab) => tab.id === activeTabId)
   const activePane = activeTab ? findLeaf(activeTab.root, activeTab.activeSessionId)?.pane : null
@@ -35,8 +37,13 @@ export function TabBar({ onToggleSnippets, snippetsOpen }: Props) {
   return (
     <div className="tabbar">
       <div className="tab-list">
-        {tabs.map((tab) => {
+        {tabs.map((tab, index) => {
           const head = firstLeaf(tab.root).pane
+          // 批量编辑时这个标签是否真的在收广播（未连接的会被跳过，不能标成同步中）
+          const inSync =
+            inputSyncEnabled &&
+            (inputSyncTabs.length === 0 || inputSyncTabs.includes(tab.id)) &&
+            head.status === 'ready'
           const paneCount = tabPaneCount(tab)
           return (
             <div
@@ -45,7 +52,8 @@ export function TabBar({ onToggleSnippets, snippetsOpen }: Props) {
                 'tab',
                 tab.id === activeTabId && 'is-active',
                 head.status === 'error' && 'has-error',
-                draggingTabId === tab.id && 'is-dragging'
+                draggingTabId === tab.id && 'is-dragging',
+                inSync && 'is-batch-target'
               )}
               draggable
               onDragStart={(event) => {
@@ -83,7 +91,13 @@ export function TabBar({ onToggleSnippets, snippetsOpen }: Props) {
                 className={cx('tab-dot', `status-${head.status}`)}
                 style={head.color && head.status === 'ready' ? { background: head.color } : undefined}
               />
+              {inputSyncEnabled && index < 9 && (
+                <span className="tab-batch-index" title="批量编辑序号">
+                  {index + 1}
+                </span>
+              )}
               <span className="tab-title">{head.title}</span>
+              {inSync && <span className="tab-batch-dot" title="批量编辑：这个终端也会收到输入" />}
               {paneCount > 1 && <span className="tab-badge">{paneCount}</span>}
               <button
                 className="tab-close"
