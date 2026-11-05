@@ -2,7 +2,7 @@ import { SESSION_STATUS_TEXT } from '@shared/types'
 import { useState } from 'react'
 import { useAppStore, tabPaneCount } from '../store'
 import { DRAG_MIME, type DragPayload } from '../pane-dock'
-import { findLeaf, firstLeaf } from '../pane-tree'
+import { findLeaf, firstLeaf, leaves } from '../pane-tree'
 import { cx } from '../utils'
 import {
   IconClose,
@@ -28,7 +28,7 @@ export function TabBar({ onToggleSnippets, snippetsOpen }: Props) {
   const splitPane = useAppStore((s) => s.splitPane)
   const moveTab = useAppStore((s) => s.moveTab)
   const inputSyncEnabled = useAppStore((s) => s.inputSyncEnabled)
-  const inputSyncTabs = useAppStore((s) => s.inputSyncTabs)
+  const inputSyncSessions = useAppStore((s) => s.inputSyncSessions)
 
   const activeTab = tabs.find((tab) => tab.id === activeTabId)
   const activePane = activeTab ? findLeaf(activeTab.root, activeTab.activeSessionId)?.pane : null
@@ -39,11 +39,15 @@ export function TabBar({ onToggleSnippets, snippetsOpen }: Props) {
       <div className="tab-list">
         {tabs.map((tab, index) => {
           const head = firstLeaf(tab.root).pane
-          // 批量编辑时这个标签是否真的在收广播（未连接的会被跳过，不能标成同步中）
-          const inSync =
-            inputSyncEnabled &&
-            (inputSyncTabs.length === 0 || inputSyncTabs.includes(tab.id)) &&
-            head.status === 'ready'
+          // 这个标签里有几个分屏真的在收广播（只算已连接、已勾选的；分屏关了就不算）
+          const syncPanes = inputSyncEnabled
+            ? leaves(tab.root).filter(
+                (node) =>
+                  node.pane.status === 'ready' &&
+                  (inputSyncSessions.length === 0 || inputSyncSessions.includes(node.pane.sessionId))
+              ).length
+            : 0
+          const inSync = syncPanes > 0
           const paneCount = tabPaneCount(tab)
           return (
             <div
@@ -97,7 +101,16 @@ export function TabBar({ onToggleSnippets, snippetsOpen }: Props) {
                 </span>
               )}
               <span className="tab-title">{head.title}</span>
-              {inSync && <span className="tab-batch-dot" title="批量编辑：这个终端也会收到输入" />}
+              {inSync && (
+                <span
+                  className="tab-batch-dot"
+                  title={
+                    syncPanes > 1
+                      ? `批量编辑：本标签有 ${syncPanes} 个分屏会收到输入`
+                      : '批量编辑：这个终端也会收到输入'
+                  }
+                />
+              )}
               {paneCount > 1 && <span className="tab-badge">{paneCount}</span>}
               <button
                 className="tab-close"

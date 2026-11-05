@@ -1,12 +1,16 @@
 import type { TerminalTab } from './store'
-import { findLeaf, firstLeaf } from './pane-tree'
+import { leaves } from './pane-tree'
 
 /**
  * 批量编辑（同屏广播输入）：在任意一个终端里敲的字，同时发给其它选中的终端。
  *
- * 选谁：以**标签页**为单位（和 Ctrl+1..9 的序号一致），取每个标签当前聚焦的那个分屏。
- * 为什么按标签而不是按分屏：一个标签通常就是一台机器，用户嘴里的「1、2、3 号」说的是标签；
- * 标签内部分屏在做批量运维时反而是杂音，取「你正看着的那个分屏」最符合直觉。
+ * 选谁：粒度是**分屏（会话）**，但按标签分组展示。
+ *  - 多标签：每个标签按 Ctrl+1..9 的序号列出（1、2、3…）；
+ *  - 多分屏：一个标签里的每个分屏都单独参与，序号是「标签.分屏」（1.1、1.2…）。
+ *
+ * 为什么两个都要处理：批量运维时两种用法都存在 —— 有时是「三台机器各开一个标签」，
+ * 有时是「一台机器上左右开两个分屏」（比如一边跑部署、一边 tail 日志，两边都要同步输入）。
+ * 早期版本只取「标签当前聚焦的那个分屏」，等于把分屏里的其它终端全漏掉了。
  *
  * 「不选 = 全部」：`selected` 为空数组表示所有标签都参与。
  * 界面上也是这么写的（不勾任何一项时的提示就是「全部终端」）。
@@ -18,10 +22,13 @@ import { findLeaf, firstLeaf } from './pane-tree'
  */
 export interface InputSyncTarget {
   tabId: string
-  /** 该标签当前聚焦分屏的会话；理论上总有，留 null 以防布局异常 */
-  sessionId: string | null
+  sessionId: string
   /** 标签序号，1 起，与 Ctrl+1..9 对齐 */
-  index: number
+  tabIndex: number
+  /** 该分屏在标签内的序号，1 起；单分屏标签恒为 1 */
+  paneIndex: number
+  /** 标签内的分屏总数（决定序号显示成 `2` 还是 `2.1`） */
+  paneCount: number
   label: string
   /** 只有 ready 才能真收到输入 */
   ready: boolean
@@ -29,19 +36,40 @@ export interface InputSyncTarget {
   selected: boolean
 }
 
+/**
+ * 列出所有可广播的分屏。顺序 = 标签顺序 → 标签内的分屏顺序，
+ * 与界面上看到的排列一致，序号也据此生成。
+ */
 export function syncTargets(tabs: TerminalTab[], selected: string[]): InputSyncTarget[] {
   const all = selected.length === 0
-  return tabs.map((tab, i) => {
-    const pane = (findLeaf(tab.root, tab.activeSessionId) ?? firstLeaf(tab.root)).pane
-    return {
-      tabId: tab.id,
-      sessionId: pane?.sessionId ?? null,
-      index: i + 1,
-      label: pane?.title || pane?.subtitle || '终端',
-      ready: pane?.status === 'ready',
-      selected: all || selected.includes(tab.id)
-    }
+  const targets: InputSyncTarget[] = []
+  tabs.forEach((tab, tabIndex) => {
+    const panes = leaves(tab.root)
+    panes.forEach((leaf, paneIndex) => {
+      const pane = leaf.pane
+      targets.push({
+        tabId: tab.id,
+        sessionId: pane.sessionId,
+        tabIndex: tabIndex + 1,
+        paneIndex: paneIndex + 1,
+        paneCount: panes.length,
+        label: pane.title || pane.subtitle || '终端',
+        ready: pane.status === 'ready',
+        selected: all || selected.includes(pane.sessionId)
+      })
+    })
   })
+  return targets
+}
+
+/** 列表里的序号：单分屏标签是 `2`，多分屏是 `2.1` / `2.2` */
+export function targetLabel(target: InputSyncTarget): string {
+  return target.paneCount > 1 ? `${target.tabIndex}.${target.paneIndex}` : String(target.tabIndex)
+}
+
+/** 某个标签下有几个分屏在参与广播（标签上的红点 / 「N 个分屏」用） */
+export function syncingPaneCount(targets: InputSyncTarget[], tabId: string): number {
+  return targets.filter((t) => t.tabId === tabId && t.selected && t.ready).length
 }
 
 /** 真正会写入的会话：选中 + ready + 不是输入来源 + 去重 */
@@ -51,7 +79,7 @@ export function activeSyncSessions(
 ): string[] {
   const out: string[] = []
   for (const target of targets) {
-    if (!target.selected || !target.ready || !target.sessionId) continue
+    if (!target.selected || !target.ready) continue
     if (target.sessionId === sourceSessionId) continue
     if (!out.includes(target.sessionId)) out.push(target.sessionId)
   }

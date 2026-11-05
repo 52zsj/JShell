@@ -85,8 +85,11 @@ interface AppState {
    * 免得「上次开过、这次忘了」，一条 rm 广播到所有机器上。
    */
   inputSyncEnabled: boolean
-  /** 参与广播的标签页；空数组表示全部（用户约定的「不选即全部」） */
-  inputSyncTabs: string[]
+  /**
+   * 参与广播的**分屏会话**；空数组表示全部（用户约定的「不选即全部」）。
+   * 粒度用会话而不是标签：一个标签里可能分了屏，每个分屏都要能单独参与。
+   */
+  inputSyncSessions: string[]
 
   bootstrap: () => Promise<void>
   setAutoSync: (state: AutoSyncState) => void
@@ -118,10 +121,12 @@ interface AppState {
 
   /** 开 / 关批量编辑；关闭时顺手清空选择，避免下次打开时沿用旧目标 */
   setInputSync: (enabled: boolean) => void
-  /** 勾选 / 取消某个标签页；已是「全部」状态时先展开成显式列表再移除 */
-  toggleInputSyncTab: (tabId: string) => void
+  /** 勾选 / 取消某个分屏；已是「全部」状态时先展开成显式列表再移除 */
+  toggleInputSyncSession: (sessionId: string) => void
   /** 回到「全部」（清空选择） */
-  selectAllInputSyncTabs: () => void
+  selectAllInputSyncSessions: () => void
+  /** 关闭标签 / 分屏后，把它们的会话从广播目标里剔除 */
+  pruneInputSync: (sessionIds: string[]) => void
 
   reloadHosts: () => Promise<void>
   reloadSnippets: () => Promise<void>
@@ -262,7 +267,7 @@ export const useAppStore = create<AppState>()((set, get) => {
     updateChecking: false,
     closedTabs: [],
     inputSyncEnabled: false,
-    inputSyncTabs: [],
+    inputSyncSessions: [],
     treeOpen: true,
     treeHeight: 260,
     cwdBySession: {},
@@ -505,6 +510,8 @@ export const useAppStore = create<AppState>()((set, get) => {
       disposeTerminal(sessionId)
       forgetCwd([sessionId])
       if (get().findSessionId === sessionId) set({ findSessionId: null })
+      // 分屏关掉了就别再留它在广播列表里
+      get().pruneInputSync([sessionId])
 
       const nextRoot = removeLeaf(found.tab.root, sessionId)
       if (!nextRoot) {
@@ -534,12 +541,8 @@ export const useAppStore = create<AppState>()((set, get) => {
       forgetCwd(sessionIds)
       rememberClosed(tab)
       removeTab(tabId)
-      // 标签没了就别再留它在广播列表里（否则「已选 N 个」会一直偏大）
-      set((state) =>
-        state.inputSyncTabs.includes(tabId)
-          ? { inputSyncTabs: state.inputSyncTabs.filter((id) => id !== tabId) }
-          : {}
-      )
+      // 标签没了就别再留它的分屏在广播列表里（否则「已选 N 个」会一直偏大）
+      this.pruneInputSync(sessionIds)
     },
 
     async reconnect(sessionId) {
@@ -646,27 +649,41 @@ export const useAppStore = create<AppState>()((set, get) => {
     },
 
     setInputSync(enabled) {
-      set({ inputSyncEnabled: enabled, inputSyncTabs: [] })
+      set({ inputSyncEnabled: enabled, inputSyncSessions: [] })
     },
 
-    toggleInputSyncTab(tabId) {
+    toggleInputSyncSession(sessionId) {
       set((state) => {
-        // 空数组代表「全部」。第一次取消某项时，要先把全部展开成显式列表，
-        // 否则「全部 - 1」会被算成「空列表」= 又是全部，点不动。
-        const current = state.inputSyncTabs.length
-          ? state.inputSyncTabs
-          : state.tabs.map((tab) => tab.id)
-        const next = current.includes(tabId)
-          ? current.filter((id) => id !== tabId)
-          : [...current, tabId]
-        // 全部都被取消勾选 → 回到「全部」这一语义（这也是用户要的规则）
-        const allSelected = next.length === 0 || next.length === state.tabs.length
-        return { inputSyncTabs: allSelected ? [] : next }
+        // 空数组代表「全部」。第一次取消某项时，要先展开成显式列表（展开的是**所有分屏**，
+        // 不只是每个标签的第一个），否则「全部 - 1」会被算成空列表 = 又是全部，点不动。
+        const allSessionIds = state.tabs.flatMap((tab) => leaves(tab.root).map((n) => n.pane.sessionId))
+        const current = state.inputSyncSessions.length ? state.inputSyncSessions : allSessionIds
+        const next = current.includes(sessionId)
+          ? current.filter((id) => id !== sessionId)
+          : [...current, sessionId]
+        // 全勾 / 全不勾都回到「全部」的语义
+        const allSelected = next.length === 0 || next.length === allSessionIds.length
+        return { inputSyncSessions: allSelected ? [] : next }
       })
     },
 
-    selectAllInputSyncTabs() {
-      set({ inputSyncTabs: [] })
+    selectAllInputSyncSessions() {
+      set({ inputSyncSessions: [] })
+    },
+
+    pruneInputSync(sessionIds) {
+      set((state) => {
+        if (!state.inputSyncEnabled || state.inputSyncSessions.length === 0) return {}
+        const next = state.inputSyncSessions.filter((id) => !sessionIds.includes(id))
+        if (next.length === state.inputSyncSessions.length) return {}
+        // 注意：空数组代表「全部」。如果「用户明确只选了两个、结果两个都关了」，
+        // 直接留空会变成全选 —— 那是危险的意外。这种情况下宁可整个关掉广播。
+        if (next.length === 0) {
+          state.pushToast('批量编辑已关闭：参与同步的终端都被关掉了', 'info')
+          return { inputSyncSessions: [], inputSyncEnabled: false }
+        }
+        return { inputSyncSessions: next }
+      })
     },
 
     toggleTree() {

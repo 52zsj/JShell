@@ -1819,7 +1819,7 @@ textarea.input {
   text-align: center;
 }
 
-/* 正在接收广播的标签：右侧一个小红点 */
+/* 正在接收广播的标签：一个小红点（分屏数量旁边的 tag-badge 已经显示了，这里不再重复） */
 .tab-batch-dot {
   flex: 0 0 auto;
   width: 5px;
@@ -1827,6 +1827,34 @@ textarea.input {
   border-radius: 50%;
   background: var(--danger);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger) 22%, transparent);
+}
+
+/* 选择面板里的标签分组标题（只有多分屏的标签才显示） */
+.batch-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0 2px;
+  padding: 0 6px;
+  font-size: 10px;
+  color: var(--text-faint);
+}
+
+.batch-group-index {
+  min-width: 14px;
+  text-align: center;
+  font-family: var(--mono-font);
+  font-size: 9.5px;
+  color: var(--text-dim);
+}
+
+.batch-group-label {
+  letter-spacing: 0.02em;
+}
+
+/* 分组下的分屏行稍微缩进，视觉上属于上面那个标签 */
+.batch-row.is-child {
+  padding-left: 18px;
 }
 
 /* 广播期间给整个终端区加一圈红边：视线离开状态栏也能察觉 */

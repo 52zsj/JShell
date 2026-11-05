@@ -97,7 +97,7 @@ export function TerminalView({ sessionId, active, settings, onContextMenu }: Pro
           broadcastInput(
             sessionId,
             data,
-            { enabled: true, tabs: state.tabs, selected: state.inputSyncTabs },
+            { enabled: true, tabs: state.tabs, selected: state.inputSyncSessions },
             (targetSessionId, payload) => {
               window.jshell.sessions.write(targetSessionId, payload)
             }
