@@ -21,6 +21,16 @@ export class SessionManager {
   private readonly sessions = new Map<string, TerminalSession>()
   /** 每个会话一个流控账本：渲染端确认了多少、还欠多少 */
   private readonly flows = new Map<string, FlowControl>()
+  /**
+   * 渲染层在会话建好之前就测完尺寸发来的 resize。
+   *
+   * 时序问题：TerminalView 一挂载就会 fit 并立刻发 resize，而会话创建走的是
+   * `await sessions.open(...)`，主进程这时还没把会话放进表里。以前这种 resize
+   * 被 `?.` 静默丢掉 —— PTY 停在初始 100×30，界面却是真实尺寸（比如 40 行），
+   * 于是「内容只占到屏幕 3/4、光标卡在中部、回车也拉不回来」。
+   * 现在先暂存，建会话时直接用它作为初始尺寸（一次到位，也不会让 ConPTY 白重绘一次）。
+   */
+  private readonly pendingSize = new Map<string, { cols: number; rows: number }>()
   private readonly store: StoreService
   private readonly emit: (event: SessionEvent) => void
   private flowTimer?: NodeJS.Timeout
@@ -97,8 +107,9 @@ export class SessionManager {
     this.sessions.set(sessionId, session)
     this.store.touchHost(hostId)
 
-    // 后台握手，错误已由会话自身以 status 事件上报
-    void session.connect(size).catch(() => undefined)
+    // 后台握手，错误已由会话自身以 status 事件上报。
+    // 尺寸优先用渲染层已经量好的——它比建会话更早完成测量。
+    void session.connect(this.initialSize(sessionId, size)).catch(() => undefined)
 
     return {
       sessionId,
@@ -129,7 +140,11 @@ export class SessionManager {
 
     const session = new LocalSession(sessionId, target, { emit: this.emit })
     this.sessions.set(sessionId, session)
-    session.start(size)
+    const localSize = this.initialSize(sessionId, size)
+    session.start(localSize)
+    // 记一条尺寸日志：终端「内容只占屏幕一部分、光标卡在中间」时，
+    // 对齐这里的 cols×rows 与界面实际行数就能立刻判断是不是 PTY 尺寸没跟上
+    log.info(`本地终端已创建：${target} ${localSize.cols}x${localSize.rows}`)
 
     return {
       sessionId,
@@ -162,6 +177,27 @@ export class SessionManager {
 
   // ---------------------------------------------------------------- 销毁
 
+  /** 渲染层请求改变尺寸；会话还没建好时先记下来，建好后立刻应用 */
+  resize(sessionId: string, cols: number, rows: number): void {
+    const session = this.sessions.get(sessionId)
+    if (!session) {
+      this.pendingSize.set(sessionId, { cols, rows })
+      return
+    }
+    session.resize(cols, rows)
+  }
+
+  /** 取会话的初始尺寸：优先用渲染层已经量好的，避免先按 100×30 建屏再重建 */
+  private initialSize(
+    sessionId: string,
+    fallback: { cols: number; rows: number }
+  ): { cols: number; rows: number } {
+    const pending = this.pendingSize.get(sessionId)
+    if (!pending) return fallback
+    this.pendingSize.delete(sessionId)
+    return pending
+  }
+
   close(sessionId: string): void {
     const session = this.sessions.get(sessionId)
     if (!session) return
@@ -169,6 +205,7 @@ export class SessionManager {
     this.sessions.delete(sessionId)
     // 流控账本随会话一起丢弃，避免 Map 长期持有已关闭会话
     this.flows.delete(sessionId)
+    this.pendingSize.delete(sessionId)
   }
 
   /**
@@ -188,5 +225,6 @@ export class SessionManager {
     this.sessions.clear()
     // 账本跟着一起清，避免残留条目被每秒 tick 白跑
     this.flows.clear()
+    this.pendingSize.clear()
   }
 }

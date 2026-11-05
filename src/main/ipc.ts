@@ -308,7 +308,8 @@ export function registerIpc(ctx: AppContext, getWindow: () => BrowserWindow | nu
     sessions.get(sessionId)?.write(data)
   })
   handle(IPC.sessionResize, (sessionId: string, cols: number, rows: number) =>
-    sessions.get(sessionId)?.resize(cols, rows)
+    // 走 SessionManager.resize：会话还没建好时会暂存，建好后自动应用
+    sessions.resize(sessionId, cols, rows)
   )
 
   // ------------------------------------------------------------------- SFTP

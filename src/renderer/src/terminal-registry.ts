@@ -21,6 +21,8 @@ interface TerminalEntry {
   host: HTMLDivElement
   fit: FitAddon
   search: SearchAddon
+  /** 「补 fit」的重试定时器；同时保证同一时刻只有一个重试循环 */
+  refitTimer?: number
 }
 
 const entries = new Map<string, TerminalEntry>()
@@ -132,11 +134,50 @@ export function fitTerminal(sessionId: string): void {
   if (!entry) return
   const parent = entry.host.parentElement
   if (!parent || parent.clientWidth < 40 || parent.clientHeight < 40) return
-  try {
-    entry.fit.fit()
-  } catch {
-    /* 忽略测量失败 */
+
+  const attempt = (): void => {
+    try {
+      entry.fit.fit()
+    } catch {
+      /* 忽略测量失败 */
+    }
   }
+
+  /**
+   * 判断这一轮 fit 是不是真的到位了：xterm 的实际绘制区高度应当接近容器高度。
+   *
+   * 为什么不能只看「fit() 有没有抛错」：它在字符尺寸还没测量出来时会**静默地什么都不做**
+   * ——不报错也不返回失败。而容器尺寸此后通常不再变化，ResizeObserver 不会再触发，
+   * 于是 xterm 就永远停在默认的 80×24：界面一屏 36 行、xterm 只认 24 行、
+   * PTY 又是另一个尺寸，行号空间一错开，就表现为「内容只占屏幕一部分、
+   * 光标卡在中间、回车也拉不回来、文字互相覆盖」。
+   *
+   * 这个竞态跟机器快慢有关（机器快时反而更容易撞上：点在字体/字符尺寸就绪之前），
+   * 所以固定「重试 2 次」并不可靠 —— 改成「没到位就继续，最多 3.5 秒」。
+   */
+  const fitted = (): boolean => {
+    const screen = entry.term.element?.querySelector('.xterm-screen') as HTMLElement | null
+    if (!screen) return false
+    const target = parent.clientHeight
+    const actual = screen.clientHeight
+    // 允许半行左右的误差（.xterm 自身还有内边距）
+    return actual > 0 && Math.abs(actual - target) <= 24
+  }
+
+  attempt()
+  if (fitted() || entry.refitTimer !== undefined) return
+
+  const deadline = Date.now() + 3500
+  const tick = (): void => {
+    attempt()
+    const el = entries.get(sessionId)
+    if (!el || fitted() || Date.now() > deadline) {
+      if (el) el.refitTimer = undefined
+      return
+    }
+    el.refitTimer = window.setTimeout(tick, 120)
+  }
+  entry.refitTimer = window.setTimeout(tick, 120)
 }
 
 /** 会话关闭时调用，释放 xterm 与 DOM */
@@ -144,6 +185,7 @@ export function disposeTerminal(sessionId: string): void {
   const entry = entries.get(sessionId)
   pending.delete(sessionId)
   if (!entry) return
+  if (entry.refitTimer !== undefined) window.clearTimeout(entry.refitTimer)
   entries.delete(sessionId)
   entry.host.remove()
   entry.term.dispose()
