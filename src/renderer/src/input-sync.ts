@@ -62,6 +62,13 @@ export function syncTargets(tabs: TerminalTab[], selected: string[]): InputSyncT
   return targets
 }
 
+/** 某个标签下所有分屏的会话 id（快捷键「只对当前标签生效」时用） */
+export function tabSessionIds(tabs: TerminalTab[], tabId: string | null): string[] {
+  const tab = tabs.find((item) => item.id === tabId)
+  if (!tab) return []
+  return leaves(tab.root).map((node) => node.pane.sessionId)
+}
+
 /** 列表里的序号：单分屏标签是 `2`，多分屏是 `2.1` / `2.2` */
 export function targetLabel(target: InputSyncTarget): string {
   return target.paneCount > 1 ? `${target.tabIndex}.${target.paneIndex}` : String(target.tabIndex)

@@ -85,11 +85,17 @@ export function InputSyncControl() {
 
       {enabled && (
         <button
-          className={cx('batch-scope', others === 0 && 'is-empty')}
-          title="选择要把输入同步给哪些标签 / 分屏"
+          // 始终显示真实范围（已选 N 个），否则「单终端时显示无其它可用终端」会把入口本身藏起来，
+          // 用户想点进去加终端反而找不到地方
+          className={cx('batch-scope', others === 0 && 'is-idle')}
+          title={
+            others === 0
+              ? '当前范围里没有别的终端，广播暂时不会产生效果。点这里可以再加入其它终端'
+              : '选择要把输入同步给哪些标签 / 分屏'
+          }
           onClick={() => setOpen((prev) => !prev)}
         >
-          {others === 0 ? '无其它可用终端' : scopeLabel}
+          {scopeLabel}
         </button>
       )}
 
@@ -148,6 +154,12 @@ export function InputSyncControl() {
             ))}
             {targets.length === 0 && <div className="batch-empty">还没有打开的终端</div>}
           </div>
+
+          {others === 0 && (
+            <p className="batch-idle">
+              当前范围里只有 1 个终端，广播暂时没有效果 —— 再勾选至少一个其它终端。
+            </p>
+          )}
 
           <p className="batch-warn">
             开启期间每条输入都会发给以上终端；要跑破坏性命令前先关掉。

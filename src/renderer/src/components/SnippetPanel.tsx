@@ -3,6 +3,7 @@ import { useAppStore } from '../store'
 import { errorMessage } from '../utils'
 import { IconClose, IconCode, IconPlus, IconTrash, IconEdit, IconClipboard } from '../icons'
 import { getFocusedSession, getTerminal } from '../terminal-registry'
+import { sendInput } from '../terminal-input'
 
 interface Props {
   onClose: () => void
@@ -57,7 +58,8 @@ export function SnippetPanel({ onClose }: Props) {
       pushToast('请先打开一个会话', 'error')
       return
     }
-    window.jshell.sessions.write(sessionId, text)
+    // 同上：片段「填入」属于代替用户输入，批量编辑开着时要一起发出去
+    sendInput(sessionId, text)
     getTerminal(sessionId)?.focus()
     pushToast('已填入终端，按回车执行', 'success')
   }

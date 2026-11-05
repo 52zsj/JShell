@@ -28,6 +28,7 @@ import {
   type PaneNode,
   type PaneState
 } from './pane-tree'
+import { tabSessionIds } from './input-sync'
 import { restoreTabs, serializeTabs } from './layout'
 import { dockTabs, type DockRequest } from './pane-dock'
 import { disposeTerminal, pushTerminalData } from './terminal-registry'
@@ -125,6 +126,11 @@ interface AppState {
   toggleInputSyncSession: (sessionId: string) => void
   /** 回到「全部」（清空选择） */
   selectAllInputSyncSessions: () => void
+  /**
+   * 快捷键开关批量编辑：**只把当前标签的分屏**纳入范围（不广播到所有标签）。
+   * 想同步到别的标签/分屏，用状态栏的列表点选 —— 键盘一下就把命令发给全部机器太危险了。
+   */
+  toggleInputSyncCurrentTab: () => void
   /** 关闭标签 / 分屏后，把它们的会话从广播目标里剔除 */
   pruneInputSync: (sessionIds: string[]) => void
 
@@ -669,6 +675,27 @@ export const useAppStore = create<AppState>()((set, get) => {
 
     selectAllInputSyncSessions() {
       set({ inputSyncSessions: [] })
+    },
+
+    toggleInputSyncCurrentTab() {
+      const state = get()
+      if (state.inputSyncEnabled) {
+        set({ inputSyncEnabled: false, inputSyncSessions: [] })
+        return
+      }
+      const sessionIds = tabSessionIds(state.tabs, state.activeTabId)
+      if (sessionIds.length === 0) {
+        state.pushToast('没有打开的终端，无法开启批量编辑', 'error')
+        return
+      }
+      // 范围锁在「当前标签的分屏」：快捷键不应该一步就把命令发给所有机器
+      set({ inputSyncEnabled: true, inputSyncSessions: sessionIds })
+      if (sessionIds.length < 2) {
+        state.pushToast(
+          '批量编辑已开启（当前标签只有 1 个终端）。要同步到其它终端，点状态栏「已选 1 个」勾选',
+          'info'
+        )
+      }
     },
 
     pruneInputSync(sessionIds) {

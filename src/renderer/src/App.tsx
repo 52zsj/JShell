@@ -286,6 +286,9 @@ export default function App() {
         case 'session.host':
           setEditor({})
           break
+        case 'batch.toggle':
+          state.toggleInputSyncCurrentTab()
+          break
         case 'pane.splitRight':
           void state.splitPane('row')
           break

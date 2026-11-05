@@ -25,7 +25,7 @@
 - **拖拽吸附**：把标签拖到任意分屏的左/右/上/下边缘，即可把整个终端并进来（3 个终端合成 1 个标签）
 - **布局记忆**：退出前的标签与分屏结构会在下次启动时恢复（只还原结构，不自动重连）
 - **多标签会话**：`⌘ 1..9`（Windows `Ctrl 1..9`）快速切换，中键关闭
-- **批量编辑**：状态栏一键开启，输入同时发给多个终端；多标签与多分屏都支持（按 `1` / `1.2` 勾选），默认全部、默认关闭、不落盘，开启时整屏红框提示
+- **批量编辑**：`⌘⇧S` / `Ctrl+Shift+S` 或状态栏一键开启，输入同时发给多个终端；多标签与多分屏都支持（按 `1` / `1.2` 勾选）；快捷键只作用于当前标签，其余靠点选；默认关闭、不落盘，开启时整屏红框提示
 - **快捷键可改**：所有动作都能在设置里重新录制绑定，冲突会高亮提示
 - **终端内核**：xterm.js（VS Code 同款），256 色 / 真彩色、`vim`、`htop`、`tmux` 备用屏幕、缩放重排
 - **终端搜索**：`⌘F`（Windows `Ctrl+Shift+F`）增量搜索，高亮匹配、显示 `当前/总数`、Enter/⇧Enter 跳转
@@ -102,9 +102,9 @@ node scripts/build-all.mjs --dir                       # 只产出免安装目�
 
 | 平台 | 安装版 | 便携版 |
 | --- | --- | --- |
-| macOS | `JShell-0.11.30-arm64.dmg` / `.zip`、`x64` 同名文件 | `JShell-0.11.30-<架构>-portable.zip`（解压即用） |
-| Windows | `JShell-0.11.30-x64-setup.exe`（简体中文 NSIS 向导） | `JShell-0.11.30-x64-portable.exe`（单文件） |
-| Linux | `JShell-0.11.30-x64.AppImage` / `.deb` | — |
+| macOS | `JShell-0.11.31-arm64.dmg` / `.zip`、`x64` 同名文件 | `JShell-0.11.31-<架构>-portable.zip`（解压即用） |
+| Windows | `JShell-0.11.31-x64-setup.exe`（简体中文 NSIS 向导） | `JShell-0.11.31-x64-portable.exe`（单文件） |
+| Linux | `JShell-0.11.31-x64.AppImage` / `.deb` | — |
 
 ### 发版（推 GitHub Release）
 
@@ -160,6 +160,7 @@ npm run release:tag                      # 打 tag v<版本> 并推送 main 与 
 | 在终端中搜索 | `⌘F` | `Ctrl+Shift+F` |
 | 关闭标签页 | `⌘W` | `Ctrl+F4` |
 | 重新打开关闭的标签 | `⌘⇧T` | `Alt+Shift+T` |
+| 批量编辑（同屏输入，只作用于当前标签） | `⌘⇧S` | `Ctrl+Shift+S` |
 | 切换标签页（固定绑定） | `⌘ 1..9` | `Ctrl 1..9` |
 | 命令片段 | `⌘B` | `Ctrl+Shift+K` |
 | 打开设置 | `⌘,` | `Ctrl+,` |

@@ -6,6 +6,7 @@ import { useAppStore } from '../store'
 import { acceptanceSequence, matchSuggestion, type SnippetSuggestion } from '../snippet-suggest'
 import { getTerminalTheme } from '../themes'
 import { broadcastInput } from '../input-sync'
+import { sendInput } from '../terminal-input'
 
 interface Props {
   sessionId: string
@@ -131,7 +132,8 @@ export function TerminalView({ sessionId, active, settings, onContextMenu }: Pro
       if (!current) return true
       event.preventDefault()
       // 先退格删掉已经输入的触发词，再写补全后的整行；不代为回车，交给用户确认
-      window.jshell.sessions.write(sessionId, acceptanceSequence(current))
+      // 走 sendInput 而不是直接 write：片段补全也要遵守批量编辑
+      sendInput(sessionId, acceptanceSequence(current))
       applySuggestion(null)
       return false
     })

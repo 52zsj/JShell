@@ -1672,10 +1672,20 @@ textarea.input {
   background: var(--bg-hover);
 }
 
-.batch-scope.is-empty {
-  color: var(--text-faint);
-  border-color: var(--border);
-  cursor: default;
+/* 范围里没有别的终端：用琥珀色提示"目前无效"，但保持可点（入口不能藏） */
+.batch-scope.is-idle {
+  color: var(--warn);
+  border-color: color-mix(in srgb, var(--warn) 45%, transparent);
+}
+
+.batch-idle {
+  margin: 8px 2px 0;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--warn) 12%, transparent);
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: var(--warn);
 }
 
 .batch-picker {

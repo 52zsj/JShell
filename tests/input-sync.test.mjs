@@ -5,6 +5,7 @@ import {
   broadcastInput,
   syncTargets,
   syncingPaneCount,
+  tabSessionIds,
   targetLabel
 } from '../src/renderer/src/input-sync.ts'
 
@@ -197,4 +198,31 @@ test('只有一个终端时开启无害（不写、不报错）', () => {
   )
   assert.equal(count, 0)
   assert.deepEqual(written, [])
+})
+
+// ---------------------------------------------------------------- 快捷键「只对当前标签」
+
+test('tabSessionIds 返回该标签下所有分屏的会话（快捷关键用来锁范围）', () => {
+  const mixed = [splitTab('t1', ['a', 'b']), tab('t2', 'c')]
+  assert.deepEqual(tabSessionIds(mixed, 't1'), ['a', 'b'])
+  assert.deepEqual(tabSessionIds(mixed, 't2'), ['c'])
+  assert.deepEqual(tabSessionIds(mixed, 'nope'), [])
+  assert.deepEqual(tabSessionIds(mixed, null), [])
+})
+
+test('锁在单个标签时的广播效果：同标签分屏互发，跨标签不受影响', () => {
+  const mixed = [splitTab('t1', ['a', 'b']), tab('t2', 'c')]
+  const scope = tabSessionIds(mixed, 't1')
+  const written = []
+  const count = broadcastInput('a', 'ls\r', { enabled: true, tabs: mixed, selected: scope }, (id, d) =>
+    written.push([id, d])
+  )
+  assert.equal(count, 1)
+  assert.deepEqual(written, [['b', 'ls\r']])
+})
+
+test('单分屏标签锁范围时没有可写目标（调用方要给用户提示）', () => {
+  const mixed = [tab('t1', 'a'), tab('t2', 'b')]
+  const scope = tabSessionIds(mixed, 't1')
+  assert.equal(activeSyncSessions(syncTargets(mixed, scope), 'a').length, 0)
 })

@@ -44,6 +44,14 @@ export const SHORTCUTS: ShortcutDef[] = [
     defaultKeysWin: 'Ctrl+Shift+N'
   },
   {
+    id: 'batch.toggle',
+    label: '批量编辑（同屏输入）',
+    group: '会话',
+    defaultKeys: 'Mod+Shift+S',
+    // S = Sync；Ctrl+Shift+S 在 shell 里无绑定（裸 Ctrl+S 是流控 XOFF，绝不能抢）
+    defaultKeysWin: 'Ctrl+Shift+S'
+  },
+  {
     id: 'pane.splitRight',
     label: '向右分屏',
     group: '分屏',
