@@ -86,6 +86,20 @@ export class TunnelManager {
     return info
   }
 
+  /** 全部规则 + 运行状态：界面用它渲染「已配置 / 监听中」 */
+  list(): TunnelRuntimeInfo[] {
+    return this.store.listTunnels().map((cfg) => {
+      const running = this.active.get(cfg.id)
+      return this.toInfo(running ? running.cfg : cfg, running ? 'listening' : 'closed')
+    })
+  }
+
+  /** 删除规则：先停掉监听，再从配置里移除 */
+  remove(tunnelId: string): void {
+    this.stop(tunnelId)
+    this.store.removeTunnel(tunnelId)
+  }
+
   stop(tunnelId: string): void {
     const entry = this.active.get(tunnelId)
     if (!entry) return

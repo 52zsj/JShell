@@ -16,6 +16,7 @@ import type {
   SessionEvent,
   ShellsResult,
   Snippet,
+  SshConfigImportResult,
   TextFile,
   TunnelConfig,
   TunnelRuntimeInfo,
@@ -52,6 +53,11 @@ export interface JShellApi {
     trustKey(host: string, port: number, algorithm: string, fingerprint: string): Promise<void>
     /** 保存前测试连接；不写入配置、不记录指纹 */
     test(draft: HostDraft): Promise<ConnectionTestResult>
+    /**
+     * 从 `~/.ssh/config` 批量导入主机。
+     * 跳过通配符块、Match 块与已存在的主机（host+port+username 相同）。
+     */
+    importSshConfig(): Promise<SshConfigImportResult>
   }
   sessions: {
     /** 打开 SSH 会话；sessionId 由渲染进程生成，避免事件早于标签页创建 */
@@ -177,10 +183,12 @@ export interface JShellApi {
     remove(id: string): Promise<void>
   }
   tunnels: {
-    /** 已配置的转发规则 */
-    list(): Promise<TunnelConfig[]>
+    /** 已配置的转发规则（含运行状态） */
+    list(): Promise<TunnelRuntimeInfo[]>
     start(sessionId: string, cfg: Omit<TunnelConfig, 'id' | 'enabled'> & { id?: string }): Promise<TunnelRuntimeInfo>
     stop(tunnelId: string): Promise<void>
+    /** 删除规则（会先停止监听） */
+    remove(tunnelId: string): Promise<void>
   }
   terminal: {
     /**

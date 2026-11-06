@@ -1612,6 +1612,109 @@ textarea.input {
   box-shadow: 0 0 0 1px var(--border);
 }
 
+/* ---------------------------------------------------------------- 端口转发面板 */
+.tunnel-modal {
+  width: 640px;
+}
+
+.tunnel-session {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 2px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.tunnel-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.tunnel-form .field {
+  margin: 0;
+}
+
+.tunnel-arrow {
+  padding-bottom: 7px;
+  color: var(--text-faint);
+}
+
+.tunnel-list {
+  margin-top: 16px;
+}
+
+.tunnel-list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.tunnel-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0 6px;
+  border-radius: 6px;
+}
+
+.tunnel-row:hover {
+  background: var(--bg-hover);
+}
+
+.tunnel-rule {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.tunnel-empty {
+  padding: 8px 6px;
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.notice code,
+.tunnel-modal code {
+  padding: 0 3px;
+  border-radius: 3px;
+  background: var(--bg-active);
+  font-family: var(--mono-font);
+  font-size: 11px;
+}
+
+/* 弹窗底部里放说明文字时撑满剩余宽度 */
+.notice.grow {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 小号按钮（列表行内的操作） */
+.btn.tiny {
+  height: 22px;
+  padding: 0 8px;
+  font-size: 11px;
+}
+
+.btn.danger {
+  color: var(--danger);
+}
+
+.btn.danger:hover {
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+}
+
 /* ---------------------------------------------------------------- 批量编辑（同屏广播输入） */
 .batch-edit {
   position: relative;

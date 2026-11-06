@@ -18,7 +18,8 @@ const api: JShellApi = {
     remove: (id) => ipcRenderer.invoke(IPC.hostRemove, id),
     trustKey: (host, port, algorithm, fingerprint) =>
       ipcRenderer.invoke(IPC.hostTrustKey, host, port, algorithm, fingerprint),
-    test: (draft) => ipcRenderer.invoke(IPC.hostTest, draft)
+    test: (draft) => ipcRenderer.invoke(IPC.hostTest, draft),
+    importSshConfig: () => ipcRenderer.invoke(IPC.hostImportSshConfig)
   },
   sessions: {
     open: (hostId, size, sessionId) => ipcRenderer.invoke(IPC.sessionOpen, hostId, size, sessionId),
@@ -111,7 +112,8 @@ const api: JShellApi = {
   tunnels: {
     list: () => ipcRenderer.invoke(IPC.tunnelList),
     start: (sessionId, cfg) => ipcRenderer.invoke(IPC.tunnelStart, sessionId, cfg),
-    stop: (tunnelId) => ipcRenderer.invoke(IPC.tunnelStop, tunnelId)
+    stop: (tunnelId) => ipcRenderer.invoke(IPC.tunnelStop, tunnelId),
+    remove: (tunnelId) => ipcRenderer.invoke(IPC.tunnelRemove, tunnelId)
   },
   terminal: {
     setFocused: (focused) => ipcRenderer.send(IPC.terminalFocus, focused)

@@ -12,6 +12,7 @@ import type {
   ShellsResult,
   Snippet,
   TransferTask,
+  TunnelRuntimeInfo,
   UpdateCheckResult
 } from '@shared/types'
 import {
@@ -80,6 +81,8 @@ interface AppState {
   cwdBySession: Record<string, string>
   /** 自动同步的运行状态（主进程推送，界面只读） */
   autoSync: AutoSyncState | null
+  /** 端口转发规则（含运行状态）；只会被「端口转发」面板使用 */
+  tunnels: TunnelRuntimeInfo[]
   /**
    * 批量编辑：在任意终端里敲的字符同时发给其它终端。
    * 刻意只放内存、不进 settings —— 重启后一定是关闭状态，
@@ -119,6 +122,22 @@ interface AppState {
   resizeSplit: (splitId: string, ratio: number) => void
   /** 拖拽吸附：把标签或单个分屏并到目标分屏的某一侧 */
   dock: (request: DockRequest) => void
+
+  loadTunnels: () => Promise<void>
+  /** 新建并启动一条本地转发；成功后返回运行信息 */
+  startTunnel: (
+    sessionId: string,
+    cfg: {
+      /** 已有规则重启时带上 id，避免又建出一条新规则 */
+      id?: string
+      bindHost: string
+      bindPort: number
+      destHost: string
+      destPort: number
+    }
+  ) => Promise<TunnelRuntimeInfo>
+  stopTunnel: (tunnelId: string) => Promise<void>
+  removeTunnel: (tunnelId: string) => Promise<void>
 
   /** 开 / 关批量编辑；关闭时顺手清空选择，避免下次打开时沿用旧目标 */
   setInputSync: (enabled: boolean) => void
@@ -238,12 +257,15 @@ export const useAppStore = create<AppState>()((set, get) => {
     shells: null,
     hosts: [],
     autoSync: null,
+    tunnels: [],
     settings: {
       theme: 'dark',
       terminalTheme: 'one-dark',
       fontFamily: 'monospace',
       fontSize: 13,
       cursorBlink: true,
+      cursorStyle: 'bar',
+      lineHeight: 1.25,
       scrollback: 5000,
       hostKeyPolicy: 'tofu',
       sidebarWidth: 264,
@@ -355,6 +377,22 @@ export const useAppStore = create<AppState>()((set, get) => {
         if (event.status === 'error' && event.message) {
           get().pushToast(event.message, 'error')
         }
+        return
+      }
+
+      if (event.type === 'tunnel') {
+        const { id, sessionId, status } = event.tunnel
+        set((state) => {
+          const exists = state.tunnels.some((t) => t.id === id)
+          if (!exists) return {}
+          return {
+            tunnels: state.tunnels.map((t) =>
+              t.id === id ? { ...t, sessionId: sessionId || t.sessionId, status } : t
+            )
+          }
+        })
+        // 出错时主进程只发状态，具体原因看日志；这里给一句人能读的提示
+        if (status === 'error') get().pushToast('端口转发异常终止（端口被占用或连接已断开）', 'error')
         return
       }
 
@@ -652,6 +690,41 @@ export const useAppStore = create<AppState>()((set, get) => {
           )
         }))
       }
+    },
+
+    async loadTunnels() {
+      const tunnels = await window.jshell.tunnels.list()
+      set({ tunnels })
+    },
+
+    async startTunnel(sessionId, cfg) {
+      const info = await window.jshell.tunnels.start(sessionId, {
+        kind: 'local',
+        ...cfg
+      })
+      set((state) => {
+        const exists = state.tunnels.some((t) => t.id === info.id)
+        return {
+          tunnels: exists
+            ? state.tunnels.map((t) => (t.id === info.id ? info : t))
+            : [...state.tunnels, info]
+        }
+      })
+      return info
+    },
+
+    async stopTunnel(tunnelId) {
+      await window.jshell.tunnels.stop(tunnelId)
+      set((state) => ({
+        tunnels: state.tunnels.map((t) =>
+          t.id === tunnelId ? { ...t, status: 'closed' as const } : t
+        )
+      }))
+    },
+
+    async removeTunnel(tunnelId) {
+      await window.jshell.tunnels.remove(tunnelId)
+      set((state) => ({ tunnels: state.tunnels.filter((t) => t.id !== tunnelId) }))
     },
 
     setInputSync(enabled) {

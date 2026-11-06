@@ -7,6 +7,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
     '"JetBrains Mono", "SF Mono", SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace',
   fontSize: 13,
   cursorBlink: true,
+  cursorStyle: 'bar',
+  lineHeight: 1.25,
   scrollback: 5000,
   hostKeyPolicy: 'tofu',
   sidebarWidth: 264,
@@ -42,6 +44,22 @@ function clamp(value: unknown, fallback: number, min: number, max: number): numb
   return Math.min(max, Math.max(min, Math.round(num)))
 }
 
+/** 小数用的夹取（clamp 会取整，行高、缩放这类不能取整） */
+function clampNumber(value: unknown, fallback: number, min: number, max: number): number {
+  const num = typeof value === 'number' ? value : Number(value)
+  if (!Number.isFinite(num)) return fallback
+  const bounded = Math.min(max, Math.max(min, num))
+  return Math.round(bounded * 100) / 100
+}
+
+const CURSOR_STYLES = ['bar', 'block', 'underline'] as const
+
+function cursorStyle(value: unknown): (typeof CURSOR_STYLES)[number] {
+  return CURSOR_STYLES.includes(value as (typeof CURSOR_STYLES)[number])
+    ? (value as (typeof CURSOR_STYLES)[number])
+    : DEFAULT_SETTINGS.cursorStyle
+}
+
 function keybindings(value: unknown): Record<string, string> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
   const result: Record<string, string> = {}
@@ -70,6 +88,9 @@ export function sanitizeSettings(input: unknown): AppSettings {
     fontFamily: text(raw.fontFamily, DEFAULT_SETTINGS.fontFamily, 500),
     fontSize: clamp(raw.fontSize, DEFAULT_SETTINGS.fontSize, 10, 22),
     cursorBlink: bool(raw.cursorBlink, DEFAULT_SETTINGS.cursorBlink),
+    cursorStyle: cursorStyle(raw.cursorStyle),
+    // 行高太紧凑会粘在一起、太宽松一屏放不下几行；夹在 1.0–1.6
+    lineHeight: clampNumber(raw.lineHeight, DEFAULT_SETTINGS.lineHeight, 1, 1.6),
     scrollback: clamp(raw.scrollback, DEFAULT_SETTINGS.scrollback, 500, 50000),
     hostKeyPolicy: raw.hostKeyPolicy === 'ignore' ? 'ignore' : 'tofu',
     sidebarWidth: clamp(raw.sidebarWidth, DEFAULT_SETTINGS.sidebarWidth, 200, 400),

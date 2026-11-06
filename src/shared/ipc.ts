@@ -11,6 +11,7 @@
 export const IPC = {
   // 主机配置
   hostList: 'host:list',
+  hostImportSshConfig: 'host:import-ssh-config',
   hostSave: 'host:save',
   hostRemove: 'host:remove',
   hostTrustKey: 'host:trust-key',
@@ -95,6 +96,7 @@ export const IPC = {
   tunnelList: 'tunnel:list',
   tunnelStart: 'tunnel:start',
   tunnelStop: 'tunnel:stop',
+  tunnelRemove: 'tunnel:remove',
 
   // 终端焦点与剪贴板（菜单快捷键按焦点路由到终端或系统编辑命令）
   terminalFocus: 'term:focus',

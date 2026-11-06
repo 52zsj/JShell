@@ -32,6 +32,7 @@ import { StoreService } from './services/store'
 import { SyncService } from './services/sync-service'
 import { AutoSyncService } from './services/auto-sync'
 import { TunnelManager } from './services/tunnels'
+import { readSshConfigHosts } from './services/ssh-config'
 import { checkForUpdates, loadReleaseInfo } from './services/update'
 
 export interface AppContext {
@@ -275,6 +276,40 @@ export function registerIpc(ctx: AppContext, getWindow: () => BrowserWindow | nu
   // ------------------------------------------------------------------ 主机
   handle(IPC.hostList, () => store.listHosts())
   handle(IPC.hostSave, (draft: HostDraft) => store.upsertHost(draft))
+  handle(IPC.hostImportSshConfig, () => {
+    const { hosts, files } = readSshConfigHosts()
+    const existing = store.listHosts()
+    let added = 0
+    let skipped = 0
+    let invalid = 0
+    for (const item of hosts) {
+      // 同一台机器（地址+端口+用户名）已经存在就不重复导入，避免每次点都翻倍
+      const dup = existing.some(
+        (host) => host.host === item.host && host.port === item.port && host.username === item.username
+      )
+      if (dup) {
+        skipped += 1
+        continue
+      }
+      try {
+        const profile = store.upsertHost({
+          name: item.alias,
+          host: item.host,
+          port: item.port,
+          username: item.username,
+          // 有 IdentityFile 就走密钥；没有则交给 ssh-agent（ssh config 的常见用法）
+          authType: item.identityFile ? 'key' : 'agent',
+          privateKeyPath: item.identityFile,
+          group: 'ssh config'
+        })
+        existing.push(profile)
+        added += 1
+      } catch {
+        invalid += 1
+      }
+    }
+    return { added, skipped, invalid, files }
+  })
   handle(IPC.hostRemove, (id: string) => store.deleteHost(id))
   handle(IPC.hostTest, (draft: HostDraft) => {
     if (!draft || typeof draft !== 'object') throw new Error('主机参数无效')
@@ -583,13 +618,14 @@ export function registerIpc(ctx: AppContext, getWindow: () => BrowserWindow | nu
   handle(IPC.snippetRemove, (id: string) => store.deleteSnippet(id))
 
   // ---------------------------------------------------------------- 端口转发
-  handle(IPC.tunnelList, () => store.listTunnels())
+  handle(IPC.tunnelList, () => tunnels.list())
   handle(
     IPC.tunnelStart,
     (sessionId: string, cfg: Omit<TunnelConfig, 'id' | 'enabled'> & { id?: string }) =>
       tunnels.start(sessionId, cfg)
   )
   handle(IPC.tunnelStop, (tunnelId: string) => tunnels.stop(tunnelId))
+  handle(IPC.tunnelRemove, (tunnelId: string) => tunnels.remove(tunnelId))
 
   // ------------------------------------------------------------ 系统与对话框
   handle(IPC.appShells, () => detectShells())

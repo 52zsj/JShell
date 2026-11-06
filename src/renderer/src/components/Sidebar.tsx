@@ -106,6 +106,28 @@ export function Sidebar({ onCreate, onEdit, onClone, onOpenLocal }: Props) {
     })
   }
 
+  const importSshConfig = async (): Promise<void> => {
+    const state = useAppStore.getState()
+    try {
+      const result = await window.jshell.hosts.importSshConfig()
+      if (result.files.length === 0) {
+        state.pushToast('没有找到 ~/.ssh/config', 'error')
+        return
+      }
+      await state.reloadHosts()
+      if (result.added === 0 && result.skipped === 0 && result.invalid === 0) {
+        state.pushToast('~/.ssh/config 里没有可导入的主机（只有通配符或 Match 块）', 'info')
+        return
+      }
+      const parts = [`导入 ${result.added} 个主机`]
+      if (result.skipped > 0) parts.push(`跳过 ${result.skipped} 个已存在`)
+      if (result.invalid > 0) parts.push(`${result.invalid} 个字段不完整`)
+      state.pushToast(parts.join('，'), result.added > 0 ? 'success' : 'info')
+    } catch (err) {
+      state.pushToast(errorMessage(err), 'error')
+    }
+  }
+
   const expandAll = (): void => setCollapsed(new Set())
   const collapseAll = (): void => setCollapsed(new Set(groupKeys))
 
@@ -161,6 +183,13 @@ export function Sidebar({ onCreate, onEdit, onClone, onOpenLocal }: Props) {
         </button>
         <button className="host-toolbar-btn" title="折叠全部分组" onClick={collapseAll}>
           全部折叠
+        </button>
+        <button
+          className="host-toolbar-btn"
+          title="从 ~/.ssh/config 批量导入主机（跳过通配符块与已存在的主机）"
+          onClick={() => void importSshConfig()}
+        >
+          导入 ssh
         </button>
       </div>
 

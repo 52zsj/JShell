@@ -27,6 +27,7 @@ import {
 import { HostKeyDialog } from './components/HostKeyDialog'
 import { RsyncWizard } from './components/RsyncWizard'
 import { InputSyncControl } from './components/InputSyncControl'
+import { TunnelDialog } from './components/TunnelDialog'
 import { IconArrowRight, IconKey, IconLaptop, IconSettings, IconSync, IconTerminal } from './icons'
 
 function StatusBar() {
@@ -145,6 +146,7 @@ export default function App() {
   const [snippetsOpen, setSnippetsOpen] = useState(false)
   const [syncOpen, setSyncOpen] = useState(false)
   const [menu, setMenu] = useState<TerminalMenuTarget | null>(null)
+  const [tunnelTarget, setTunnelTarget] = useState<{ sessionId: string; label: string } | null>(null)
 
   const inputSyncEnabled = useAppStore((s) => s.inputSyncEnabled)
   const platform = info?.platform ?? 'darwin'
@@ -406,6 +408,21 @@ export default function App() {
             文件传输
           </button>
           <button
+            className="btn btn-ghost"
+            disabled={!activePane || activePane.kind !== 'ssh'}
+            onClick={() =>
+              activePane &&
+              setTunnelTarget({ sessionId: activePane.sessionId, label: activePane.subtitle })
+            }
+            title={
+              activePane && activePane.kind === 'ssh'
+                ? '端口转发：把本机端口的连接通过这条 SSH 送到远端（-L）'
+                : '端口转发需要先连接一台 SSH 主机'
+            }
+          >
+            端口转发
+          </button>
+          <button
             className="icon-btn"
             title={`设置 (${formatBinding(bindings['settings.open'], isMac)})`}
             onClick={() => setSettingsOpen(true)}
@@ -472,6 +489,13 @@ export default function App() {
       )}
       {syncOpen && <SyncDialog onClose={() => setSyncOpen(false)} />}
       {menu && <TerminalContextMenu target={menu} onClose={() => setMenu(null)} />}
+      {tunnelTarget && (
+        <TunnelDialog
+          sessionId={tunnelTarget.sessionId}
+          sessionLabel={tunnelTarget.label}
+          onClose={() => setTunnelTarget(null)}
+        />
+      )}
       {rsyncOpen && (
         <RsyncWizard
           onClose={() => setRsyncOpen(false)}

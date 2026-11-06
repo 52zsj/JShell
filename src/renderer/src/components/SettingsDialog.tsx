@@ -330,6 +330,41 @@ export function SettingsDialog({ isMac, bindings, onClose, onOpenSync }: Props) 
               </label>
             </div>
 
+            <div className="field-row">
+              <div className="field">
+                <span>光标形状</span>
+                <div className="segmented">
+                  {(
+                    [
+                      ['bar', '竖线'],
+                      ['block', '方块'],
+                      ['underline', '下划线']
+                    ] as const
+                  ).map(([value, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      className={`segmented-item${settings.cursorStyle === value ? ' is-active' : ''}`}
+                      onClick={() => commit({ cursorStyle: value })}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <label className="field">
+                <span>行高：{settings.lineHeight.toFixed(2)}</span>
+                <input
+                  type="range"
+                  min={1}
+                  max={1.6}
+                  step={0.05}
+                  value={settings.lineHeight}
+                  onChange={(e) => commit({ lineHeight: Number(e.target.value) })}
+                />
+              </label>
+            </div>
+
             <div className="tile-grid">
               <label className="tile">
                 <input

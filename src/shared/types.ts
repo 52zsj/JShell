@@ -249,6 +249,10 @@ export interface AppSettings {
   fontFamily: string
   fontSize: number
   cursorBlink: boolean
+  /** 光标形状：竖线 / 方块 / 下划线 —— 方块在浅色主题和录屏里更容易看清 */
+  cursorStyle: 'bar' | 'block' | 'underline'
+  /** 行高倍数：紧凑(1.0)~宽松(1.6)，影响一屏能放多少行 */
+  lineHeight: number
   scrollback: number
   /** TOFU：首次信任并记录指纹，指纹变化时拒绝连接；ignore：跳过校验 */
   hostKeyPolicy: 'tofu' | 'ignore'
@@ -292,6 +296,18 @@ export interface AppSettings {
   keepaliveIntervalSeconds: number
   /** 连续多少次保活没有回应就判定连接已断（会触发断线处理与自动重连） */
   keepaliveCountMax: number
+}
+
+/** 从 ~/.ssh/config 导入的结果 */
+export interface SshConfigImportResult {
+  /** 新增的主机数 */
+  added: number
+  /** 已存在而跳过 */
+  skipped: number
+  /** 解析到但字段不合法（缺用户名等）而跳过 */
+  invalid: number
+  /** 实际读取的配置文件（含 Include） */
+  files: string[]
 }
 
 export interface AppInfo {

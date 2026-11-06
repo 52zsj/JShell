@@ -643,4 +643,11 @@ export class StoreService {
     this.persistState()
     return cfg
   }
+
+  removeTunnel(id: string): void {
+    const next = this.state.tunnels.filter((t) => t.id !== id)
+    if (next.length === this.state.tunnels.length) return
+    this.state.tunnels = next
+    this.persistState()
+  }
 }

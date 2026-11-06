@@ -163,6 +163,8 @@ export function TerminalView({ sessionId, active, settings, onContextMenu }: Pro
       term.options.fontFamily = settings.fontFamily
       term.options.fontSize = settings.fontSize
       term.options.cursorBlink = settings.cursorBlink
+      term.options.cursorStyle = settings.cursorStyle
+      term.options.lineHeight = settings.lineHeight
       // 后台标签维持收窄后的缓冲，避免改设置把内存又顶回去
       term.options.scrollback = active ? settings.scrollback : hiddenScrollback(settings)
       term.options.theme = getTerminalTheme(settings.terminalTheme)

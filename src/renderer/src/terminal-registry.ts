@@ -70,9 +70,9 @@ export function acquireTerminal(sessionId: string, settings: AppSettings): Termi
     fontFamily: settings.fontFamily,
     fontSize: settings.fontSize,
     cursorBlink: settings.cursorBlink,
-    cursorStyle: 'bar',
+    cursorStyle: settings.cursorStyle,
     scrollback: settings.scrollback,
-    lineHeight: 1.25,
+    lineHeight: settings.lineHeight,
     allowProposedApi: true,
     macOptionIsMeta: true,
     theme: getTerminalTheme(settings.terminalTheme)
