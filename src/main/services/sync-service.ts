@@ -5,6 +5,7 @@ import path from 'node:path'
 import {
   buildSyncFileName,
   SYNC_EXTENSION,
+  SYNC_MANUAL_FILE,
   SYNC_MAX_BYTES,
   SYNC_SCOPES,
   type DiffReport,
@@ -25,6 +26,7 @@ import {
 import type { AppSettings, HostProfile } from '../../shared/types'
 import { readClipboard, writeClipboard } from './clipboard'
 import { log } from './logger'
+import { createWebdavTransport } from './webdav-transport'
 import { diffBundle } from './sync-diff'
 import { composeLocalBundle } from './sync-bundle'
 import { buildPreview, mergeBundle, pickPortableSettings } from './sync-merge'
@@ -123,6 +125,19 @@ export class SyncService {
       this.writeFile(filePath, text)
       log.info(`同步包已写入云盘目录：${filePath}`)
       return { canceled: false, path: filePath, bytes, meta }
+    }
+
+    if (options.destination.kind === 'webdav') {
+      const config = this.store.getAutoSync()
+      const transport = this.manualWebdavTransport()
+      try {
+        await transport.write(text)
+      } finally {
+        await transport.dispose()
+      }
+      const remotePath = `${config.webdavUrl}/${SYNC_MANUAL_FILE}`
+      log.info(`同步包已写入 WebDAV：${remotePath}（${bytes} 字节）`)
+      return { canceled: false, path: remotePath, bytes, meta }
     }
 
     const defaultPath = path.join(app.getPath('documents'), buildSyncFileName())
@@ -339,6 +354,22 @@ export class SyncService {
       return { text: this.readFile(filePath), sourceLabel: name }
     }
 
+    if (source.kind === 'webdav') {
+      const transport = this.manualWebdavTransport()
+      let text: string | null = null
+      try {
+        text = await transport.read()
+      } finally {
+        await transport.dispose()
+      }
+      if (!text) {
+        throw new SyncError(
+          `WebDAV 上没有 ${SYNC_MANUAL_FILE}：请先在另一台机器上用「导出 → WebDAV」生成一份`
+        )
+      }
+      return { text, sourceLabel: SYNC_MANUAL_FILE }
+    }
+
     const result = win
       ? await dialog.showOpenDialog(win, {
           title: '选择同步包',
@@ -359,6 +390,28 @@ export class SyncService {
     if (result.canceled || result.filePaths.length === 0) return null
     const filePath = result.filePaths[0]
     return { text: this.readFile(filePath), sourceLabel: path.basename(filePath) }
+  }
+
+  /**
+   * 手动配置包用的 WebDAV 传输：**故意用另一个文件名**。
+   *
+   * 自动同步那份是 jshell-auto.jshellsync，被程序自己反复覆盖；
+   * 手动导出的包如果也写这个名字，会把自动同步的状态基（lastPushedHash）打乱，
+   * 造成两端反复互相同步。文件名固定，重复导出就是覆盖，不会越堆越多。
+   */
+  private manualWebdavTransport(): ReturnType<typeof createWebdavTransport> {
+    const config = this.store.getAutoSync()
+    if (config.transport !== 'webdav' || !config.webdavUrl) {
+      throw new SyncError(
+        '还没有配置 WebDAV：请先到「自动同步 → 同步位置」选择 WebDAV 并填好地址与账号，再回到这里导出/导入'
+      )
+    }
+    return createWebdavTransport({
+      url: config.webdavUrl,
+      username: config.webdavUsername,
+      password: this.store.webdavPassword(),
+      fileName: SYNC_MANUAL_FILE
+    })
   }
 
   private readFile(filePath: string): string {

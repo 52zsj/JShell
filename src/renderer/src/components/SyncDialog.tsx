@@ -37,7 +37,7 @@ interface Props {
 }
 
 type Tab = 'export' | 'import' | 'auto'
-type DestKind = 'file' | 'folder' | 'clipboard'
+type DestKind = 'file' | 'folder' | 'clipboard' | 'webdav'
 
 const DEFAULT_SCOPES: SyncScope[] = SYNC_SCOPES.filter((item) => item.defaultOn).map((item) => item.id)
 
@@ -207,12 +207,18 @@ export function SyncDialog({ onClose }: Props) {
             ? { kind: 'dialog' }
             : dest === 'folder'
               ? { kind: 'folder', targetId }
-              : { kind: 'clipboard' }
+              : dest === 'webdav'
+                ? { kind: 'webdav' }
+                : { kind: 'clipboard' }
       })
       if (result.canceled) return
       setExported(result)
       pushToast(
-        result.clipboard ? '同步包已复制到剪贴板' : `同步包已导出（${formatBytes(result.bytes ?? 0)}）`,
+        result.clipboard
+          ? '同步包已复制到剪贴板'
+          : result.path?.startsWith('http')
+            ? `已写入 WebDAV：${result.path}（${formatBytes(result.bytes ?? 0)}）`
+            : `同步包已导出（${formatBytes(result.bytes ?? 0)}）`,
         'success'
       )
     } catch (err) {
@@ -412,6 +418,13 @@ export function SyncDialog({ onClose }: Props) {
                   >
                     <IconCloud /> 网盘
                     {targets.length > 0 && <span className="sync-badge">{targets.length}</span>}
+                  </button>
+                  <button
+                    className={cx('btn', dest === 'webdav' ? 'btn-primary' : 'btn-ghost')}
+                    title="写到「自动同步」里配置的 WebDAV 目录（文件名为 jshell-manual.jshellsync）"
+                    onClick={() => setDest('webdav')}
+                  >
+                    <IconCloud /> WebDAV
                   </button>
                   <button
                     className={cx('btn', dest === 'clipboard' ? 'btn-primary' : 'btn-ghost')}
@@ -619,6 +632,14 @@ export function SyncDialog({ onClose }: Props) {
                       >
                         <IconCloud /> 网盘
                         <IconChevronDown />
+                      </button>
+                      <button
+                        className="btn btn-ghost"
+                        disabled={busy}
+                        title="读取「自动同步」里配置的 WebDAV 目录上的 jshell-manual.jshellsync"
+                        onClick={() => void runInspect({ kind: 'webdav' })}
+                      >
+                        <IconCloud /> 从 WebDAV
                       </button>
                       <button
                         className="btn btn-ghost"

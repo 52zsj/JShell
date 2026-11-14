@@ -428,71 +428,101 @@ export class RsyncService {
   ): Promise<void> {
     const secrets = await this.askpass(internal.task.id, host)
 
-    const args = buildRsyncArgs(plan, {
-      capability,
-      sshCommand: host ? buildSshCommand(host, this.keyPathOf(host), this.knownHostsPath(), this.resolveSshBinary()) : undefined,
-      source: this.specOf(source, host, capability),
-      target: this.specOf(target, host, capability)
-    })
-
+    const sshCommand = host
+      ? buildSshCommand(host, this.keyPathOf(host), this.knownHostsPath(), this.resolveSshBinary())
+      : undefined
     const env: NodeJS.ProcessEnv = { ...process.env, ...secrets.env }
     if (capability.progress2) env.LC_ALL = 'C'
 
-    await new Promise<void>((resolve, reject) => {
-      let stderr = ''
-      let lastEmit = 0
-      const child = spawn(capability.binary, args, { env, stdio: ['ignore', 'pipe', 'pipe'] })
-      internal.child = child
+    /**
+     * 跑一次 rsync。`compat` 为真时只用老版本也认识的参数。
+     *
+     * Windows 上大量用户装的是 cwRsync 2.6.9：它不认 `--info=progress2`、`--append-verify`、`-s`，
+     * 一上来就 `unknown option` 退出，过去会被我们翻译成「版本过旧」——其实只要降级参数就能传。
+     */
+    const attempt = (compat: boolean): Promise<void> =>
+      new Promise<void>((resolve, reject) => {
+        const args = buildRsyncArgs(plan, {
+          capability,
+          compat,
+          sshCommand,
+          source: this.specOf(source, host, capability),
+          target: this.specOf(target, host, capability)
+        })
+        // 完整命令行进日志：Windows 上排查 rsync 只能靠这个
+        log.info(`rsync 启动${compat ? '（兼容参数）' : ''}：${capability.binary} ${args.join(' ')}`)
 
-      const onLine = (line: string): void => {
-        const parsed = parseProgressLine(line)
-        if (!parsed) {
-          if (line.trim()) stderr = `${stderr}${line}\n`.slice(-4000)
-          return
-        }
-        internal.task.percent = parsed.percent
-        if (parsed.transferred > 0) internal.task.transferred = parsed.transferred
-        if (parsed.speed) internal.task.speed = parsed.speed
-        if (parsed.eta) internal.task.eta = parsed.eta
-        const stamp = Date.now()
-        if (stamp - lastEmit > 300) {
-          lastEmit = stamp
-          this.publish(internal)
-        }
-      }
+        let stderr = ''
+        let lastEmit = 0
+        const child = spawn(capability.binary, args, { env, stdio: ['ignore', 'pipe', 'pipe'] })
+        internal.child = child
 
-      let buffer = ''
-      child.stdout?.on('data', (chunk: Buffer) => {
-        buffer += chunk.toString('utf8').replace(/\r/g, '\n')
-        const lines = buffer.split('\n')
-        buffer = lines.pop() ?? ''
-        for (const line of lines) onLine(line)
-      })
-      child.stderr?.on('data', (chunk: Buffer) => {
-        stderr = `${stderr}${chunk.toString('utf8')}`.slice(-4000)
+        const onLine = (line: string): void => {
+          const parsed = parseProgressLine(line)
+          if (!parsed) {
+            if (line.trim()) stderr = `${stderr}${line}\n`.slice(-4000)
+            return
+          }
+          internal.task.percent = parsed.percent
+          if (parsed.transferred > 0) internal.task.transferred = parsed.transferred
+          if (parsed.speed) internal.task.speed = parsed.speed
+          if (parsed.eta) internal.task.eta = parsed.eta
+          const stamp = Date.now()
+          if (stamp - lastEmit > 300) {
+            lastEmit = stamp
+            this.publish(internal)
+          }
+        }
+
+        let buffer = ''
+        child.stdout?.on('data', (chunk: Buffer) => {
+          buffer += chunk.toString('utf8').replace(/\r/g, '\n')
+          const lines = buffer.split('\n')
+          buffer = lines.pop() ?? ''
+          for (const line of lines) onLine(line)
+        })
+        child.stderr?.on('data', (chunk: Buffer) => {
+          stderr = `${stderr}${chunk.toString('utf8')}`.slice(-4000)
+        })
+
+        child.on('error', (err) => {
+          internal.child = undefined
+          reject(err)
+        })
+        child.on('close', (code) => {
+          if (buffer) onLine(buffer)
+          internal.child = undefined
+          if (internal.canceled) {
+            resolve()
+            return
+          }
+          if (code === 0) {
+            this.publish(internal)
+            resolve()
+            return
+          }
+          const detail = stderr.trim().split('\n').slice(-3).join(' ')
+          const error = new Error(
+            this.describeFailure(detail || `rsync 退出码 ${code}`)
+          ) as Error & { raw?: string }
+          // 原始输出留给上层判断「是不是参数不被接受」
+          error.raw = stderr
+          reject(error)
+        })
       })
 
-      child.on('error', (err) => {
-        secrets.cleanup()
-        reject(err)
-      })
-      child.on('close', (code) => {
-        if (buffer) onLine(buffer)
-        secrets.cleanup()
-        internal.child = undefined
-        if (internal.canceled) {
-          resolve()
-          return
-        }
-        if (code === 0) {
-          this.publish(internal)
-          resolve()
-          return
-        }
-        const detail = stderr.trim().split('\n').slice(-3).join(' ')
-        reject(new Error(this.describeFailure(detail || `rsync 退出码 ${code}`)))
-      })
-    })
+    try {
+      await attempt(false)
+    } catch (err) {
+      const raw = String((err as Error & { raw?: string }).raw ?? '')
+      if (!/unknown option|syntax or usage error/i.test(raw)) throw err
+      log.warn('rsync 不接受某个参数，改用兼容参数重试', raw.slice(0, 400))
+      internal.task.message = '本机 rsync 较旧，正在用兼容参数重试…'
+      this.publish(internal)
+      await attempt(true)
+    } finally {
+      secrets.cleanup()
+    }
   }
 
   /** 与用户 ~/.ssh 分离的 known_hosts，首次连接按 accept-new 记录 */

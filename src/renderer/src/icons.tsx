@@ -28,6 +28,15 @@ export const IconClose = () => (
   </svg>
 )
 
+/** 关闭全部标签：三个叠起来的关闭标记，和单个 × 区分开 */
+export const IconCloseAll = () => (
+  <svg {...base}>
+    <path d="M4 7h6M4 12h6M4 17h6" />
+    <path d="M15 7l5 5M20 7l-5 5" />
+    <path d="M15 17h5" />
+  </svg>
+)
+
 export const IconTerminal = () => (
   <svg {...base}>
     <rect x="3" y="4" width="18" height="16" rx="2.5" />

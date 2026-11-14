@@ -179,11 +179,15 @@ export type SyncDestination =
   | { kind: 'folder'; targetId: string }
   /** 经剪贴板传递，适合临时在两台设备之间搬运 */
   | { kind: 'clipboard' }
+  /** 直接写到 WebDAV 目录（复用自动同步里保存的地址与账号） */
+  | { kind: 'webdav' }
 
 export type SyncSource =
   | { kind: 'file' }
   | { kind: 'folder'; targetId: string; name: string }
   | { kind: 'clipboard' }
+  /** 从 WebDAV 目录读手动导出的那份包 */
+  | { kind: 'webdav' }
 
 export interface SyncExportOptions {
   scopes: SyncScope[]
@@ -354,6 +358,8 @@ export const SYNC_SUBDIR = 'JShell'
  * 否则每次同步都会在云盘里堆一个新包。
  */
 export const SYNC_AUTO_FILE = 'jshell-auto.jshellsync'
+/** 手动导出的配置包在 WebDAV 上的固定文件名（固定名=重复导出覆盖，不会越堆越多） */
+export const SYNC_MANUAL_FILE = 'jshell-manual.jshellsync'
 
 // ------------------------------------------------------------ 自动同步
 

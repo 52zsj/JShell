@@ -1,11 +1,12 @@
 import { SESSION_STATUS_TEXT } from '@shared/types'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAppStore, tabPaneCount } from '../store'
 import { DRAG_MIME, type DragPayload } from '../pane-dock'
 import { findLeaf, firstLeaf, leaves } from '../pane-tree'
 import { cx } from '../utils'
 import {
   IconClose,
+  IconCloseAll,
   IconCode,
   IconFolder,
   IconSplitDown,
@@ -30,9 +31,31 @@ export function TabBar({ onToggleSnippets, snippetsOpen }: Props) {
   const inputSyncEnabled = useAppStore((s) => s.inputSyncEnabled)
   const inputSyncSessions = useAppStore((s) => s.inputSyncSessions)
 
+  useEffect(() => {
+    if (tabs.length === 0) setConfirmCloseAll(false)
+  }, [tabs.length])
+
   const activeTab = tabs.find((tab) => tab.id === activeTabId)
   const activePane = activeTab ? findLeaf(activeTab.root, activeTab.activeSessionId)?.pane : null
   const [draggingTabId, setDraggingTabId] = useState<string | null>(null)
+  const [confirmCloseAll, setConfirmCloseAll] = useState(false)
+
+  // 点空白处 / Esc 收起确认气泡
+  useEffect(() => {
+    if (!confirmCloseAll) return
+    const onDown = (event: MouseEvent) => {
+      if (!(event.target as HTMLElement).closest('.close-all-wrap')) setConfirmCloseAll(false)
+    }
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setConfirmCloseAll(false)
+    }
+    window.addEventListener('mousedown', onDown, true)
+    window.addEventListener('keydown', onKey, true)
+    return () => {
+      window.removeEventListener('mousedown', onDown, true)
+      window.removeEventListener('keydown', onKey, true)
+    }
+  }, [confirmCloseAll])
 
   return (
     <div className="tabbar">
@@ -128,6 +151,40 @@ export function TabBar({ onToggleSnippets, snippetsOpen }: Props) {
       </div>
 
       <div className="tabbar-actions">
+        {/* 一键关闭：就地确认，不弹系统对话框 —— 这个动作频繁且意图明确，
+            系统模态框反而打断节奏；同时就地确认也能被自动化测试点到 */}
+        <div className="close-all-wrap">
+          <button
+            className="icon-btn"
+            disabled={tabs.length === 0}
+            title="关闭全部标签（含所有分屏）"
+            onClick={() => setConfirmCloseAll((prev) => !prev)}
+          >
+            <IconCloseAll />
+          </button>
+          {confirmCloseAll && tabs.length > 0 && (
+            <div className="close-all-pop">
+              <p>
+                关闭全部 <strong>{tabs.length}</strong> 个标签？
+                <em>所有分屏会话都会断开</em>
+              </p>
+              <div className="close-all-actions">
+                <button className="btn btn-ghost tiny" onClick={() => setConfirmCloseAll(false)}>
+                  取消
+                </button>
+                <button
+                  className="btn danger tiny"
+                  onClick={() => {
+                    setConfirmCloseAll(false)
+                    void useAppStore.getState().closeAllTabs()
+                  }}
+                >
+                  关闭全部
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
         <div className="mode-switch">
           <button
             className={cx('icon-btn', activePane?.mode === 'terminal' && 'is-active')}

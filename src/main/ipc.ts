@@ -276,6 +276,7 @@ export function registerIpc(ctx: AppContext, getWindow: () => BrowserWindow | nu
   // ------------------------------------------------------------------ 主机
   handle(IPC.hostList, () => store.listHosts())
   handle(IPC.hostSave, (draft: HostDraft) => store.upsertHost(draft))
+  handle(IPC.hostRenameGroup, (from: string, to: string) => store.renameGroup(from, to))
   handle(IPC.hostImportSshConfig, () => {
     const { hosts, files } = readSshConfigHosts()
     const existing = store.listHosts()

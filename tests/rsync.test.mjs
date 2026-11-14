@@ -120,7 +120,10 @@ test('远端没装 rsync 时给出中文结论而不是原始堆栈', () => {
 test('认证失败 / 超时 / 旧版本都能归类', () => {
   assert.ok(summarizeRsyncError('Permission denied (publickey).').includes('认证或权限不足'))
   assert.ok(summarizeRsyncError('ssh: connect to host a.com port 22: Connection timed out').includes('超时'))
-  assert.ok(summarizeRsyncError('rsync: --append-verify: unknown option').includes('版本过旧'))
+  // 参数不被接受时不再笼统说「版本过旧」，要给出可执行的下一步
+  const compat = summarizeRsyncError('rsync: --append-verify: unknown option')
+  assert.ok(compat.includes('不支持所需的参数'), compat)
+  assert.ok(compat.includes('SFTP'), compat)
 })
 
 test('未知错误被裁剪成一句话，不带编译路径', () => {
@@ -130,4 +133,35 @@ test('未知错误被裁剪成一句话，不带编译路径', () => {
   assert.equal(message.startsWith('同步失败：'), true)
   assert.equal(message.includes('AppleInternal'), false)
   assert.ok(message.length <= 200)
+})
+
+test('兼容参数只带 2.6 也认识的旗标（Windows 上的旧 cwRsync）', () => {
+  const plan = {
+    source: '/a',
+    target: '/b',
+    options: { compress: true, deleteExtraneous: true, exclude: 'node_modules\n*.log', retries: 0 }
+  }
+  const capability = {
+    available: true,
+    version: '3.2.7',
+    progress2: true,
+    appendVerify: true,
+    protectArgs: true,
+    binary: 'rsync'
+  }
+  const args = buildRsyncArgs(plan, {
+    capability,
+    compat: true,
+    sshCommand: 'ssh -p 22',
+    source: '/a',
+    target: '/b'
+  })
+  assert.ok(args.includes('--progress'))
+  assert.ok(!args.includes('--info=progress2'))
+  assert.ok(!args.includes('--append-verify'))
+  assert.ok(!args.includes('-s'))
+  assert.deepEqual(args.slice(-2), ['/a', '/b'])
+  // 排除规则与压缩仍要保留，否则兼容模式下行为差别太大
+  assert.ok(args.includes('-z'))
+  assert.ok(args.includes('--exclude'))
 })

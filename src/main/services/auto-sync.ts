@@ -27,6 +27,7 @@ import { diffBundle } from './sync-diff'
 import { passwordChanged, passwordTag } from './sync-password'
 import {
   changedCount,
+  riskyCount,
   decidePull,
   decidePushGate,
   isLocalEmpty,
@@ -37,6 +38,7 @@ import { mergeBundle } from './sync-merge'
 import { createSftpTransport, normalizeRemoteDir } from './sftp-transport'
 import { createWebdavTransport, normalizeWebdavUrl } from './webdav-transport'
 import { createFolderTransport, type SyncTransport } from './sync-transport'
+import { log } from './logger'
 import { detectSyncTargets, ensureSyncFolder } from './sync-targets'
 import type { StoredAutoSync, StoreService } from './store'
 
@@ -430,8 +432,12 @@ export class AutoSyncService {
     }
     this.running = true
     this.emit()
+    // 每次触发起一行日志：Windows 上排查「为什么一直同步」只能靠这个
+    log.info(`自动同步开始（${trigger}）`)
     try {
-      return await this.execute(trigger)
+      const result = await this.execute(trigger)
+      log.info(`自动同步结束（${trigger}）：${result.action} — ${result.message}`)
+      return result
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
       this.store.saveAutoSync({ lastError: message, lastResult: message })
@@ -514,6 +520,9 @@ export class AutoSyncService {
         })
         report = diff
 
+        log.info(
+          `拉取判定：${decision}（远端 ${hash.slice(0, 8)}，变更 ${changedCount(diff)} 项，风险 ${riskyCount(diff)} 项）`
+        )
         if (decision === 'skip') {
           // 自己刚写出去的：什么都没发生
         } else if (decision === 'record') {
@@ -590,6 +599,7 @@ export class AutoSyncService {
         const envelope = password
           ? encryptBundle(payload, meta, password)
           : plainBundle(payload, meta)
+        log.info(`推送配置到同步位置：${hash.slice(0, 8)}`)
         await transport.write(serializeBundle(envelope))
         this.store.saveAutoSync({
           lastPushedHash: hash,

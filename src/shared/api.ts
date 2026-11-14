@@ -58,6 +58,8 @@ export interface JShellApi {
      * 跳过通配符块、Match 块与已存在的主机（host+port+username 相同）。
      */
     importSshConfig(): Promise<SshConfigImportResult>
+    /** 批量重命名分组；返回被改动的主机数 */
+    renameGroup(from: string, to: string): Promise<number>
   }
   sessions: {
     /** 打开 SSH 会话；sessionId 由渲染进程生成，避免事件早于标签页创建 */

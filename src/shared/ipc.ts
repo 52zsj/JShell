@@ -12,6 +12,7 @@ export const IPC = {
   // 主机配置
   hostList: 'host:list',
   hostImportSshConfig: 'host:import-ssh-config',
+  hostRenameGroup: 'host:rename-group',
   hostSave: 'host:save',
   hostRemove: 'host:remove',
   hostTrustKey: 'host:trust-key',

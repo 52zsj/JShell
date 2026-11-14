@@ -166,3 +166,29 @@ test('远程内容变化会触发 watch 回调', async () => {
     await server.close()
   }
 })
+
+test('手动配置包用独立文件名：不会覆盖自动同步那份', async () => {
+  const srv = await startServer()
+
+  const auto = createWebdavTransport({ url: srv.url, username: USER, password: PASS })
+  await auto.write('AUTO-BUNDLE')
+
+  const manual = createWebdavTransport({
+    url: srv.url,
+    username: USER,
+    password: PASS,
+    fileName: 'jshell-manual.jshellsync'
+  })
+  await manual.write('MANUAL-BUNDLE')
+
+  // 两个名字各自独立：自动同步那份没有被手动导出踩掉
+  const paths = [...srv.files.keys()]
+  assert.ok(paths.some((item) => item.endsWith('/jshell-auto.jshellsync')), paths.join(','))
+  assert.ok(paths.some((item) => item.endsWith('/jshell-manual.jshellsync')), paths.join(','))
+  assert.equal(await auto.read(), 'AUTO-BUNDLE')
+  assert.equal(await manual.read(), 'MANUAL-BUNDLE')
+
+  await auto.dispose()
+  await manual.dispose()
+  await srv.close()
+})

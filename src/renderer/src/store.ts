@@ -106,6 +106,8 @@ interface AppState {
   splitPane: (direction: 'row' | 'column') => Promise<void>
   closeSession: (sessionId: string) => Promise<void>
   closeTab: (tabId: string) => Promise<void>
+  /** 关闭全部标签（含所有分屏会话）；调用方负责确认 */
+  closeAllTabs: () => Promise<void>
   reconnect: (sessionId: string) => Promise<void>
   focusPane: (tabId: string, sessionId: string) => void
   /** 终端自身获得焦点时同步「当前分屏」，保证高亮与实际输入一致 */
@@ -157,6 +159,8 @@ interface AppState {
   reloadSnippets: () => Promise<void>
   /** 同步包导入后重新读取设置（会同步应用主题） */
   reloadSettings: () => Promise<void>
+  /** 批量重命名分组，返回被改动的主机数 */
+  renameGroup: (from: string, to: string) => Promise<number>
   saveHost: (draft: HostDraft) => Promise<void>
   removeHost: (hostId: string) => Promise<void>
   updateSettings: (patch: Partial<AppSettings>) => Promise<void>
@@ -589,6 +593,25 @@ export const useAppStore = create<AppState>()((set, get) => {
       this.pruneInputSync(sessionIds)
     },
 
+    async closeAllTabs() {
+      const { tabs } = get()
+      if (tabs.length === 0) return
+      const sessionIds = tabs.flatMap((tab) => leaves(tab.root).map((node) => node.pane.sessionId))
+
+      await Promise.all(sessionIds.map((sessionId) => closeSessionInMain(sessionId)))
+      for (const sessionId of sessionIds) disposeTerminal(sessionId)
+      forgetCwd(sessionIds)
+
+      // 「一键关闭」是用户主动清场，不写进「最近关闭」，免得重开时把一堆标签又拉回来
+      set({
+        tabs: [],
+        activeTabId: null,
+        findSessionId: null,
+        inputSyncEnabled: false,
+        inputSyncSessions: []
+      })
+    },
+
     async reconnect(sessionId) {
       const found = locate(sessionId)
       if (!found) return
@@ -862,6 +885,12 @@ export const useAppStore = create<AppState>()((set, get) => {
       const settings = await window.jshell.settings.get()
       set({ settings })
       applyTheme(settings.theme)
+    },
+
+    async renameGroup(from, to) {
+      const count = await window.jshell.hosts.renameGroup(from, to)
+      await get().reloadHosts()
+      return count
     },
 
     async saveHost(draft) {

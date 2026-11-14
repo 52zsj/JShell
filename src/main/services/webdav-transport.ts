@@ -43,6 +43,11 @@ export interface WebdavTransportOptions {
   username?: string
   password?: string
   pollMs?: number
+  /**
+   * 文件名。默认是自动同步用的 jshell-auto.jshellsync；
+   * 手动导出的配置包要用另一个名字，绝不能覆盖自动同步那份。
+   */
+  fileName?: string
 }
 
 interface RequestOptions {
@@ -98,7 +103,8 @@ async function send(
  */
 export function createWebdavTransport(options: WebdavTransportOptions): SyncTransport {
   const base = normalizeWebdavUrl(options.url)
-  const fileUrl = `${base}/${SYNC_AUTO_FILE}`
+  const fileName = options.fileName ?? SYNC_AUTO_FILE
+  const fileUrl = `${base}/${fileName}`
   const pollMs = options.pollMs ?? DEFAULT_POLL_MS
   const creds: RequestOptions = { username: options.username, password: options.password }
 

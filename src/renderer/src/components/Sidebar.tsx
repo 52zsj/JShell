@@ -128,6 +128,23 @@ export function Sidebar({ onCreate, onEdit, onClone, onOpenLocal }: Props) {
     }
   }
 
+  const [renaming, setRenaming] = useState<string | null>(null)
+  const [renameDraft, setRenameDraft] = useState('')
+
+  /** 分组名只是每台主机上的一个字段，「改名」= 批量改这一组的主机 */
+  const commitRename = async (from: string): Promise<void> => {
+    const to = renameDraft.trim()
+    setRenaming(null)
+    if (!to || to === from) return
+    const state = useAppStore.getState()
+    try {
+      const count = await state.renameGroup(from, to)
+      state.pushToast(`已把 ${count} 台主机改到分组「${to}」`, 'success')
+    } catch (err) {
+      state.pushToast(errorMessage(err), 'error')
+    }
+  }
+
   const expandAll = (): void => setCollapsed(new Set())
   const collapseAll = (): void => setCollapsed(new Set(groupKeys))
 
@@ -249,15 +266,46 @@ export function Sidebar({ onCreate, onEdit, onClone, onOpenLocal }: Props) {
 
         {grouped.map(([group, list]) => (
           <section key={group} className="host-group">
-            <button
-              className="host-group-title"
-              onClick={() => toggleGroup(group)}
-              title={collapsed.has(group) ? '展开' : '折叠'}
-            >
-              {collapsed.has(group) ? <IconChevronRight /> : <IconChevronDown />}
-              <span className="host-group-label">{group}</span>
-              <span className="host-group-count">{list.length}</span>
-            </button>
+            {renaming === group ? (
+              <div className="host-group-head">
+                <input
+                  className="host-group-rename"
+                  autoFocus
+                  value={renameDraft}
+                  placeholder="分组名"
+                  onChange={(event) => setRenameDraft(event.target.value)}
+                  onBlur={() => void commitRename(group)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') void commitRename(group)
+                    if (event.key === 'Escape') setRenaming(null)
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="host-group-head">
+                <button
+                  className="host-group-title"
+                  onClick={() => toggleGroup(group)}
+                  title={collapsed.has(group) ? '展开' : '折叠'}
+                >
+                  {collapsed.has(group) ? <IconChevronRight /> : <IconChevronDown />}
+                  <span className="host-group-label">{group}</span>
+                  <span className="host-group-count">{list.length}</span>
+                </button>
+                {group !== '未分组' && (
+                  <button
+                    className="host-group-edit"
+                    title={`重命名分组「${group}」：这一组里的 ${list.length} 台主机会一起改`}
+                    onClick={() => {
+                      setRenameDraft(group)
+                      setRenaming(group)
+                    }}
+                  >
+                    <IconEdit />
+                  </button>
+                )}
+              </div>
+            )}
             {!collapsed.has(group) && list.map((host) => (
               <div
                 key={host.id}

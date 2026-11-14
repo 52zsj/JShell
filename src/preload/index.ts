@@ -19,7 +19,8 @@ const api: JShellApi = {
     trustKey: (host, port, algorithm, fingerprint) =>
       ipcRenderer.invoke(IPC.hostTrustKey, host, port, algorithm, fingerprint),
     test: (draft) => ipcRenderer.invoke(IPC.hostTest, draft),
-    importSshConfig: () => ipcRenderer.invoke(IPC.hostImportSshConfig)
+    importSshConfig: () => ipcRenderer.invoke(IPC.hostImportSshConfig),
+    renameGroup: (from, to) => ipcRenderer.invoke(IPC.hostRenameGroup, from, to)
   },
   sessions: {
     open: (hostId, size, sessionId) => ipcRenderer.invoke(IPC.sessionOpen, hostId, size, sessionId),

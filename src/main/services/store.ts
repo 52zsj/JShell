@@ -15,6 +15,7 @@ import type {
   TunnelConfig
 } from '../../shared/types'
 import type { Snapshot } from './sync-merge'
+import { log } from './logger'
 
 /**
  * 加密后的密文封装。
@@ -295,6 +296,27 @@ export class StoreService {
     return profile
   }
 
+  /**
+   * 批量重命名分组：把 group = from 的主机一次性改成 to。
+   *
+   * 分组名不是独立实体（只存在于每台主机上），所以「改分组名」本质就是批量改 hosts。
+   * to 与已有分组同名时即合并 —— 这正是用户想要的「把它们并到一组」。
+   */
+  renameGroup(from: string, to: string): number {
+    const target = to.trim()
+    if (!target) throw new Error('分组名不能为空')
+    if (target === from) return 0
+    let changed = 0
+    const now = Date.now()
+    this.state.hosts = this.state.hosts.map((host) => {
+      if ((host.group ?? '') !== from) return host
+      changed += 1
+      return { ...host, group: target, updatedAt: now }
+    })
+    if (changed > 0) this.persistState()
+    return changed
+  }
+
   deleteHost(id: string): void {
     const host = this.getHost(id)
     this.state.hosts = this.state.hosts.filter((h) => h.id !== id)
@@ -523,6 +545,16 @@ export class StoreService {
   backupNow(reason = 'sync'): string {
     const dir = path.join(this.dir, 'backups')
     fs.mkdirSync(dir, { recursive: true })
+
+    // 内容与上一份完全相同就不再生成一份。
+    // Windows 上自动同步可能被网盘客户端反复触发，过去每次 apply 都新建一个目录，
+    // 结果 backups/ 里堆出成百上千个内容相同的 auto-* —— 看上去就像「配置无限生成」。
+    const latest = this.listBackups(dir, reason)[0]
+    if (latest && this.sameBackupContent(latest)) {
+      log.info(`跳过重复备份：${path.basename(latest)} 与本机当前内容一致`)
+      return latest
+    }
+
     const stamp = new Date().toISOString().replace(/[:.]/g, '-')
     const target = path.join(dir, `${reason}-${stamp}`)
     fs.mkdirSync(target, { recursive: true })
@@ -533,7 +565,53 @@ export class StoreService {
         /* 备份失败不应阻塞导入，调用方会在结果里提示 */
       }
     }
+    this.pruneBackups(dir, reason)
+    log.info(`已备份配置：${path.basename(target)}（原因：${reason}）`)
     return target
+  }
+
+  /** 某个原因下的备份目录，按时间倒序（目录名以 ISO 时间戳结尾，字典序即时间序） */
+  private listBackups(dir: string, reason: string): string[] {
+    try {
+      return fs
+        .readdirSync(dir)
+        .filter((name) => name.startsWith(`${reason}-`))
+        .sort()
+        .reverse()
+        .map((name) => path.join(dir, name))
+    } catch {
+      return []
+    }
+  }
+
+  private sameBackupContent(dir: string): boolean {
+    try {
+      const stateCopy = path.join(dir, path.basename(this.stateFile))
+      if (!fs.existsSync(stateCopy) || !fs.existsSync(this.stateFile)) return false
+      return fs.readFileSync(stateCopy).equals(fs.readFileSync(this.stateFile))
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * 只留最近 12 份同类备份。
+   *
+   * 备份是「出事能回退」的保险，不是历史档案馆；无上限增长会把用户磁盘吃光，
+   * 也会让网盘客户端反复上传成千上万个小文件。
+   */
+  private pruneBackups(dir: string, reason: string, keep = 12): void {
+    const list = this.listBackups(dir, reason)
+    for (const stale of list.slice(keep)) {
+      try {
+        fs.rmSync(stale, { recursive: true, force: true })
+      } catch {
+        /* 删不掉就下次再说，不能因为清理失败影响主流程 */
+      }
+    }
+    if (list.length > keep) {
+      log.info(`清理旧备份 ${list.length - keep} 份（保留最近 ${keep} 份 ${reason} 备份）`)
+    }
   }
 
   // ------------------------------------------------------------ 自动同步

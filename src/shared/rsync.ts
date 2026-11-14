@@ -73,11 +73,14 @@ export interface RsyncArgContext {
   /** 传入的源与目标（已展开成本机路径或 user@host:path） */
   source: string
   target: string
+  /** 兼容模式：老版本 rsync 不支持 3.x 的参数时降级 */
+  compat?: boolean
 }
 
 /** 构造 rsync 参数；单独导出便于单测 */
 export function buildRsyncArgs(plan: RsyncPlan, ctx: RsyncArgContext): string[] {
   const { capability } = ctx
+  if (ctx.compat) return buildCompatArgs(plan, ctx)
   const args = [
     '-a',
     '--partial',
@@ -96,6 +99,24 @@ export function buildRsyncArgs(plan: RsyncPlan, ctx: RsyncArgContext): string[] 
   }
   if (ctx.sshCommand) args.push('-e', ctx.sshCommand)
 
+  args.push(ctx.source, ctx.target)
+  return args
+}
+
+/**
+ * 兼容参数：老的 rsync（典型是 Windows 上装机量很大的 cwRsync 2.6.9）不认
+ * `--info=progress2` / `--append-verify` / `-s`，会直接 `unknown option` 退出。
+ *
+ * 这里只保留 2.6 也支持的旗标，退化成「逐行进度 + 整体重传」，能传完比传得漂亮重要。
+ */
+function buildCompatArgs(plan: RsyncPlan, ctx: RsyncArgContext): string[] {
+  const args = ['-a', '--partial', '--human-readable', '--progress']
+  if (plan.options.compress) args.push('-z')
+  if (plan.options.deleteExtraneous) args.push('--delete')
+  for (const rule of plan.options.exclude.split(/[\n,]/).map((item) => item.trim())) {
+    if (rule) args.push('--exclude', rule)
+  }
+  if (ctx.sshCommand) args.push('-e', ctx.sshCommand)
   args.push(ctx.source, ctx.target)
   return args
 }
@@ -136,7 +157,8 @@ export function summarizeRsyncError(raw: string): string {
     return '连接超时：请检查网络，或把重试次数调高后重试。'
   }
   if (/unknown option|syntax or usage error/i.test(text)) {
-    return '本机 rsync 版本过旧，请升级到 3.x（macOS: brew install rsync）。'
+    // 已自动用兼容参数重试过还到这里，说明确实是本机 rsync 太老或包装脚本有问题
+    return '本机 rsync 不支持所需的参数（多见于 Windows 上的旧版 cwRsync）：请升级到 3.1+，或改用「文件」面板走 SFTP 传输。'
   }
 
   // 兜底：去掉编译路径与堆栈噪音，只留一句
