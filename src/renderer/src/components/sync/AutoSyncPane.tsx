@@ -41,6 +41,7 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
   const [webdavUrlDraft, setWebdavUrlDraft] = useState('')
   const [webdavUserDraft, setWebdavUserDraft] = useState('')
   const [webdavPasswordDraft, setWebdavPasswordDraft] = useState('')
+  const [accountDraft, setAccountDraft] = useState('')
   const [autoTest, setAutoTest] = useState<{ ok: boolean; message: string } | null>(null)
   /** 待处理：用户输入的云端口令 */
   const [pendingPassword, setPendingPassword] = useState('')
@@ -50,6 +51,10 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
   useEffect(() => {
     setSftpDirDraft(auto?.sftpDir ?? '')
   }, [auto?.sftpDir])
+
+  useEffect(() => {
+    setAccountDraft(auto?.account ?? '')
+  }, [auto?.account])
 
   useEffect(() => {
     setWebdavUrlDraft(auto?.webdavUrl ?? '')
@@ -570,6 +575,47 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
               </section>
 
               <section className="sync-section">
+                <h3>同步账号</h3>
+                <div className="sync-unlock">
+                  <label className="field">
+                    <span>账号名（可留空）</span>
+                    <input
+                      className="input"
+                      value={accountDraft}
+                      placeholder="例如 home / team-a"
+                      onChange={(event) => setAccountDraft(event.target.value)}
+                      onBlur={() => {
+                        if (accountDraft !== (auto?.account ?? '')) {
+                          void patchAuto({ account: accountDraft })
+                        }
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' && accountDraft !== (auto?.account ?? '')) {
+                          void patchAuto({ account: accountDraft })
+                        }
+                      }}
+                    />
+                  </label>
+                  <button
+                    className="btn btn-ghost"
+                    disabled={autoBusy || accountDraft === (auto?.account ?? '')}
+                    onClick={() => void patchAuto({ account: accountDraft })}
+                  >
+                    保存账号
+                  </button>
+                </div>
+                <p className="sync-hint">
+                  判断「是不是同一套配置」只看<strong>账号 + 口令</strong>：
+                  两台机器填同一个账号、同一个口令，就当成同一套配置，直接共用，
+                  <strong>不看设备、也没有设备 ID</strong>。
+                </p>
+                <p className="sync-hint">
+                  账号<strong>只做匹配</strong>，不参与加密；留空表示不限制（任何账号的包都接受）。
+                  填了账号后，如果同步位置上放的是另一个账号的包，会暂停并提示，不会把两套配置混在一起。
+                </p>
+              </section>
+
+              <section className="sync-section">
                 <h3>同步口令</h3>
                 <div className="sync-unlock">
                   <label className="field">
@@ -744,6 +790,25 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                             onClick={() => void overwriteRemote()}
                           >
                             用本机覆盖云端
+                          </button>
+                          <button
+                            className="btn btn-ghost"
+                            disabled={autoBusy}
+                            onClick={() => void dismissPending()}
+                          >
+                            暂不处理
+                          </button>
+                        </>
+                      )}
+                      {pendingKind === 'account' && (
+                        <>
+                          {/* 账号不一致没有"一键解决"：要么改账号，要么换位置，都要人决定 */}
+                          <button
+                            className="btn btn-ghost"
+                            disabled={autoBusy}
+                            onClick={() => void patchAuto({ account: '' })}
+                          >
+                            清空本机账号（接受云端）
                           </button>
                           <button
                             className="btn btn-ghost"

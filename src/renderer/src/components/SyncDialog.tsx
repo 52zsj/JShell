@@ -710,7 +710,11 @@ export function SyncDialog({ onClose }: Props) {
                       <div className="sync-package">
                         <div className="sync-package-head">
                           <IconShield />
-                          <strong>{inspect.meta?.deviceName ?? '未知设备'}</strong>
+                          <strong>
+                            {inspect.meta?.account
+                              ? `账号：${inspect.meta.account}`
+                              : '未指定账号'}
+                          </strong>
                           {inspect.legacy && <span className="sync-badge">旧版格式</span>}
                           {inspect.encrypted ? (
                             <span className="sync-badge ok">已加密</span>

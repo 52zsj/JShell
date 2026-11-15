@@ -331,7 +331,7 @@ export class SyncService {
 
   /** 按勾选范围裁剪快照，并生成明文元信息（与自动同步共用同一实现） */
   private compose(scopes: SyncScope[]): { payload: SyncBundlePayload; meta: SyncBundleMeta } {
-    return composeLocalBundle(this.store, scopes)
+    return composeLocalBundle(this.store, scopes, this.store.getAutoSync().account)
   }
 
   private async readSource(
@@ -462,7 +462,8 @@ export class SyncService {
     const exportedAt = typeof raw.exportedAt === 'string' ? raw.exportedAt : new Date().toISOString()
     return {
       appVersion: typeof raw.version === 'number' ? `0.5.x（旧版格式 v${raw.version}）` : '旧版格式',
-      deviceName: '旧版导出文件',
+      // 旧格式没有账号概念：留空即"不限制"，任何账号都接受
+      account: '',
       platform: 'unknown',
       createdAt: exportedAt,
       scopes: ['hosts', 'snippets'],

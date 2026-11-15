@@ -5,7 +5,7 @@ import path from 'node:path'
 import { sanitizeLayout } from '../../shared/layout-schema'
 import { DEFAULT_SETTINGS, sanitizeSettings } from '../../shared/settings'
 import type { SyncCredential, SyncScope, SyncTransportKind } from '../../shared/sync'
-import { SYNC_SCOPES, AutoSyncPath} from '../../shared/sync'
+import { SYNC_SCOPES, AutoSyncPath, normalizeAccount } from '../../shared/sync'
 import type {
   AppSettings,
   HostDraft,
@@ -55,6 +55,11 @@ export interface StoredAutoSync {
   /** 用户手动添加的同步路径（本机私有，不随配置包同步） */
   paths?: AutoSyncPath[]
   scopes: SyncScope[]
+  /**
+   * 同步账号：同账号 + 同口令 = 同一套配置（只做匹配，不参与加密）。
+   * 不记录任何设备标识 —— 多机同步靠"同一个名字"识别，而不是设备 ID。
+   */
+  account: string
   pushLocalChanges: boolean
   pullRemoteChanges: boolean
   pauseOnRisky: boolean
@@ -79,6 +84,7 @@ const DEFAULT_AUTO_SYNC: StoredAutoSync = {
   dir: '',
   targetId: '',
   scopes: ['hosts', 'snippets', 'settings', 'tunnels'],
+  account: '',
   pushLocalChanges: true,
   pullRemoteChanges: true,
   pauseOnRisky: true
@@ -634,6 +640,7 @@ export class StoreService {
       return {
         ...DEFAULT_AUTO_SYNC,
         ...raw,
+        account: normalizeAccount(raw.account),
         scopes: scopes.length > 0 ? scopes : [...DEFAULT_AUTO_SYNC.scopes]
       }
     } catch {
@@ -650,6 +657,7 @@ export class StoreService {
   }
 
   saveAutoSync(patch: Partial<StoredAutoSync>): StoredAutoSync {
+    if (patch.account !== undefined) patch = { ...patch, account: normalizeAccount(patch.account) }
     this.autoSync = { ...this.autoSync, ...patch }
     StoreService.writeJsonAtomic(this.syncFile, this.autoSync)
     return this.getAutoSync()

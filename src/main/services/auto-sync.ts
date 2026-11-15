@@ -25,6 +25,7 @@ import {
 } from './sync-crypto'
 import { diffBundle } from './sync-diff'
 import { passwordChanged, passwordTag } from './sync-password'
+import { accountsCompatible } from '../../shared/sync'
 import {
   changedCount,
   riskyCount,
@@ -167,6 +168,7 @@ export class AutoSyncService {
       webdavUrl: config.webdavUrl,
       webdavUsername: config.webdavUsername,
       hasWebdavPassword: Boolean(config.webdavPassword),
+      account: config.account ?? '',
       paths: (config.paths ?? []).map((item) => ({ ...item })),
       scopes: [...config.scopes],
       pushLocalChanges: config.pushLocalChanges,
@@ -268,6 +270,7 @@ export class AutoSyncService {
     this.store.saveAutoSync({
       enabled: patch.enabled ?? current.enabled,
       transport,
+      account: patch.account ?? current.account,
       pushLocalChanges: patch.pushLocalChanges ?? current.pushLocalChanges,
       pullRemoteChanges: patch.pullRemoteChanges ?? current.pullRemoteChanges,
       pauseOnRisky: patch.pauseOnRisky ?? current.pauseOnRisky,
@@ -484,6 +487,8 @@ export class AutoSyncService {
     let passwordMismatch = false
     /** 云端包是否加密（undefined 表示云端还没有文件） */
     let remoteEncrypted: boolean | undefined
+    /** 云端包里的同步账号（只做匹配，不参与解密） */
+    let remoteAccount = ''
     /** 本机在拉取前是否空空如也（决定要不要说「已用云端内容填充」） */
     let localWasEmpty = false
     let report: DiffReport | undefined
@@ -500,6 +505,7 @@ export class AutoSyncService {
           const decoded = this.decode(text, password)
           payload = decoded.payload
           remoteEncrypted = decoded.encrypted
+          remoteAccount = decoded.account
         } catch (err) {
           // 口令对不上不是致命错误，但**绝不能自作主张覆盖云端**：
           // 记下来，等人来决定（见 push 前的 decidePushGate）。
@@ -511,9 +517,11 @@ export class AutoSyncService {
         }
         if (payload) {
         const hash = contentHash(payload)
+        const accountMismatch = !accountsCompatible(config.account, remoteAccount)
         const diff = diffBundle(this.store.snapshot(), payload, 'overwrite')
         const decision = decidePull({
           remoteHash: hash,
+          accountMismatch,
           lastPulledHash: config.lastPulledHash,
           report: diff,
           pauseOnRisky: config.pauseOnRisky
@@ -523,6 +531,16 @@ export class AutoSyncService {
         log.info(
           `拉取判定：${decision}（远端 ${hash.slice(0, 8)}，变更 ${changedCount(diff)} 项，风险 ${riskyCount(diff)} 项）`
         )
+        if (decision === 'account') {
+          const summary =
+            `同步账号不一致：本机是「${config.account || '未命名'}」，云端是「${remoteAccount || '未命名'}」。` +
+            '为免把两套配置混在一起，本次不做任何改动。请在「自动同步」里把账号改成一致，或换一个同步目录。'
+          this.pending = { at: Date.now(), kind: 'account', summary }
+          this.store.saveAutoSync({ lastResult: summary, lastError: undefined })
+          this.emit()
+          return { ok: true, action: 'paused', message: summary, at: Date.now() }
+        }
+
         if (decision === 'skip') {
           // 自己刚写出去的：什么都没发生
         } else if (decision === 'record') {
@@ -556,7 +574,7 @@ export class AutoSyncService {
     }
 
     if (wantsPush) {
-      const { payload, meta } = composeLocalBundle(this.store, config.scopes)
+      const { payload, meta } = composeLocalBundle(this.store, config.scopes, config.account)
       if (!password) delete payload.credentials
       const hash = contentHash(payload)
       const current = this.store.getAutoSync()
@@ -641,18 +659,19 @@ export class AutoSyncService {
   private decode(
     text: string,
     password: string | undefined
-  ): { payload: SyncBundlePayload; encrypted: boolean } {
+  ): { payload: SyncBundlePayload; encrypted: boolean; account: string } {
     const parsed = parseSyncText(text)
     if (parsed.legacy) {
       throw new SyncError(`自动同步目录里的 ${SYNC_AUTO_FILE} 不是有效的同步包`)
     }
     const envelope = parsed.envelope
-    if (!envelope.encrypted) return { payload: envelope.payload ?? {}, encrypted: false }
+    const account = envelope.meta.account ?? ''
+    if (!envelope.encrypted) return { payload: envelope.payload ?? {}, encrypted: false, account }
     if (!password) {
       throw new SyncError('同步包已加密，但本机没有保存口令', 'password-mismatch')
     }
     try {
-      return { payload: decryptBundle(envelope, password), encrypted: true }
+      return { payload: decryptBundle(envelope, password), encrypted: true, account }
     } catch (err) {
       throw new SyncError(
         '同步口令不对：另一台机器用的口令可能和你这台不同。',

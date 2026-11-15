@@ -1,5 +1,5 @@
 import { app } from 'electron'
-import os from 'node:os'
+import { normalizeAccount } from '../../shared/sync'
 import type { SyncBundleMeta, SyncBundlePayload, SyncScope } from '../../shared/sync'
 import { pickPortableSettings } from './sync-merge'
 import type { StoreService } from './store'
@@ -11,7 +11,8 @@ import type { StoreService } from './store'
  */
 export function composeLocalBundle(
   store: StoreService,
-  scopes: SyncScope[]
+  scopes: SyncScope[],
+  account = ''
 ): { payload: SyncBundlePayload; meta: SyncBundleMeta } {
   const snapshot = store.snapshot()
   const set = new Set(scopes)
@@ -33,7 +34,8 @@ export function composeLocalBundle(
 
   const meta: SyncBundleMeta = {
     appVersion: app.getVersion(),
-    deviceName: os.hostname().slice(0, 80) || '未知设备',
+    // 身份只写"账号"：同账号 + 同口令 = 同一套配置，不写主机名/设备信息
+    account: normalizeAccount(account),
     platform: process.platform,
     createdAt: new Date().toISOString(),
     scopes: scopes.filter((scope) => scope !== 'credentials' || Boolean(payload.credentials)),

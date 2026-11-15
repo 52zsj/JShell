@@ -8,6 +8,8 @@ import type { DiffReport } from '../../shared/sync'
  */
 
 export type PullDecision =
+  /** 账号对不上：这是别人/另一套配置的包，绝不应用到本机 */
+  | 'account'
   /** 内容指纹与上次处理过的一致：自己写出去的文件又触发了 watcher，什么都不做 */
   | 'skip'
   /** 内容不同但本地无需变更：只记账，不写盘 */
@@ -19,6 +21,8 @@ export type PullDecision =
 
 export interface PullInput {
   remoteHash: string
+  /** 本机账号与云端账号不一致（两边都非空且不同） */
+  accountMismatch?: boolean
   lastPulledHash?: string
   report: DiffReport
   pauseOnRisky: boolean
@@ -33,6 +37,8 @@ export function riskyCount(report: DiffReport): number {
 }
 
 export function decidePull(input: PullInput): PullDecision {
+  // 账号优先：连"是不是同一套配置"都不确定时，不要看内容、不要记账
+  if (input.accountMismatch) return 'account'
   if (input.lastPulledHash && input.remoteHash === input.lastPulledHash) return 'skip'
   const changed = changedCount(input.report)
   if (changed === 0) return 'record'
