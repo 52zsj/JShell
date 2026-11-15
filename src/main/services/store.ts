@@ -552,9 +552,7 @@ export class StoreService {
     const dir = path.join(this.dir, 'backups')
     fs.mkdirSync(dir, { recursive: true })
 
-    // 内容与上一份完全相同就不再生成一份。
-    // Windows 上自动同步可能被网盘客户端反复触发，过去每次 apply 都新建一个目录，
-    // 结果 backups/ 里堆出成百上千个内容相同的 auto-* —— 看上去就像「配置无限生成」。
+    // 内容与上一份相同就不再新建：网盘客户端反复触发时，过去会堆出上千个备份目录。
     const latest = this.listBackups(dir, reason)[0]
     if (latest && this.sameBackupContent(latest)) {
       log.info(`跳过重复备份：${path.basename(latest)} 与本机当前内容一致`)
@@ -600,12 +598,7 @@ export class StoreService {
     }
   }
 
-  /**
-   * 只留最近 12 份同类备份。
-   *
-   * 备份是「出事能回退」的保险，不是历史档案馆；无上限增长会把用户磁盘吃光，
-   * 也会让网盘客户端反复上传成千上万个小文件。
-   */
+  /** 只留最近 12 份同类备份，避免无上限增长。 */
   private pruneBackups(dir: string, reason: string, keep = 12): void {
     const list = this.listBackups(dir, reason)
     for (const stale of list.slice(keep)) {

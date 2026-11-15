@@ -112,13 +112,7 @@ function sanitizeRemoteTunnel(raw: unknown): TunnelConfig | null {
   }
 }
 
-/**
- * 合并设置：**只接受白名单里的字段**，本机独有的字段原样保留。
- *
- * 这里刻意不做"先整体覆盖再把本机字段改回来"：那种写法依赖两处清单保持一致，
- * 一旦漏改就会把用户的 shell 路径 / 开机自启带到别的机器上。
- * 白名单法只有一处清单，本机字段根本不进入合并范围。
- */
+/** 合并设置：只接受白名单字段，本机字段不进入合并范围。 */
 function mergeSettings(local: AppSettings, remote: unknown): AppSettings {
   if (!remote || typeof remote !== 'object') return local
   const incoming = pickPortableSettings(remote as Partial<AppSettings>)
@@ -345,11 +339,7 @@ export function mergeBundle(local: Snapshot, remote: SyncBundlePayload, options:
   }
 }
 
-/**
- * 导出前的快照裁剪：**只带白名单里的字段**。
- * 本机独有（路径、窗口几何、开机自启）与未知字段一律丢掉，
- * 既避免把「这台机器」的痕迹带到别处，也防止未来新增字段被意外同步。
- */
+/** 导出裁剪：只带白名单字段，本机项与未知字段丢弃。 */
 export function pickPortableSettings(settings: Partial<AppSettings>): Partial<AppSettings> {
   const source = settings as unknown as Record<string, unknown>
   const result: Record<string, unknown> = {}

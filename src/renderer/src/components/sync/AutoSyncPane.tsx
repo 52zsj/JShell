@@ -246,30 +246,11 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
               <section className="sync-section">
                 <h3>自动同步</h3>
                 <p className="sync-hint">
-                  把配置固定放在一个共享位置（网盘目录、你的服务器或 WebDAV）上：
-                  本机改动后自动写回，其他设备改动后自动拉回，多台机器始终一致。
+                  多台机器共用一个共享位置，改动自动保持一致。与「配置包」无关，那里是你手动导出的文件。
                 </p>
                 <p className="sync-hint">
-                  <strong>和「配置包」是两件事</strong>：配置包是你手动导出一个文件、拷给对方；
-                  自动同步是程序自己维护一个固定文件（<code>jshell-auto.jshellsync</code>），
-                  双方都不需要手动搬。你手动导出的包，它不会去读。
+                  顺序：选共享位置 → 各机器设同一个口令 → 打开开关。拉取前会检测，可能覆盖本机改动时先暂停。
                 </p>
-                <p className="sync-hint">
-                  拉取前仍然会做检测，遇到「会覆盖本机较新改动」默认先暂停。
-                </p>
-                <ol className="sync-steps">
-                  <li>
-                    <strong>选一个共享位置</strong>：iCloud 云盘目录、你的服务器（SFTP）或 WebDAV。
-                    几台机器要指向<strong>同一个位置</strong>。
-                  </li>
-                  <li>
-                    <strong>设一个同步口令</strong>：各机器填同一个，包会被加密，落在云盘里只有密文。
-                  </li>
-                  <li>
-                    <strong>打开「自动同步」开关</strong>：本机一改就写回那儿，
-                    那边的变化也会自动拉回来。也可以随时点「立即同步」手动来一次。
-                  </li>
-                </ol>
                 <label className="sync-scope">
                   <input
                     type="checkbox"
@@ -361,11 +342,7 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                             </optgroup>
                           )}
                         </select>
-                        <p className="sync-hint">
-                          这些目录是<strong>自动探测</strong>出来的（打开面板就扫一遍本机）：
-                          iCloud / OneDrive / Dropbox / Google 云端硬盘 / 坚果云 / 百度网盘 / Nextcloud。
-                          只有一个时直接选中；多个时优先用你上次选过的，再按最近活跃排序。
-                        </p>
+                        <p className="sync-hint">自动探测本机网盘目录，默认用上次选过的那个。</p>
                       </>
                     )}
                     <div className="settings-actions">
@@ -383,8 +360,7 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                       </button>
                     </div>
                     <p className="sync-hint">
-                      探测不到你的网盘（自建网盘、NAS / 共享盘、U 盘、装在非默认路径的客户端），
-                      就点上面加一条，指定目录后可以随时改名字。路径只存在本机，不会跟着配置包跑到别的机器上。
+                      网盘没被探测到就加一条目录；路径只存在本机，不会跟着配置包走。
                     </p>
                     {customPaths.length > 0 && (
                       <div className="sync-path-list">
@@ -425,8 +401,7 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                       </div>
                     )}
                     <p className="sync-hint">
-                      文件固定为 <code>&lt;目录&gt;/JShell/jshell-auto.jshellsync</code>，
-                      反复同步不会在目录里堆出一堆副本。
+                      文件名固定为 <code>jshell-auto.jshellsync</code>，反复同步不会堆副本。
                     </p>
                   </>
                 ) : auto?.transport === 'sftp' ? (
@@ -605,13 +580,7 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                   </button>
                 </div>
                 <p className="sync-hint">
-                  判断「是不是同一套配置」只看<strong>账号 + 口令</strong>：
-                  两台机器填同一个账号、同一个口令，就当成同一套配置，直接共用，
-                  <strong>不看设备、也没有设备 ID</strong>。
-                </p>
-                <p className="sync-hint">
-                  账号<strong>只做匹配</strong>，不参与加密；留空表示不限制（任何账号的包都接受）。
-                  填了账号后，如果同步位置上放的是另一个账号的包，会暂停并提示，不会把两套配置混在一起。
+                  同账号 + 同口令 = 同一套配置。账号只做匹配、可留空；账号不同会暂停，不合并。
                 </p>
               </section>
 
@@ -645,13 +614,7 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                   </button>
                 </div>
                 <p className="sync-hint">
-                  口令用来<strong>加密同步包</strong>，只有知道口令的设备才能读出里面的内容。
-                  口令经系统安全存储保存在本机，不会写进同步包本身。
-                </p>
-                <p className="sync-hint">
-                  <strong>几台机器之间必须用同一个口令</strong>，否则互相解不开。
-                  换口令的顺序：先在一台机器上改，然后点「立即同步」把新口令的包写上去，
-                  再到其余机器上改成同样的口令并各点一次「立即同步」。
+                  口令用于加密，各机器必须相同；存在系统安全存储里，不写进包。换口令后每台都要再同步一次。
                 </p>
               </section>
 

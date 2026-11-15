@@ -107,9 +107,9 @@ node scripts/build-all.mjs --dir                       # 只产出免安装目�
 
 | 平台 | 安装版 | 便携版 |
 | --- | --- | --- |
-| macOS | `JShell-0.11.35-arm64.dmg` / `.zip`、`x64` 同名文件 | `JShell-0.11.35-<架构>-portable.zip`（解压即用） |
-| Windows | `JShell-0.11.35-x64-setup.exe`（简体中文 NSIS 向导） | `JShell-0.11.35-x64-portable.exe`（单文件） |
-| Linux | `JShell-0.11.35-x64.AppImage` / `.deb` | — |
+| macOS | `JShell-0.11.36-arm64.dmg` / `.zip`、`x64` 同名文件 | `JShell-0.11.36-<架构>-portable.zip`（解压即用） |
+| Windows | `JShell-0.11.36-x64-setup.exe`（简体中文 NSIS 向导） | `JShell-0.11.36-x64-portable.exe`（单文件） |
+| Linux | `JShell-0.11.36-x64.AppImage` / `.deb` | — |
 
 ### 发版（推 GitHub Release）
 
@@ -258,6 +258,26 @@ npm run release:tag                      # 打 tag v<版本> 并推送 main 与 
 - `logs/`：中文运行日志，不含口令与终端输出
 
 删除整个目录即完全重置，不残留任何云端数据。
+
+## 配置同步范围
+
+**身份 = 账号 + 口令**：两台机器填同一个同步账号、同一个口令，就视为同一套配置。
+账号明文写在包里、只用于匹配，不参与加密；任一方留空表示不限制。账号不一致时暂停，不会合并。
+
+通道：文件夹（iCloud / OneDrive / 坚果云等）、SFTP、WebDAV；手动配置包也支持另存到 WebDAV
+（`jshell-manual.jshellsync`，与自动同步的 `jshell-auto.jshellsync` 互不影响）。
+
+| 会同步 | 只留本机 |
+| --- | --- |
+| 主题、终端配色、字体族、字号、光标闪烁/形状、行高、回滚行数 | 侧边栏宽度（按屏幕调） |
+| 主机指纹策略、快捷键、通知、侧边栏显示本机终端 | 本地 shell 路径（mac 的 `/bin/zsh` 到 Windows 不存在） |
+| 删除按钮 / 删除前确认、目录树跟随、SSH 保活三项、关闭窗口进托盘 | 隐藏的本地 shell 列表、开机自启、启动即最小化 |
+| 主机与分组、命令片段、端口转发规则、（可选）凭据 | 窗口几何与本机私有状态 |
+
+- 实现上是一份**白名单**（`src/shared/sync.ts` 的 `SYNCABLE_SETTINGS`）：不在名单里的字段默认留本机，
+  新增设置必须显式加进去才会同步
+- 同步时只**合并**白名单字段，本机字段不进入合并范围，绝不会被远端覆盖
+- 判断标准只有一条：换一台机器（尤其换操作系统）之后这个值还有没有意义
 
 ## 安全模型
 

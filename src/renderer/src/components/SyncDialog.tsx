@@ -3,10 +3,7 @@ import {
   MIN_PASSWORD_LENGTH,
   SYNC_DELETE_NOTICE,
   SYNC_MODE_LABELS,
-  DEVICE_LOCAL_REASONS,
-  DEVICE_LOCAL_SETTINGS,
   SYNC_SCOPES,
-  SYNCABLE_SETTINGS,
   passwordStrength,
   type DiffReport,
   type PasswordStrength,
@@ -405,8 +402,7 @@ export function SyncDialog({ onClose }: Props) {
               <section className="sync-section">
                 <h3>保存到哪里</h3>
                 <p className="sync-hint">
-                  配置包就是一个普通文件。存成文件最通用——网盘目录、U 盘、局域网共享都能选；
-                  复制到剪贴板适合临时传给另一台设备。
+                  生成一个文件，拷到另一台机器导入即可。WebDAV 使用「自动同步」里配好的账号。
                 </p>
                 <div className="sync-dest-row">
                   <button
@@ -460,8 +456,7 @@ export function SyncDialog({ onClose }: Props) {
                   </div>
                 )}
                 <p className="sync-hint">
-                  这是<strong>手动导出</strong>的一份文件，拷给对方导入即可。
-                  想让多台机器长期自动保持一致，用「自动同步」页签——它由程序自己维护，不用手动搬。
+                  手动导出的文件。想长期自动保持一致，用「自动同步」页签。
                 </p>
 
               </section>
@@ -500,25 +495,10 @@ export function SyncDialog({ onClose }: Props) {
                   </div>
                 </details>
 
-                <details className="sync-split">
-                  <summary>哪些设置会同步、哪些只留本机</summary>
-                  <div className="sync-split-body">
-                    <div className="sync-split-col">
-                      <strong>会同步（通用偏好）</strong>
-                      <p>{Object.values(SYNCABLE_SETTINGS).join('、')}</p>
-                    </div>
-                    <div className="sync-split-col is-local">
-                      <strong>只留本机（换机器后会失效）</strong>
-                      <ul>
-                        {DEVICE_LOCAL_SETTINGS.map((key) => (
-                          <li key={key}>
-                            {DEVICE_LOCAL_REASONS[key as keyof typeof DEVICE_LOCAL_REASONS]}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </details>
+                <p className="sync-hint">
+                  设置只同步通用偏好（主题、字体、快捷键、保活等）；本地 shell 路径、窗口尺寸、开机自启
+                  属于本机配置，不会同步。明细见 README。
+                </p>
               </section>
 
               <section className="sync-section">

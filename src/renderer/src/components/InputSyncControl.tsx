@@ -3,16 +3,7 @@ import { useAppStore } from '../store'
 import { syncTargets, targetLabel, type InputSyncTarget } from '../input-sync'
 import { cx } from '../utils'
 
-/**
- * 批量编辑的开关与作用范围选择器（状态栏右侧）。
- *
- * 交互约定（按用户要求）：**不勾任何一项 = 全部**。
- * 因为广播输入本身很危险（一条 rm 会打到所有机器上），所以：
- *  - 默认关闭，不落盘，重启必为关闭；
- *  - 开启后状态栏变红、终端区出现红色描边，任何时刻都看得见"我现在在广播"；
- *  - 列表粒度是**分屏**：多标签按 1、2、3 列出，同一个标签里的分屏按 1.1、1.2 列出，
- *    两种用法（多机分标签 / 单机分屏）都能单独勾选。
- */
+/** 批量编辑开关 + 范围选择器。不勾任何一项 = 全部；默认关闭且不落盘。 */
 export function InputSyncControl() {
   const enabled = useAppStore((s) => s.inputSyncEnabled)
   const selectedIds = useAppStore((s) => s.inputSyncSessions)

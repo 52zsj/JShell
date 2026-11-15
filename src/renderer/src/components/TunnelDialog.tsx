@@ -12,15 +12,7 @@ interface Props {
   onClose: () => void
 }
 
-/**
- * 端口转发（SSH 本地转发 -L）面板。
- *
- * 只做 -L：本机监听一个端口，连接通过既有 SSH 通道送到远端目标。
- * 覆盖「连不上内网数据库 / 管理面板」这类最常见的场景，且不需要额外授权流程。
- *
- * 规则会持久化（store.tunnels），但**会话断开时监听会被主进程自动停掉** ——
- * 隧道依附于 SSH 连接，连接没了留着监听端口没有意义。
- */
+/** 端口转发（仅 -L）。规则会持久化，SSH 断开时监听自动停止。 */
 export function TunnelDialog({ sessionId, sessionLabel, onClose }: Props) {
   const tunnels = useAppStore((s) => s.tunnels)
   const loadTunnels = useAppStore((s) => s.loadTunnels)
@@ -118,8 +110,7 @@ export function TunnelDialog({ sessionId, sessionLabel, onClose }: Props) {
 
         <div className="modal-body">
           <p className="notice">
-            本地转发（<code>-L</code>）：本机监听一个端口，连接经这台 SSH 送到远端目标。
-            连接断开时监听会自动停止。
+            本机监听一个端口，连接经这台 SSH 送到远端（<code>-L</code>）。
           </p>
           <div className="tunnel-session">
             <span className="status-label">会话</span>
@@ -200,8 +191,7 @@ export function TunnelDialog({ sessionId, sessionLabel, onClose }: Props) {
 
         <footer className="modal-foot">
           <span className="notice grow">
-            用法示例：连着数据库服务器时，本地端口 5432 → <code>127.0.0.1:5432</code>，
-            然后本机客户端连 <code>127.0.0.1:5432</code> 即可。
+            例：本地 5432 → <code>127.0.0.1:5432</code>，客户端连本机 5432 即可。
           </span>
           <button className="btn" onClick={onClose}>
             关闭
