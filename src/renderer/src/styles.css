@@ -1612,6 +1612,58 @@ textarea.input {
   box-shadow: 0 0 0 1px var(--border);
 }
 
+/* 同步范围清单：哪些会同步、哪些只留本机 */
+.sync-split {
+  margin-top: 10px;
+  font-size: 11.5px;
+  color: var(--text-dim);
+}
+
+.sync-split summary {
+  cursor: pointer;
+  color: var(--text-faint);
+}
+
+.sync-split summary:hover {
+  color: var(--text);
+}
+
+.sync-split-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.sync-split-col {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+.sync-split-col strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text);
+  font-size: 11px;
+}
+
+.sync-split-col p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.sync-split-col ul {
+  margin: 0;
+  padding-left: 14px;
+  line-height: 1.6;
+}
+
+.sync-split-col.is-local {
+  border-color: color-mix(in srgb, var(--warn) 30%, transparent);
+}
+
 /* 一键关闭标签：就地确认气泡 */
 .close-all-wrap {
   position: relative;

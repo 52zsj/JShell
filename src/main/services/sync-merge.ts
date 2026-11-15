@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { sanitizeSettings } from '../../shared/settings'
-import { DEVICE_LOCAL_SETTINGS, type SyncBundlePayload, type SyncCredential, type SyncImportMode, type SyncPreview } from '../../shared/sync'
+import { SYNCABLE_SETTINGS, type SyncBundlePayload, type SyncCredential, type SyncImportMode, type SyncPreview } from '../../shared/sync'
 import type { AppSettings, AuthType, HostProfile, Snippet, TunnelConfig } from '../../shared/types'
 
 /**
@@ -112,20 +112,18 @@ function sanitizeRemoteTunnel(raw: unknown): TunnelConfig | null {
   }
 }
 
-/** 只保留可跨设备迁移的设置项，丢弃设备私有字段与未知字段 */
+/**
+ * 合并设置：**只接受白名单里的字段**，本机独有的字段原样保留。
+ *
+ * 这里刻意不做"先整体覆盖再把本机字段改回来"：那种写法依赖两处清单保持一致，
+ * 一旦漏改就会把用户的 shell 路径 / 开机自启带到别的机器上。
+ * 白名单法只有一处清单，本机字段根本不进入合并范围。
+ */
 function mergeSettings(local: AppSettings, remote: unknown): AppSettings {
   if (!remote || typeof remote !== 'object') return local
-  const incoming = { ...(remote as Record<string, unknown>) }
-  for (const key of DEVICE_LOCAL_SETTINGS) delete incoming[key]
+  const incoming = pickPortableSettings(remote as Partial<AppSettings>)
   // sanitizeSettings 会补齐缺省值与越界值，避免坏包把界面搞崩
-  const cleaned = sanitizeSettings(incoming)
-  const merged: AppSettings = { ...local, ...cleaned }
-  // 设备私有字段始终以本机为准
-  merged.sidebarWidth = local.sidebarWidth
-  merged.localShell = local.localShell
-  merged.hiddenLocalShells = local.hiddenLocalShells
-  merged.launchAtLogin = local.launchAtLogin
-  return merged
+  return sanitizeSettings({ ...local, ...incoming })
 }
 
 function sanitizeCredentials(raw: unknown, hostIds: Set<string>): Record<string, SyncCredential> {
@@ -347,10 +345,17 @@ export function mergeBundle(local: Snapshot, remote: SyncBundlePayload, options:
   }
 }
 
-/** 导出前的快照裁剪：去掉设备私有设置，避免把「这台机器」的痕迹带到别处 */
+/**
+ * 导出前的快照裁剪：**只带白名单里的字段**。
+ * 本机独有（路径、窗口几何、开机自启）与未知字段一律丢掉，
+ * 既避免把「这台机器」的痕迹带到别处，也防止未来新增字段被意外同步。
+ */
 export function pickPortableSettings(settings: Partial<AppSettings>): Partial<AppSettings> {
-  const result: Record<string, unknown> = { ...settings }
-  for (const key of DEVICE_LOCAL_SETTINGS) delete result[key]
+  const source = settings as unknown as Record<string, unknown>
+  const result: Record<string, unknown> = {}
+  for (const key of Object.keys(SYNCABLE_SETTINGS)) {
+    if (source[key] !== undefined) result[key] = source[key]
+  }
   return result as Partial<AppSettings>
 }
 

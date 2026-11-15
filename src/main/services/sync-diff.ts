@@ -1,4 +1,6 @@
-import { DEVICE_LOCAL_SETTINGS, type DiffEntry, type DiffReport, type SyncBundlePayload, type SyncImportMode } from '../../shared/sync'
+import { pickPortableSettings } from './sync-merge'
+import type { AppSettings } from '../../shared/types'
+import { type DiffEntry, type DiffReport, type SyncBundlePayload, type SyncImportMode } from '../../shared/sync'
 import type { HostProfile, Snippet, TunnelConfig } from '../../shared/types'
 import type { Snapshot } from './sync-merge'
 
@@ -200,8 +202,11 @@ export function diffBundle(local: Snapshot, remote: SyncBundlePayload, mode: Syn
 
   // ------------------------------------------------------------------ 设置
   if (remote.settings && typeof remote.settings === 'object') {
-    const incoming = { ...(remote.settings as Record<string, unknown>) }
-    for (const key of DEVICE_LOCAL_SETTINGS) delete incoming[key]
+    // 只比较真正会被应用的部分，避免预览里出现"要改但实际不改"的假变更
+    const incoming = pickPortableSettings(remote.settings as Partial<AppSettings>) as Record<
+      string,
+      unknown
+    >
     for (const [key, value] of Object.entries(incoming)) {
       const current = (local.settings as unknown as Record<string, unknown>)[key]
       if (JSON.stringify(current) !== JSON.stringify(value)) {

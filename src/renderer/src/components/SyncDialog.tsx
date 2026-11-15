@@ -3,7 +3,10 @@ import {
   MIN_PASSWORD_LENGTH,
   SYNC_DELETE_NOTICE,
   SYNC_MODE_LABELS,
+  DEVICE_LOCAL_REASONS,
+  DEVICE_LOCAL_SETTINGS,
   SYNC_SCOPES,
+  SYNCABLE_SETTINGS,
   passwordStrength,
   type DiffReport,
   type PasswordStrength,
@@ -494,6 +497,26 @@ export function SyncDialog({ onClose }: Props) {
                         </span>
                       </label>
                     ))}
+                  </div>
+                </details>
+
+                <details className="sync-split">
+                  <summary>哪些设置会同步、哪些只留本机</summary>
+                  <div className="sync-split-body">
+                    <div className="sync-split-col">
+                      <strong>会同步（通用偏好）</strong>
+                      <p>{Object.values(SYNCABLE_SETTINGS).join('、')}</p>
+                    </div>
+                    <div className="sync-split-col is-local">
+                      <strong>只留本机（换机器后会失效）</strong>
+                      <ul>
+                        {DEVICE_LOCAL_SETTINGS.map((key) => (
+                          <li key={key}>
+                            {DEVICE_LOCAL_REASONS[key as keyof typeof DEVICE_LOCAL_REASONS]}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
                 </details>
               </section>

@@ -41,7 +41,7 @@ export const SYNC_SCOPES: SyncScopeDef[] = [
   {
     id: 'settings',
     label: '偏好设置',
-    hint: '主题、终端配色、字号、快捷键、跟随目录等；窗口尺寸与本机 shell 路径属于设备私有，不会同步',
+    hint: '主题、配色、字体、快捷键、保活等通用偏好；本机 shell 路径、窗口尺寸、开机自启等属于本机配置，不同步',
     defaultOn: true
   },
   {
@@ -70,16 +70,61 @@ export const SYNC_SCOPES: SyncScopeDef[] = [
  * 这些值描述的是「这一台机器」而不是「这个用户」，
  * 同步过去轻则无效（shell 路径不存在），重则覆盖用户当前窗口布局。
  */
+/**
+ * 会随配置同步的设置项（**白名单**）。
+ *
+ * 为什么用白名单而不是黑名单：黑名单的语义是"新增字段默认同步"，
+ * 而设置里最容易出事的就是路径/系统集成这类"看着通用、换台机器就失效"的东西。
+ * 白名单让新增字段默认留本机，必须显式加进来才会出门。
+ *
+ * 值是该字段的中文名，界面上直接列出来给用户看。
+ */
+export const SYNCABLE_SETTINGS: Record<string, string> = {
+  theme: '界面主题',
+  terminalTheme: '终端配色',
+  fontFamily: '字体族',
+  fontSize: '字号',
+  cursorBlink: '光标闪烁',
+  cursorStyle: '光标形状',
+  lineHeight: '行高',
+  scrollback: '回滚行数',
+  hostKeyPolicy: '主机指纹策略',
+  keybindings: '快捷键',
+  notifications: '通知',
+  showLocalShells: '侧边栏显示本机终端',
+  hostDeleteButton: '主机删除按钮',
+  hostDeleteConfirm: '删除前确认',
+  autoFollowCwd: '目录树跟随终端',
+  keepaliveEnabled: 'SSH 保活',
+  keepaliveIntervalSeconds: '保活间隔',
+  keepaliveCountMax: '保活次数',
+  closeToTray: '关闭窗口时收进托盘'
+}
+
+/**
+ * **本机独有**的设置：永远不出配置包，同步时也不会被远端覆盖。
+ *
+ * 判断标准只有一条：换一台机器（尤其换操作系统）之后这个值还有没有意义。
+ * 路径、窗口几何、系统注册项都属于"没意义"，同步过去只会让新机器行为错乱。
+ */
 export const DEVICE_LOCAL_SETTINGS = [
   'sidebarWidth',
   'localShell',
   'hiddenLocalShells',
-  'launchAtLogin'
+  'launchAtLogin',
+  'startMinimized'
 ] as const
 
 export type DeviceLocalSetting = (typeof DEVICE_LOCAL_SETTINGS)[number]
 
-// ------------------------------------------------------------------ 包格式
+/** 本机独有的原因，界面直接展示，省得用户猜"为什么这个没同步过去" */
+export const DEVICE_LOCAL_REASONS: Record<DeviceLocalSetting, string> = {
+  sidebarWidth: '按本机屏幕宽度调整',
+  localShell: '本机 shell 路径（mac 的 /bin/zsh 到 Windows 不存在）',
+  hiddenLocalShells: '同上，是一组本机路径',
+  launchAtLogin: '系统开机启动项，每台机器各自登记',
+  startMinimized: '与开机自启配套的启动行为'
+}
 
 export const SYNC_FORMAT = 'jshell-sync'
 export const SYNC_VERSION = 1
