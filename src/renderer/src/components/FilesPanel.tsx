@@ -357,7 +357,7 @@ export function FilesPanel({ sessionId, active }: Props) {
       </div>
 
       <div className="files-footer">
-        {entries.length} 项 · 双击目录进入，双击文本文件用内置编辑器打开（目录树在终端上方）
+        {entries.length} 项 · 双击进入目录，双击文本文件用内置编辑器打开
       </div>
 
       {prompt && (

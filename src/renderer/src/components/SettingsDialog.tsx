@@ -205,15 +205,13 @@ export function SettingsDialog({ isMac, bindings, onClose, onOpenSync }: Props) 
                 </button>
               )}
             </div>
-            <p className="notice">
-              自动识别到 {shells?.shells.length ?? 0} 个可用的本地终端程序；取消勾选只会从侧边栏隐藏，终端本身仍可用。
-            </p>
+            <p className="notice">识别到 {shells?.shells.length ?? 0} 个本地终端；取消勾选只是隐藏。</p>
           </section>
 
           <section className="settings-section" hidden={tab !== 'shortcuts'}>
             <h3>快捷键</h3>
             <p className="notice">
-              点击右侧按键后直接按下新的组合即可录制；按 Esc 取消。快捷键需包含 {isMac ? '⌘' : 'Ctrl'}
+              点右侧按键后按下新组合即录制，Esc 取消。需包含 {isMac ? '⌘' : 'Ctrl'}
               ，修改后立即生效。
             </p>
             {groups.map(([group, defs]) => (
@@ -409,7 +407,7 @@ export function SettingsDialog({ isMac, bindings, onClose, onOpenSync }: Props) 
             <p className="notice">
               {info?.safeStorageAvailable
                 ? '密码与私钥口令通过系统安全存储加密后保存在本地。'
-                : '当前系统未提供可用的安全存储（常见于无 keyring 的 Linux），口令将以弱编码形式保存，请谨慎使用。'}
+                : '系统无可用安全存储（常见于无 keyring 的 Linux），口令将以弱编码保存。'}
             </p>
 
             <h3 className="settings-sub">连接保活</h3>
@@ -421,12 +419,7 @@ export function SettingsDialog({ isMac, bindings, onClose, onOpenSync }: Props) 
               />
               <span className="tile-body">
                 <strong>定时保活，避免空闲连接被中断</strong>
-                <em>
-                  在 SSH 协议层定时发保活请求，<strong>不往终端写字符</strong>——
-                  不会污染输入、不会进 shell 历史，也不会打断 vim / less 这类程序。
-                  开启后还能及时发现「已经断了但本地不知道」的情况（合盖、切 Wi-Fi、NAT 超时），
-                  断线会被自动重连接管。只对 SSH 会话生效，本地终端不受影响。
-                </em>
+                <em>在 SSH 协议层发心跳，不写终端、不进历史；只对 SSH 会话生效</em>
               </span>
             </label>
             <div className="field-row">
@@ -458,10 +451,9 @@ export function SettingsDialog({ isMac, bindings, onClose, onOpenSync }: Props) 
               </label>
             </div>
             <p className="notice">
-              默认每 {settings.keepaliveIntervalSeconds} 秒发一次，连续{' '}
-              {settings.keepaliveCountMax} 次没有回应即判定连接已断（约{' '}
-              {Math.round((settings.keepaliveIntervalSeconds * settings.keepaliveCountMax) / 60)} 分钟），
-              随后走断线处理：网络类原因会自动重连。改过设置后仅对<strong>新建或重连</strong>的会话生效。
+              每 {settings.keepaliveIntervalSeconds} 秒发一次，连续 {settings.keepaliveCountMax} 次无响应判定断线
+              （约 {Math.round((settings.keepaliveIntervalSeconds * settings.keepaliveCountMax) / 60)} 分钟）。
+              改动只对新建或重连的会话生效。
             </p>
 
             <h3 className="settings-sub">主机删除</h3>
@@ -502,22 +494,19 @@ export function SettingsDialog({ isMac, bindings, onClose, onOpenSync }: Props) 
                 />
                 <span className="tile-body">
                   <strong>目录树自动跟随终端目录</strong>
-                  <em>
-                    开启：目录树跟随终端 <code>cd</code> 实时刷新（登录无任何多余输出）。
-                    关闭：二者解耦，目录树停在当前位置、不再随 <code>cd</code> 变化，可双击手动浏览；终端本身不受影响。
-                  </em>
+                  <em>开启后目录树跟随 <code>cd</code>，关闭则固定在当前位置</em>
                 </span>
               </label>
               <div className="tile is-static">
                 <span className="tile-body">
                   <strong>目录树</strong>
-                  <em>双击目录进入、双击文本文件直接编辑，支持上一级与定位当前目录</em>
+                  <em>双击进入目录、编辑文件，支持上一级与定位当前目录</em>
                 </span>
               </div>
               <div className="tile is-static">
                 <span className="tile-body">
                   <strong>文件传输（rsync）</strong>
-                  <em>标题栏「同步」：支持本机上传/下载、服务器间中转、断点续传与失败重试</em>
+                  <em>本机上传下载、服务器间中转、断点续传与重试</em>
                 </span>
               </div>
               <div className="tile is-static">
@@ -527,9 +516,7 @@ export function SettingsDialog({ isMac, bindings, onClose, onOpenSync }: Props) 
                 </span>
               </div>
             </div>
-            <p className="notice">
-              rsync 需要本机与远端都安装 rsync（macOS 自带 2.6.9 可用，但安装 3.1+ 才有整体百分比与剩余时间）。
-            </p>
+            <p className="notice">本机与远端都要有 rsync；3.1+ 才有整体进度。</p>
 
             <h3 className="settings-sub">配置包</h3>
             <div className="settings-actions">
@@ -538,9 +525,7 @@ export function SettingsDialog({ isMac, bindings, onClose, onOpenSync }: Props) 
               </button>
             </div>
             <p className="notice">
-              把主机与设置打成一个加密文件，拷到另一台机器导入，即可多机统一配置。
-              可存到任意文件夹、放进 iCloud / OneDrive / Dropbox / 坚果云等云盘目录自动同步，
-              或用剪贴板临时传递。加密后云盘里只有密文。
+              打成加密文件，可存本地、云盘目录或剪贴板；云盘里只有密文。
             </p>
           </section>
 
@@ -590,10 +575,7 @@ export function SettingsDialog({ isMac, bindings, onClose, onOpenSync }: Props) 
               </label>
             </div>
             <p className="notice">
-              {isMac
-                ? 'macOS：开机自启登记为「登录项」，并在登录后以隐藏方式启动。'
-                : 'Windows：开机自启写入当前用户启动项（无需管理员权限），并在登录后以隐藏方式启动。'}
-              便携版更换解压目录后，请重新开关一次「开机自动启动」以更新系统登记的路径。
+              开机自启登记在系统登录项里；便携版换目录后需重新开关一次。
             </p>
           </section>
 

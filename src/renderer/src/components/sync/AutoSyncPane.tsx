@@ -189,8 +189,7 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
     const ok = await window.jshell.dialog.confirm({
       title: '用本机配置覆盖云端？',
       message: '云端现有的同步包会被本机的配置替换掉。',
-      detail:
-        '云端那份内容会丢失，而且另一台设备之后就看不到它了。这台机器的口令也会被用于加密新的云端内容。',
+      detail: '云端内容会被覆盖，其他机器随后读到的是这份。',
       danger: true
     })
     if (!ok) return
@@ -246,10 +245,10 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
               <section className="sync-section">
                 <h3>自动同步</h3>
                 <p className="sync-hint">
-                  多台机器共用一个共享位置，改动自动保持一致。与「配置包」无关，那里是你手动导出的文件。
+                  多台机器共用一个位置，改动自动保持一致。
                 </p>
                 <p className="sync-hint">
-                  顺序：选共享位置 → 各机器设同一个口令 → 打开开关。拉取前会检测，可能覆盖本机改动时先暂停。
+                  顺序：选位置 → 设同一口令 → 打开开关。
                 </p>
                 <label className="sync-scope">
                   <input
@@ -274,7 +273,7 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                             : '先填写 WebDAV 目录地址'
                           : auto?.dir
                             ? `当前目录：${auto.dir}`
-                            : '先在下面选择一个同步目录；启用后由本机后台监听，不联网'}
+                            : '先选一个同步目录（本机后台监听，不联网）'}
                     </em>
                   </span>
                 </label>
@@ -310,9 +309,7 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                   <>
                     {targets.length === 0 ? (
                       <p className="sync-hint warn">
-                        没有检测到 iCloud、OneDrive、Dropbox、Google 云端硬盘、坚果云、百度网盘等网盘目录。
-                        点下面的「改用其他目录…」指到任意同步目录（网络共享、自建网盘、U 盘都行），
-                        或者换成 WebDAV / SFTP。
+                        没探测到网盘目录：点「改用其他目录…」，或换 WebDAV / SFTP。
                       </p>
                     ) : (
                       <>
@@ -449,8 +446,7 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                       </label>
                     </div>
                     <p className="sync-hint">
-                      复用这台主机的地址、认证方式与跳板机设置，等同于「用 SSH 通道搬一个文件」。
-                      SFTP 没有文件变更通知，靠每 15 秒比对一次 mtime 判断远端是否变化。
+                      用这台主机的连接搬文件；每 15 秒比对一次 mtime。
                     </p>
                   </>
                 ) : (
@@ -519,8 +515,7 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                       </button>
                     </div>
                     <p className="sync-hint">
-                      Nextcloud、坚果云、群晖、Apache mod_dav 等都可以；只接受 https（本机回环地址例外）。
-                      没有变更通知，靠 ETag 每 15 秒比对一次。密码同样存在系统安全存储里，不写进同步包。
+                      支持 Nextcloud / 坚果云 / 群晖等；只收 https（回环除外），每 15 秒比对 ETag。
                     </p>
                   </>
                 )}
@@ -614,7 +609,7 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                   </button>
                 </div>
                 <p className="sync-hint">
-                  口令用于加密，各机器必须相同；存在系统安全存储里，不写进包。换口令后每台都要再同步一次。
+                  口令用于加密，各机器必须相同。换口令后每台需再同步一次。
                 </p>
               </section>
 
@@ -681,9 +676,7 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                     />
                     <span className="sync-scope-body">
                       <strong>遇到风险先暂停</strong>
-                      <em>
-                        关闭后等同于「远端直接覆盖本地」，不再询问；结果里仍会写明覆盖了多少项
-                      </em>
+                      <em>关闭后远端直接覆盖本机，不再询问</em>
                     </span>
                   </label>
                 </div>
@@ -813,10 +806,7 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                     立即同步
                   </button>
                 </div>
-                <p className="sync-hint">
-                  立即同步 = 用当前配置<strong>重新组一份包</strong>写回同步位置，
-                  同时把同步位置的内容拉回来逐条比对。本机没变化时会提示「已是最新」。
-                </p>
+                <p className="sync-hint">写入本机配置并拉回比对；没变化会提示「已是最新」。</p>
               </section>
       </div>
 

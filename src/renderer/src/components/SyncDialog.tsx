@@ -355,9 +355,7 @@ export function SyncDialog({ onClose }: Props) {
         <header className="modal-head" {...drag.handleProps}>
           <div>
             <h2>配置包</h2>
-            <p className="sync-intro">
-              把主机与设置打成一个文件，拷到另一台机器导入，就能多机统一配置。
-            </p>
+            <p className="sync-intro">打成一个文件，拷到另一台机器导入即可。</p>
           </div>
           <button className="icon-btn" onClick={close} title="关闭">
             <IconClose />
@@ -437,7 +435,7 @@ export function SyncDialog({ onClose }: Props) {
                     {targets.length === 0 ? (
                       <p className="sync-hint warn">
                         没有检测到 iCloud、OneDrive、Dropbox、Google 云端硬盘、坚果云等网盘目录。
-                        这不影响使用：选「保存到文件…」存到任意路径，或用剪贴板传递。
+                        不影响使用：也可存成文件或走剪贴板。
                       </p>
                     ) : (
                       targets.map((target) => (
@@ -496,8 +494,7 @@ export function SyncDialog({ onClose }: Props) {
                 </details>
 
                 <p className="sync-hint">
-                  设置只同步通用偏好（主题、字体、快捷键、保活等）；本地 shell 路径、窗口尺寸、开机自启
-                  属于本机配置，不会同步。明细见 README。
+                  只同步通用偏好；本地路径、窗口尺寸、开机自启不同步（见 README）。
                 </p>
               </section>
 
@@ -554,13 +551,12 @@ export function SyncDialog({ onClose }: Props) {
                       </p>
                     )}
                     <p className="sync-hint">
-                      口令不会被保存。忘记口令 = 文件无法解密，JShell 也无法帮你找回。
+                      口令不保存，忘记即无法解密。
                     </p>
                   </div>
                 ) : (
                   <p className="sync-hint warn">
-                    不加密时，任何拿到这个文件的人都能读到你的主机地址、用户名和分组。
-                    只建议在完全可信的介质上使用，并且不要勾选「密码与私钥口令」。
+                    不加密时，拿到文件的人能读到主机地址与用户名；含凭据的包必须加密。
                   </p>
                 )}
               </section>

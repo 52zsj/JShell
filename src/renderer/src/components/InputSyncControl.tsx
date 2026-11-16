@@ -61,11 +61,7 @@ export function InputSyncControl() {
     <div className="batch-edit" ref={wrapRef}>
       <button
         className={cx('batch-toggle', enabled && 'is-on')}
-        title={
-          enabled
-            ? '批量编辑已开启：输入的字符会同时发给选中的终端。点击关闭'
-            : '批量编辑：在一个终端里输入，同时发给多个终端（默认发给全部标签与分屏）'
-        }
+        title={enabled ? '批量编辑已开启，点击关闭' : '批量编辑：输入同时发给多个终端'}
         onClick={() => setInputSync(!enabled)}
       >
         <span className="batch-toggle-icon" aria-hidden>
@@ -79,11 +75,7 @@ export function InputSyncControl() {
           // 始终显示真实范围（已选 N 个），否则「单终端时显示无其它可用终端」会把入口本身藏起来，
           // 用户想点进去加终端反而找不到地方
           className={cx('batch-scope', others === 0 && 'is-idle')}
-          title={
-            others === 0
-              ? '当前范围里没有别的终端，广播暂时不会产生效果。点这里可以再加入其它终端'
-              : '选择要把输入同步给哪些标签 / 分屏'
-          }
+          title={others === 0 ? '还没有其它终端参与，点这里添加' : '选择参与广播的终端'}
           onClick={() => setOpen((prev) => !prev)}
         >
           {scopeLabel}
@@ -147,13 +139,11 @@ export function InputSyncControl() {
           </div>
 
           {others === 0 && (
-            <p className="batch-idle">
-              当前范围里只有 1 个终端，广播暂时没有效果 —— 再勾选至少一个其它终端。
-            </p>
+            <p className="batch-idle">只有 1 个终端，再勾选一个才会广播。</p>
           )}
 
           <p className="batch-warn">
-            开启期间每条输入都会发给以上终端；要跑破坏性命令前先关掉。
+            输入会发给以上终端；破坏性命令前先关掉。
           </p>
         </div>
       )}

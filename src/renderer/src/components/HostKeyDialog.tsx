@@ -26,8 +26,7 @@ export function HostKeyDialog() {
 
         <div className="modal-body">
           <p className="notice is-danger">
-            这台主机的公钥与本地记录不一致，连接已被阻止。可能是服务器重装或更换了密钥，
-            也可能是中间人攻击——请先确认原因。
+            公钥与本地记录不一致，连接已阻止。可能是服务器换了密钥，也可能是中间人攻击。
           </p>
 
           <dl className="kv">
@@ -43,10 +42,7 @@ export function HostKeyDialog() {
             <dd className="mono fingerprint is-new">{prompt.actual}</dd>
           </dl>
 
-          <p className="notice">
-            确认是本人变更（例如服务器重装、替换了 host key）后，点击「信任新指纹」会覆盖本地记录
-            并重新连接；否则请取消并联系服务器管理员。
-          </p>
+          <p className="notice">确认是本人变更后再信任；否则取消并联系管理员。</p>
         </div>
 
         <footer className="modal-foot">

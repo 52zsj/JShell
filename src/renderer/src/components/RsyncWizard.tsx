@@ -212,10 +212,7 @@ export function RsyncWizard({ onClose, onDone, defaultHostId, defaultRemoteDir }
             <IconSync />
             文件传输
           </h2>
-          <p className="sync-intro">
-            在本机和服务器之间传文件（rsync）。适合整目录同步、增量续传；想临时看几个文件，
-            用终端里的 SFTP 文件面板更方便。
-          </p>
+          <p className="sync-intro">本机与服务器之间传文件，支持整目录、断点续传。</p>
           <button className="icon-btn" onClick={onClose} title="关闭" disabled={running}>
             <IconClose />
           </button>
@@ -374,9 +371,7 @@ export function RsyncWizard({ onClose, onDone, defaultHostId, defaultRemoteDir }
                       onChange={(e) => setRelayTargetPath(e.target.value)}
                     />
                   </label>
-                  <p className="notice">
-                    服务器之间经本机中转：先下载到临时目录再上传；两段都支持断点续传，完成后自动清理。
-                  </p>
+                  <p className="notice">经本机中转：先下载到临时目录再上传，完成后自动清理。</p>
                 </>
               )}
 
@@ -431,9 +426,7 @@ export function RsyncWizard({ onClose, onDone, defaultHostId, defaultRemoteDir }
                   onChange={(e) => setRetries(Number(e.target.value))}
                 />
               </label>
-              <p className="notice">
-                断点续传默认开启（--partial + 版本对应的 --append / --append-verify）：中断后重新执行会从已传输部分继续。
-              </p>
+              <p className="notice">断点续传默认开启，中断后重新执行会从已传部分继续。</p>
             </>
           )}
 

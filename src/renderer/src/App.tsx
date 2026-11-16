@@ -402,7 +402,7 @@ export default function App() {
           <button
             className="btn btn-ghost"
             onClick={() => setRsyncOpen(true)}
-            title="文件传输：在本机与服务器之间传文件（rsync，支持断点续传与重试）"
+            title="文件传输（rsync，支持断点续传与重试）"
           >
             <IconSync />
             文件传输

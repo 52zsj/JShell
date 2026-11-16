@@ -264,7 +264,7 @@ export function HostEditor({ host, clone, onClose }: Props) {
           )}
 
           {form.authType === 'agent' && (
-            <p className="notice">将使用系统 SSH 代理（macOS/Linux 读环境变量，Windows 读 OpenSSH 代理管道），请确保已加载对应私钥。</p>
+            <p className="notice">走系统 SSH 代理，请确认已加载对应私钥。</p>
           )}
 
           <div className="field">

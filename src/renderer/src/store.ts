@@ -788,7 +788,7 @@ export const useAppStore = create<AppState>()((set, get) => {
       set({ inputSyncEnabled: true, inputSyncSessions: sessionIds })
       if (sessionIds.length < 2) {
         state.pushToast(
-          '批量编辑已开启（当前标签只有 1 个终端）。要同步到其它终端，点状态栏「已选 1 个」勾选',
+          '批量编辑已开启（仅 1 个终端）：点状态栏「已选 1 个」添加其它终端',
           'info'
         )
       }
