@@ -3,15 +3,13 @@ import path from 'node:path'
 import {
   CUSTOM_PATH_PREFIX,
   SYNC_AUTO_FILE,
-  SYNC_SCOPES,
   type AutoSyncPatch,
   type AutoSyncRunResult,
   type AutoSyncState,
   type AutoSyncTestResult,
   type AutoSyncTrigger,
   type DiffReport,
-  type SyncBundlePayload,
-  type SyncScope
+  type SyncBundlePayload
 } from '../../shared/sync'
 import { composeLocalBundle } from './sync-bundle'
 import {
@@ -25,9 +23,9 @@ import {
 } from './sync-crypto'
 import { diffBundle } from './sync-diff'
 import { passwordChanged, passwordTag } from './sync-password'
-import { accountsCompatible } from '../../shared/sync'
 import { buildMarks, findConflicts, summarizeConflicts } from './sync-marks'
 import { cleanupLegacyBundles } from './sync-legacy-files'
+import { allSyncScopes } from '../../shared/sync'
 import {
   changedCount,
   riskyCount,
@@ -170,7 +168,6 @@ export class AutoSyncService {
       webdavUrl: config.webdavUrl,
       webdavUsername: config.webdavUsername,
       hasWebdavPassword: Boolean(config.webdavPassword),
-      account: config.account ?? '',
       paths: (config.paths ?? []).map((item) => ({ ...item })),
       scopes: [...config.scopes],
       pushLocalChanges: config.pushLocalChanges,
@@ -263,19 +260,17 @@ export class AutoSyncService {
 
     if (patch.password !== undefined) this.store.setSyncPassword(patch.password || null)
 
-    const scopes = patch.scopes ? sanitizeScopes(patch.scopes) : current.scopes
+    // 范围固定为全部；没设口令时自动跳过凭据（明文包不能带密码）
     const hasPassword = Boolean(this.store.getAutoSync().password)
-    if (!hasPassword && scopes.includes('credentials')) {
-      throw new SyncError('勾选「密码与私钥口令」时必须设置同步口令')
-    }
+    const scopes = allSyncScopes(hasPassword)
 
     this.store.saveAutoSync({
       enabled: patch.enabled ?? current.enabled,
       transport,
-      account: patch.account ?? current.account,
-      pushLocalChanges: patch.pushLocalChanges ?? current.pushLocalChanges,
-      pullRemoteChanges: patch.pullRemoteChanges ?? current.pullRemoteChanges,
-      pauseOnRisky: patch.pauseOnRisky ?? current.pauseOnRisky,
+      // 行为不再暴露开关：双向同步 + 风险暂停，是唯一安全的组合
+      pushLocalChanges: true,
+      pullRemoteChanges: true,
+      pauseOnRisky: true,
       scopes,
       dir,
       targetId,
@@ -489,8 +484,6 @@ export class AutoSyncService {
     let passwordMismatch = false
     /** 云端包是否加密（undefined 表示云端还没有文件） */
     let remoteEncrypted: boolean | undefined
-    /** 云端包里的同步账号（只做匹配，不参与解密） */
-    let remoteAccount = ''
     /** 本机在拉取前是否空空如也（决定要不要说「已用云端内容填充」） */
     let localWasEmpty = false
     let report: DiffReport | undefined
@@ -498,6 +491,8 @@ export class AutoSyncService {
 
     // 远端文件在不在，只查一次：拉取和写回都要用
     const remoteExists = await transport.exists()
+    /** 读取时的远端版本戳：写之前再比一次，防止覆盖别人刚写的 */
+    const versionAtRead = remoteExists ? (await transport.version?.()) ?? null : null
 
     if (wantsPull && remoteExists) {
       const text = await transport.read()
@@ -507,7 +502,6 @@ export class AutoSyncService {
           const decoded = this.decode(text, password)
           payload = decoded.payload
           remoteEncrypted = decoded.encrypted
-          remoteAccount = decoded.account
         } catch (err) {
           // 口令对不上不是致命错误，但**绝不能自作主张覆盖云端**：
           // 记下来，等人来决定（见 push 前的 decidePushGate）。
@@ -519,11 +513,12 @@ export class AutoSyncService {
         }
         if (payload) {
         const hash = contentHash(payload)
-        const accountMismatch = !accountsCompatible(config.account, remoteAccount)
         // 两边都改过同一条 → 冲突：一律暂停，绝不私自覆盖
-        const conflicts = accountMismatch
-          ? []
-          : findConflicts(this.store.snapshot(), payload, this.store.getAutoSync().syncMarks ?? {})
+        const conflicts = findConflicts(
+          this.store.snapshot(),
+          payload,
+          this.store.getAutoSync().syncMarks ?? {}
+        )
         if (conflicts.length > 0) {
           const summary = summarizeConflicts(conflicts)
           log.warn(`同步冲突 ${conflicts.length} 项，已暂停：${conflicts.map((c) => c.label).join('、')}`)
@@ -535,7 +530,6 @@ export class AutoSyncService {
         const diff = diffBundle(this.store.snapshot(), payload, 'overwrite')
         const decision = decidePull({
           remoteHash: hash,
-          accountMismatch,
           lastPulledHash: config.lastPulledHash,
           report: diff,
           pauseOnRisky: config.pauseOnRisky
@@ -545,16 +539,6 @@ export class AutoSyncService {
         log.info(
           `拉取判定：${decision}（远端 ${hash.slice(0, 8)}，变更 ${changedCount(diff)} 项，风险 ${riskyCount(diff)} 项）`
         )
-        if (decision === 'account') {
-          const summary =
-            `同步账号不一致：本机是「${config.account || '未命名'}」，云端是「${remoteAccount || '未命名'}」。` +
-            '为免把两套配置混在一起，本次不做任何改动。请在「自动同步」里把账号改成一致，或换一个同步目录。'
-          this.pending = { at: Date.now(), kind: 'account', summary }
-          this.store.saveAutoSync({ lastResult: summary, lastError: undefined })
-          this.emit()
-          return { ok: true, action: 'paused', message: summary, at: Date.now() }
-        }
-
         if (decision === 'skip') {
           // 自己刚写出去的：什么都没发生
         } else if (decision === 'record') {
@@ -588,7 +572,20 @@ export class AutoSyncService {
     }
 
     if (wantsPush) {
-      const { payload, meta } = composeLocalBundle(this.store, config.scopes, config.account)
+      // 写前校验：本次读取之后远端又变了 → 重新读、重新合并，再基于最新内容组包
+      if (versionAtRead !== null && transport.version) {
+        const versionNow = await transport.version()
+        if (versionNow !== null && versionNow !== versionAtRead) {
+          log.warn('远端在同步期间被改动，重新读取并合并后再写')
+          const latest = await transport.read()
+          if (latest) {
+            const decoded = this.decode(latest, password)
+            this.applyRemote(decoded.payload, contentHash(decoded.payload))
+            pulled = true
+          }
+        }
+      }
+      const { payload, meta } = composeLocalBundle(this.store, config.scopes)
       if (!password) delete payload.credentials
       const hash = contentHash(payload)
       const current = this.store.getAutoSync()
@@ -683,19 +680,18 @@ export class AutoSyncService {
   private decode(
     text: string,
     password: string | undefined
-  ): { payload: SyncBundlePayload; encrypted: boolean; account: string } {
+  ): { payload: SyncBundlePayload; encrypted: boolean } {
     const parsed = parseSyncText(text)
     if (parsed.legacy) {
       throw new SyncError(`自动同步目录里的 ${SYNC_AUTO_FILE} 不是有效的同步包`)
     }
     const envelope = parsed.envelope
-    const account = envelope.meta.account ?? ''
-    if (!envelope.encrypted) return { payload: envelope.payload ?? {}, encrypted: false, account }
+    if (!envelope.encrypted) return { payload: envelope.payload ?? {}, encrypted: false }
     if (!password) {
       throw new SyncError('同步包已加密，但本机没有保存口令', 'password-mismatch')
     }
     try {
-      return { payload: decryptBundle(envelope, password), encrypted: true, account }
+      return { payload: decryptBundle(envelope, password), encrypted: true }
     } catch (err) {
       throw new SyncError(
         '同步口令不对：另一台机器用的口令可能和你这台不同。',
@@ -708,8 +704,32 @@ export class AutoSyncService {
     this.store.backupNow('auto')
     this.suppressLocal = true
     try {
+      // 1) 先按远端墓碑删本机（删除也要跨设备一致）
+      const remoteStamps = payload.tombstones ?? {}
+      const doomed = this.store.pendingTombstoneDeletions(remoteStamps)
+      if (doomed.length > 0) {
+        const removed = this.store.applyTombstones(doomed, remoteStamps)
+        log.info(`按远端墓碑删除本机 ${removed} 项`)
+      } else if (Object.keys(remoteStamps).length > 0) {
+        // 没有要删的，但墓碑要并进来，之后推送才能继续传播
+        this.store.applyTombstones([], remoteStamps)
+      }
+      // 2) 合并
       const outcome = mergeBundle(this.store.snapshot(), payload, { mode: 'overwrite' })
-      this.store.applySnapshot(outcome.next)
+      // 3) 本机墓碑优先级更高：远端又把它带回来时不认
+      const next = {
+        ...outcome.next,
+        hosts: outcome.next.hosts.filter(
+          (host) => !this.store.droppedByTombstone(host.updatedAt ?? 0, `hosts:${host.id}`)
+        ),
+        snippets: outcome.next.snippets.filter(
+          (item) => !this.store.droppedByTombstone(0, `snippets:${item.id}`)
+        ),
+        tunnels: outcome.next.tunnels.filter(
+          (item) => !this.store.droppedByTombstone(0, `tunnels:${item.id}`)
+        )
+      }
+      this.store.applySnapshot(next)
       this.store.applyCredentials(outcome.credentials)
     } finally {
       this.suppressLocal = false
@@ -770,7 +790,7 @@ export class AutoSyncService {
     const transport = this.transport ?? this.buildTransport()
     if (!transport) throw new SyncError('同步位置尚未配置完整')
     const password = this.store.syncPassword()
-    const { payload, meta } = composeLocalBundle(this.store, config.scopes, config.account)
+    const { payload, meta } = composeLocalBundle(this.store, config.scopes)
     if (!password) delete payload.credentials
     const envelope = password
       ? encryptBundle(payload, meta, password)
@@ -827,11 +847,3 @@ export class AutoSyncService {
 
 }
 
-function sanitizeScopes(input: SyncScope[]): SyncScope[] {
-  const allowed = new Set(SYNC_SCOPES.map((item) => item.id))
-  const seen = new Set<SyncScope>()
-  for (const scope of Array.isArray(input) ? input : []) {
-    if (allowed.has(scope)) seen.add(scope)
-  }
-  return [...seen]
-}

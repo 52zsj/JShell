@@ -117,6 +117,18 @@ export const DEVICE_LOCAL_REASONS: Record<DeviceLocalSetting, string> = {
   startMinimized: '与开机自启配套的启动行为'
 }
 
+/**
+ * 同步范围：**固定为全部**，不再让用户勾选。
+ *
+ * 唯一例外是凭据——明文包里不允许出现密码，所以没设口令时自动跳过。
+ */
+export function allSyncScopes(hasPassword: boolean): SyncScope[] {
+  const ids = SYNC_SCOPES.map((item) => item.id).filter(
+    (id) => hasPassword || id !== 'credentials'
+  )
+  return ids as SyncScope[]
+}
+
 export const SYNC_FORMAT = 'jshell-sync'
 export const SYNC_VERSION = 1
 /** 文件首行标识：既便于人工辨认，也便于在解密前判断格式 */
@@ -140,8 +152,6 @@ export interface SyncBundleCounts {
  */
 export interface SyncBundleMeta {
   appVersion: string
-  /** 同步账号：同账号 + 同口令 = 同一套配置（只做匹配） */
-  account?: string
   /**
    * 旧版写入的主机名。**不再生成，也不再显示**；
    * 字段留着只是为了能读出老包时不至于丢掉类型信息。
@@ -154,6 +164,9 @@ export interface SyncBundleMeta {
   hasCredentials: boolean
 }
 
+/** 删除标记：`hosts:<id>` → 删除时间。用来让"删掉的东西"也同步出去 */
+export type SyncTombstones = Record<string, number>
+
 export interface SyncBundlePayload {
   hosts?: HostProfile[]
   snippets?: Snippet[]
@@ -162,6 +175,8 @@ export interface SyncBundlePayload {
   knownHosts?: Record<string, string>
   /** hostId -> 明文凭据；仅在整包加密时允许出现 */
   credentials?: Record<string, SyncCredential>
+  /** 删除标记（id → 时间戳） */
+  tombstones?: SyncTombstones
 }
 
 export interface SyncCredential {
@@ -427,26 +442,6 @@ export interface AutoSyncPath {
 /** 自定义路径在 targetId 里的前缀，避免和探测出来的网盘 id 冲突 */
 export const CUSTOM_PATH_PREFIX = 'custom:'
 
-/**
- * 同步账号：**只用于匹配，不参与加密**。
- *
- * 设计原则（按用户要求）：两台机器是不是"同一套配置"，只看这个账号 + 口令，
- * 不看设备、不需要设备 ID。
- *  - 账号为空 = 接受任何账号的包（单机或不想管名字时）
- *  - 账号非空且两边都非空 → 必须一致才算同一个集合
- */
-export function normalizeAccount(value: unknown): string {
-  return typeof value === 'string' ? value.trim().slice(0, 40) : ''
-}
-
-/** 两边账号是否属于同一套配置；任一侧为空视为兼容（不拦） */
-export function accountsCompatible(local: string, remote: string): boolean {
-  const a = normalizeAccount(local).toLowerCase()
-  const b = normalizeAccount(remote).toLowerCase()
-  if (!a || !b) return true
-  return a === b
-}
-
 export interface AutoSyncConfig {
   enabled: boolean
   transport: SyncTransportKind
@@ -476,11 +471,6 @@ export interface AutoSyncConfig {
    * 关闭即等同于「远端直接覆盖本地」。
    */
   pauseOnRisky: boolean
-  /**
-   * 同步账号（可选）。同一个账号 + 同一个口令 = 同一套配置，不看设备。
-   * 只用于匹配与显示，不参与加密。
-   */
-  account: string
   /** 同步包口令是否已设置 */
   hasPassword: boolean
   /** WebDAV 是否已保存密码 */
@@ -494,7 +484,7 @@ export interface AutoSyncConfig {
  * - password：云端的包是加密的，但本机口令解不开（多半是两台设备口令不一致）
  * - plaintext：云端现在是明文包，本机有口令，同步后云端会变成密文
  */
-export type AutoSyncPendingKind = 'risky' | 'password' | 'plaintext' | 'account' | 'conflict'
+export type AutoSyncPendingKind = 'risky' | 'password' | 'plaintext' | 'conflict'
 
 export interface AutoSyncPending {
   at: number
@@ -527,8 +517,6 @@ export interface AutoSyncRunResult {
 
 /** 渲染层可提交的配置补丁；口令是唯一允许写入的敏感字段，读取时只回 hasPassword */
 export interface AutoSyncPatch {
-  /** 同步账号：只用于匹配「是不是同一套配置」，不参与加密；空字符串表示不限制 */
-  account?: string
   enabled?: boolean
   transport?: SyncTransportKind
   targetId?: string

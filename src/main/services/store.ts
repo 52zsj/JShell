@@ -5,7 +5,7 @@ import path from 'node:path'
 import { sanitizeLayout } from '../../shared/layout-schema'
 import { DEFAULT_SETTINGS, sanitizeSettings } from '../../shared/settings'
 import type { SyncCredential, SyncScope, SyncTransportKind } from '../../shared/sync'
-import { SYNC_SCOPES, AutoSyncPath, normalizeAccount } from '../../shared/sync'
+import { SYNC_SCOPES, AutoSyncPath } from '../../shared/sync'
 import type {
   AppSettings,
   HostDraft,
@@ -55,11 +55,6 @@ export interface StoredAutoSync {
   /** 用户手动添加的同步路径（本机私有，不随配置包同步） */
   paths?: AutoSyncPath[]
   scopes: SyncScope[]
-  /**
-   * 同步账号：同账号 + 同口令 = 同一套配置（只做匹配，不参与加密）。
-   * 不记录任何设备标识 —— 多机同步靠"同一个名字"识别，而不是设备 ID。
-   */
-  account: string
   pushLocalChanges: boolean
   pullRemoteChanges: boolean
   pauseOnRisky: boolean
@@ -86,7 +81,6 @@ const DEFAULT_AUTO_SYNC: StoredAutoSync = {
   dir: '',
   targetId: '',
   scopes: ['hosts', 'snippets', 'settings', 'tunnels'],
-  account: '',
   pushLocalChanges: true,
   pullRemoteChanges: true,
   pauseOnRisky: true
@@ -94,6 +88,8 @@ const DEFAULT_AUTO_SYNC: StoredAutoSync = {
 
 interface StateShape {
   version: number
+  /** 删除标记：`hosts:<id>` → 删除时间（毫秒） */
+  tombstones?: Record<string, number>
   hosts: HostProfile[]
   settings: AppSettings
   snippets: Snippet[]
@@ -328,6 +324,7 @@ export class StoreService {
   deleteHost(id: string): void {
     const host = this.getHost(id)
     this.state.hosts = this.state.hosts.filter((h) => h.id !== id)
+    this.markDeleted('hosts', id)
     delete this.secrets[id]
     this.persistState()
     this.persistSecrets()
@@ -479,6 +476,75 @@ export class StoreService {
   }
 
   /** 深拷贝一份当前配置，供同步/合并计算使用（避免外部直接改内部状态） */
+  /** 记录一条删除标记（供同步带走） */
+  private markDeleted(kind: 'hosts' | 'snippets' | 'tunnels', id: string): void {
+    const tombstones = { ...(this.state.tombstones ?? {}) }
+    tombstones[`${kind}:${id}`] = Date.now()
+    this.state.tombstones = tombstones
+  }
+
+  tombstones(): Record<string, number> {
+    return { ...(this.state.tombstones ?? {}) }
+  }
+
+  /** 应用远端墓碑：返回需要从本机删除的 `kind:id` 集合 */
+  pendingTombstoneDeletions(remote: Record<string, number>): string[] {
+    const snapshot = this.snapshot()
+    const stamps = new Map<string, number>()
+    for (const host of snapshot.hosts) stamps.set(`hosts:${host.id}`, host.updatedAt ?? 0)
+    // 片段与转发没有 updatedAt：用 0 代表"无法判断新旧"，墓碑优先
+    for (const snippet of snapshot.snippets) stamps.set(`snippets:${snippet.id}`, 0)
+    for (const tunnel of snapshot.tunnels) stamps.set(`tunnels:${tunnel.id}`, 0)
+    const doomed: string[] = []
+    for (const [key, at] of Object.entries(remote)) {
+      const localAt = stamps.get(key)
+      // 本机没有这条 → 只是记账；本机更新时间晚于墓碑 → 说明是删除后又改过，保留
+      if (localAt === undefined) continue
+      if (at > localAt) doomed.push(key)
+    }
+    return doomed
+  }
+
+  /** 按 `kind:id` 删除本机条目，并把墓碑合并进来（保留较新的时间） */
+  applyTombstones(keys: string[], stamps: Record<string, number> = {}): number {
+    let removed = 0
+    for (const key of keys) {
+      const [kind, id] = key.split(':')
+      if (kind === 'hosts') {
+        const before = this.state.hosts.length
+        this.state.hosts = this.state.hosts.filter((host) => host.id !== id)
+        if (this.state.hosts.length !== before) {
+          removed += 1
+          delete this.secrets[id]
+        }
+      } else if (kind === 'snippets') {
+        const before = this.state.snippets.length
+        this.state.snippets = this.state.snippets.filter((item) => item.id !== id)
+        if (this.state.snippets.length !== before) removed += 1
+      } else if (kind === 'tunnels') {
+        const before = this.state.tunnels.length
+        this.state.tunnels = this.state.tunnels.filter((item) => item.id !== id)
+        if (this.state.tunnels.length !== before) removed += 1
+      }
+    }
+    const merged = { ...(this.state.tombstones ?? {}) }
+    for (const [key, at] of Object.entries(stamps)) {
+      merged[key] = Math.max(merged[key] ?? 0, at)
+    }
+    this.state.tombstones = merged
+    if (removed > 0) {
+      this.persistState()
+      this.persistSecrets()
+    }
+    return removed
+  }
+
+  /** 已被墓碑删除的条目（挡住"远端又把它带回来"） */
+  droppedByTombstone(stamp: number, key: string): boolean {
+    const at = this.state.tombstones?.[key] ?? 0
+    return at > stamp
+  }
+
   snapshot(): Snapshot {
     return {
       hosts: this.state.hosts.map((host) => ({ ...host })),
@@ -635,7 +701,6 @@ export class StoreService {
       return {
         ...DEFAULT_AUTO_SYNC,
         ...raw,
-        account: normalizeAccount(raw.account),
         scopes: scopes.length > 0 ? scopes : [...DEFAULT_AUTO_SYNC.scopes]
       }
     } catch {
@@ -652,7 +717,6 @@ export class StoreService {
   }
 
   saveAutoSync(patch: Partial<StoredAutoSync>): StoredAutoSync {
-    if (patch.account !== undefined) patch = { ...patch, account: normalizeAccount(patch.account) }
     this.autoSync = { ...this.autoSync, ...patch }
     StoreService.writeJsonAtomic(this.syncFile, this.autoSync)
     return this.getAutoSync()
@@ -707,6 +771,7 @@ export class StoreService {
 
   deleteSnippet(id: string): void {
     this.state.snippets = this.state.snippets.filter((s) => s.id !== id)
+    this.markDeleted('snippets', id)
     this.persistState()
   }
 

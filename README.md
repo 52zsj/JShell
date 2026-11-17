@@ -107,9 +107,9 @@ node scripts/build-all.mjs --dir                       # 只产出免安装目�
 
 | 平台 | 安装版 | 便携版 |
 | --- | --- | --- |
-| macOS | `JShell-0.11.38-arm64.dmg` / `.zip`、`x64` 同名文件 | `JShell-0.11.38-<架构>-portable.zip`（解压即用） |
-| Windows | `JShell-0.11.38-x64-setup.exe`（简体中文 NSIS 向导） | `JShell-0.11.38-x64-portable.exe`（单文件） |
-| Linux | `JShell-0.11.38-x64.AppImage` / `.deb` | — |
+| macOS | `JShell-0.11.39-arm64.dmg` / `.zip`、`x64` 同名文件 | `JShell-0.11.39-<架构>-portable.zip`（解压即用） |
+| Windows | `JShell-0.11.39-x64-setup.exe`（简体中文 NSIS 向导） | `JShell-0.11.39-x64-portable.exe`（单文件） |
+| Linux | `JShell-0.11.39-x64.AppImage` / `.deb` | — |
 
 ### 发版（推 GitHub Release）
 
@@ -261,8 +261,8 @@ npm run release:tag                      # 打 tag v<版本> 并推送 main 与 
 
 ## 配置同步范围
 
-**身份 = 账号 + 口令**：两台机器填同一个同步账号、同一个口令，就视为同一套配置。
-账号明文写在包里、只用于匹配，不参与加密；任一方留空表示不限制。账号不一致时暂停，不会合并。
+**身份 = 固定文件名 + 口令**：自动同步固定读写 `jshell-auto.jshellsync`（不可改名），
+两台机器填同一个口令就是同一套配置。口令只负责加密，没有账号、没有设备 ID。
 
 同步位置里**只有一份** `jshell-auto.jshellsync`（反复同步是覆盖，不是新建）。
 两台机器改了同一条内容时会**暂停并提示**，不会私自覆盖；可选择逐项合并或以某一边为准。

@@ -3,7 +3,7 @@ import {
   MIN_PASSWORD_LENGTH,
   SYNC_DELETE_NOTICE,
   SYNC_MODE_LABELS,
-  SYNC_SCOPES,
+  allSyncScopes,
   passwordStrength,
   type DiffReport,
   type PasswordStrength,
@@ -12,7 +12,6 @@ import {
   type SyncImportMode,
   type SyncImportResult,
   type SyncInspectResult,
-  type SyncScope,
   type SyncSource,
   type SyncTarget
 } from '@shared/sync'
@@ -38,8 +37,6 @@ interface Props {
 
 type Tab = 'export' | 'import' | 'auto'
 type DestKind = 'file' | 'folder' | 'clipboard' | 'webdav'
-
-const DEFAULT_SCOPES: SyncScope[] = SYNC_SCOPES.filter((item) => item.defaultOn).map((item) => item.id)
 
 const IMPORT_BUTTON: Record<SyncImportMode, string> = {
   overwrite: '覆盖导入',
@@ -74,8 +71,9 @@ export function SyncDialog({ onClose }: Props) {
   const [targets, setTargets] = useState<SyncTarget[]>([])
   const [dest, setDest] = useState<DestKind>('file')
   const [targetId, setTargetId] = useState('')
-  const [scopes, setScopes] = useState<SyncScope[]>(DEFAULT_SCOPES)
   const [usePassword, setUsePassword] = useState(true)
+  // 范围固定为全部；没设口令时不带凭据
+  const scopes = useMemo(() => allSyncScopes(usePassword), [usePassword])
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -167,17 +165,6 @@ export function SyncDialog({ onClose }: Props) {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [close])
-
-  const toggleScope = (id: SyncScope): void => {
-    setScopes((prev) => {
-      const has = prev.includes(id)
-      if (has) return prev.filter((item) => item !== id)
-      const next = [...prev, id]
-      // 凭据离开主机没有意义：勾选「密码」时自动带上主机
-      if (id === 'credentials' && !next.includes('hosts')) next.unshift('hosts')
-      return next
-    })
-  }
 
 
   // ------------------------------------------------------------------ 导出
@@ -461,40 +448,8 @@ export function SyncDialog({ onClose }: Props) {
 
               <section className="sync-section">
                 <h3>包含内容</h3>
-                {/* 不受控的 details：默认收起，用户自己决定要不要展开看细节 */}
-                <details className="sync-advanced">
-                  <summary>
-                    <span className="sync-summary-text">
-                      {scopes.length === SYNC_SCOPES.length
-                        ? '全部内容（主机与分组 · 命令片段 · 转发设置 · 端口转发规则）'
-                        : `已选 ${scopes.length} 项：${scopes
-                            .map((id) => SYNC_SCOPES.find((item) => item.id === id)?.label ?? id)
-                            .join('、')}`}
-                    </span>
-                    <span className="sync-summary-hint">点击调整</span>
-                  </summary>
-                  <div className="sync-scopes">
-                    {SYNC_SCOPES.map((item) => (
-                      <label className="sync-scope" key={item.id}>
-                        <input
-                          type="checkbox"
-                          checked={scopes.includes(item.id)}
-                          onChange={() => toggleScope(item.id)}
-                        />
-                        <span className="sync-scope-body">
-                          <strong>
-                            {item.label}
-                            {item.sensitive && <span className="sync-badge warn">敏感</span>}
-                          </strong>
-                          <em>{item.hint}</em>
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </details>
-
                 <p className="sync-hint">
-                  只同步通用偏好；本地路径、窗口尺寸、开机自启不同步（见 README）。
+                  全部配置：主机与分组、命令片段、端口转发、偏好设置、主机指纹；设了口令时含密码与私钥口令。
                 </p>
               </section>
 
@@ -709,11 +664,7 @@ export function SyncDialog({ onClose }: Props) {
                       <div className="sync-package">
                         <div className="sync-package-head">
                           <IconShield />
-                          <strong>
-                            {inspect.meta?.account
-                              ? `账号：${inspect.meta.account}`
-                              : '未指定账号'}
-                          </strong>
+                          <strong>配置包</strong>
                           {inspect.legacy && <span className="sync-badge">旧版格式</span>}
                           {inspect.encrypted ? (
                             <span className="sync-badge ok">已加密</span>

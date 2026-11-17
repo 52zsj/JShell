@@ -2,9 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   MIN_PASSWORD_LENGTH,
   SYNC_DELETE_NOTICE,
-  SYNC_SCOPES,
   type AutoSyncPatch,
-  type SyncScope,
   type SyncTarget,
   CUSTOM_PATH_PREFIX,
   pickDefaultTarget
@@ -41,7 +39,6 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
   const [webdavUrlDraft, setWebdavUrlDraft] = useState('')
   const [webdavUserDraft, setWebdavUserDraft] = useState('')
   const [webdavPasswordDraft, setWebdavPasswordDraft] = useState('')
-  const [accountDraft, setAccountDraft] = useState('')
   const [autoTest, setAutoTest] = useState<{ ok: boolean; message: string } | null>(null)
   /** 待处理：用户输入的云端口令 */
   const [pendingPassword, setPendingPassword] = useState('')
@@ -51,10 +48,6 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
   useEffect(() => {
     setSftpDirDraft(auto?.sftpDir ?? '')
   }, [auto?.sftpDir])
-
-  useEffect(() => {
-    setAccountDraft(auto?.account ?? '')
-  }, [auto?.account])
 
   useEffect(() => {
     setWebdavUrlDraft(auto?.webdavUrl ?? '')
@@ -229,14 +222,6 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
     } finally {
       setAutoBusy(false)
     }
-  }
-
-  const toggleAutoScope = (id: SyncScope): void => {
-    const current = auto?.scopes ?? []
-    let next = current.includes(id) ? current.filter((item) => item !== id) : [...current, id]
-    // 凭据必须与主机一起同步
-    if (id === 'credentials' && !next.includes('hosts')) next = ['hosts', ...next]
-    void patchAuto({ scopes: [...new Set(next)] })
   }
 
   return (
@@ -545,41 +530,6 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
               </section>
 
               <section className="sync-section">
-                <h3>同步账号</h3>
-                <div className="sync-unlock">
-                  <label className="field">
-                    <span>账号名（可留空）</span>
-                    <input
-                      className="input"
-                      value={accountDraft}
-                      placeholder="例如 home / team-a"
-                      onChange={(event) => setAccountDraft(event.target.value)}
-                      onBlur={() => {
-                        if (accountDraft !== (auto?.account ?? '')) {
-                          void patchAuto({ account: accountDraft })
-                        }
-                      }}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter' && accountDraft !== (auto?.account ?? '')) {
-                          void patchAuto({ account: accountDraft })
-                        }
-                      }}
-                    />
-                  </label>
-                  <button
-                    className="btn btn-ghost"
-                    disabled={autoBusy || accountDraft === (auto?.account ?? '')}
-                    onClick={() => void patchAuto({ account: accountDraft })}
-                  >
-                    保存账号
-                  </button>
-                </div>
-                <p className="sync-hint">
-                  同账号 + 同口令 = 同一套配置。账号只做匹配、可留空；账号不同会暂停，不合并。
-                </p>
-              </section>
-
-              <section className="sync-section">
                 <h3>同步口令</h3>
                 <div className="sync-unlock">
                   <label className="field">
@@ -615,71 +565,9 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
 
               <section className="sync-section">
                 <h3>同步内容</h3>
-                <div className="sync-scopes">
-                  {SYNC_SCOPES.map((item) => (
-                    <label className="sync-scope" key={item.id}>
-                      <input
-                        type="checkbox"
-                        checked={auto?.scopes.includes(item.id) ?? false}
-                        disabled={autoBusy}
-                        onChange={() => toggleAutoScope(item.id)}
-                      />
-                      <span className="sync-scope-body">
-                        <strong>
-                          {item.label}
-                          {item.sensitive && <span className="sync-badge warn">敏感</span>}
-                        </strong>
-                        <em>{item.hint}</em>
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </section>
-
-              <section className="sync-section">
-                <h3>行为</h3>
-                <div className="sync-scopes">
-                  <label className="sync-scope">
-                    <input
-                      type="checkbox"
-                      checked={auto?.pushLocalChanges ?? true}
-                      disabled={autoBusy}
-                      onChange={(event) =>
-                        void patchAuto({ pushLocalChanges: event.target.checked })
-                      }
-                    />
-                    <span className="sync-scope-body">
-                      <strong>本机改动后写回</strong>
-                      <em>保存主机/片段/设置后约 1.5 秒写入同步文件</em>
-                    </span>
-                  </label>
-                  <label className="sync-scope">
-                    <input
-                      type="checkbox"
-                      checked={auto?.pullRemoteChanges ?? true}
-                      disabled={autoBusy}
-                      onChange={(event) =>
-                        void patchAuto({ pullRemoteChanges: event.target.checked })
-                      }
-                    />
-                    <span className="sync-scope-body">
-                      <strong>远端变化后拉取</strong>
-                      <em>云盘同步到本机后自动应用，无需手动操作</em>
-                    </span>
-                  </label>
-                  <label className="sync-scope">
-                    <input
-                      type="checkbox"
-                      checked={auto?.pauseOnRisky ?? true}
-                      disabled={autoBusy}
-                      onChange={(event) => void patchAuto({ pauseOnRisky: event.target.checked })}
-                    />
-                    <span className="sync-scope-body">
-                      <strong>遇到风险先暂停</strong>
-                      <em>关闭后远端直接覆盖本机，不再询问</em>
-                    </span>
-                  </label>
-                </div>
+                <p className="sync-hint">
+                  固定同步全部：主机与分组、命令片段、端口转发、偏好设置、主机指纹；设了口令时也同步密码与私钥口令。
+                </p>
                 <p className="sync-hint">{SYNC_DELETE_NOTICE}</p>
               </section>
 
@@ -772,25 +660,6 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                             onClick={() => void applyAutoPending()}
                           >
                             以云端为准
-                          </button>
-                          <button
-                            className="btn btn-ghost"
-                            disabled={autoBusy}
-                            onClick={() => void dismissPending()}
-                          >
-                            暂不处理
-                          </button>
-                        </>
-                      )}
-                      {pendingKind === 'account' && (
-                        <>
-                          {/* 账号不一致没有"一键解决"：要么改账号，要么换位置，都要人决定 */}
-                          <button
-                            className="btn btn-ghost"
-                            disabled={autoBusy}
-                            onClick={() => void patchAuto({ account: '' })}
-                          >
-                            清空本机账号（接受云端）
                           </button>
                           <button
                             className="btn btn-ghost"

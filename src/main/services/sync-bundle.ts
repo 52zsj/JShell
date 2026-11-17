@@ -1,5 +1,4 @@
 import { app } from 'electron'
-import { normalizeAccount } from '../../shared/sync'
 import type { SyncBundleMeta, SyncBundlePayload, SyncScope } from '../../shared/sync'
 import { pickPortableSettings } from './sync-merge'
 import type { StoreService } from './store'
@@ -11,8 +10,7 @@ import type { StoreService } from './store'
  */
 export function composeLocalBundle(
   store: StoreService,
-  scopes: SyncScope[],
-  account = ''
+  scopes: SyncScope[]
 ): { payload: SyncBundlePayload; meta: SyncBundleMeta } {
   const snapshot = store.snapshot()
   const set = new Set(scopes)
@@ -25,6 +23,10 @@ export function composeLocalBundle(
     payload.tunnels = snapshot.tunnels.map((tunnel) => ({ ...tunnel, sessionId: undefined }))
   }
   if (set.has('knownHosts')) payload.knownHosts = snapshot.knownHosts
+  // 删除标记：让"删掉的条目"也能传播（否则别的机器下次推送又带回来）
+  const tombstones = store.tombstones()
+  if (Object.keys(tombstones).length > 0) payload.tombstones = tombstones
+
   if (set.has('credentials')) {
     // 凭据只对本次真正带上的主机有意义，避免把无关主机的密码也解出来
     const ids = (payload.hosts ?? snapshot.hosts).map((host) => host.id)
@@ -34,8 +36,6 @@ export function composeLocalBundle(
 
   const meta: SyncBundleMeta = {
     appVersion: app.getVersion(),
-    // 身份只写"账号"：同账号 + 同口令 = 同一套配置，不写主机名/设备信息
-    account: normalizeAccount(account),
     platform: process.platform,
     createdAt: new Date().toISOString(),
     scopes: scopes.filter((scope) => scope !== 'credentials' || Boolean(payload.credentials)),

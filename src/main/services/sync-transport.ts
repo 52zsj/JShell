@@ -20,6 +20,8 @@ export interface SyncTransport {
   write(text: string): Promise<void>
   /** 返回取消监听的函数 */
   watch(onChange: () => void): () => void
+  /** 远端版本戳（ETag / mtime+size）：写之前比对，防止把别人刚写的覆盖掉 */
+  version?(): Promise<string | null>
   /** 自检：目录可写、能读到文件；返回一句人类可读的结果 */
   test(): Promise<string>
   dispose(): Promise<void>
@@ -32,6 +34,15 @@ export interface SyncTransport {
 export function createFolderTransport(dir: string): SyncTransport {
   const file = path.join(dir, SYNC_AUTO_FILE)
 
+  const version = async (): Promise<string | null> => {
+    try {
+      const stat = fs.statSync(file)
+      return `${stat.mtimeMs}:${stat.size}`
+    } catch {
+      return null
+    }
+  }
+
   const exists = async (): Promise<boolean> => {
     try {
       return fs.statSync(file).isFile()
@@ -43,6 +54,7 @@ export function createFolderTransport(dir: string): SyncTransport {
   return {
     kind: 'folder',
     label: dir,
+    version,
 
     exists,
 
