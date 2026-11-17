@@ -26,6 +26,7 @@ import {
 import type { AppSettings, HostProfile } from '../../shared/types'
 import { readClipboard, writeClipboard } from './clipboard'
 import { log } from './logger'
+import { cleanupLegacyBundles } from './sync-legacy-files'
 import { createWebdavTransport } from './webdav-transport'
 import { diffBundle } from './sync-diff'
 import { composeLocalBundle } from './sync-bundle'
@@ -121,9 +122,11 @@ export class SyncService {
     if (options.destination.kind === 'folder') {
       const targetDir = resolveTargetDir(this.targets(), options.destination.targetId)
       const dir = ensureSyncFolder(targetDir)
-      const filePath = this.uniquePath(dir, buildSyncFileName())
+      // 固定文件名：同一目录里永远只有这一份手动包，重复导出即覆盖
+      const filePath = path.join(dir, SYNC_MANUAL_FILE)
       this.writeFile(filePath, text)
-      log.info(`同步包已写入云盘目录：${filePath}`)
+      const cleaned = cleanupLegacyBundles(dir)
+      log.info(`同步包已写入云盘目录：${filePath}${cleaned > 0 ? `（清理旧副本 ${cleaned} 个）` : ''}`)
       return { canceled: false, path: filePath, bytes, meta }
     }
 
@@ -425,18 +428,6 @@ export class SyncService {
     const tmp = `${filePath}.tmp`
     fs.writeFileSync(tmp, text, { mode: 0o600 })
     fs.renameSync(tmp, filePath)
-  }
-
-  /** 同一天多次导出不覆盖：加时分秒后缀 */
-  private uniquePath(dir: string, name: string): string {
-    const first = path.join(dir, name)
-    if (!fs.existsSync(first)) return first
-    const ext = path.extname(name)
-    const base = name.slice(0, name.length - ext.length)
-    const stamp = new Date().toTimeString().slice(0, 8).replace(/:/g, '')
-    const second = path.join(dir, `${base}-${stamp}${ext}`)
-    if (!fs.existsSync(second)) return second
-    return path.join(dir, `${base}-${stamp}-${Math.random().toString(36).slice(2, 6)}${ext}`)
   }
 
   /** 旧版纯 JSON：`{ version, exportedAt, hosts, snippets }` */

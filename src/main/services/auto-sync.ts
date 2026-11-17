@@ -26,6 +26,8 @@ import {
 import { diffBundle } from './sync-diff'
 import { passwordChanged, passwordTag } from './sync-password'
 import { accountsCompatible } from '../../shared/sync'
+import { buildMarks, findConflicts, summarizeConflicts } from './sync-marks'
+import { cleanupLegacyBundles } from './sync-legacy-files'
 import {
   changedCount,
   riskyCount,
@@ -518,6 +520,18 @@ export class AutoSyncService {
         if (payload) {
         const hash = contentHash(payload)
         const accountMismatch = !accountsCompatible(config.account, remoteAccount)
+        // 两边都改过同一条 → 冲突：一律暂停，绝不私自覆盖
+        const conflicts = accountMismatch
+          ? []
+          : findConflicts(this.store.snapshot(), payload, this.store.getAutoSync().syncMarks ?? {})
+        if (conflicts.length > 0) {
+          const summary = summarizeConflicts(conflicts)
+          log.warn(`同步冲突 ${conflicts.length} 项，已暂停：${conflicts.map((c) => c.label).join('、')}`)
+          this.pending = { at: Date.now(), kind: 'conflict', summary }
+          this.store.saveAutoSync({ lastResult: summary, lastError: undefined })
+          this.emit()
+          return { ok: true, action: 'paused', message: summary, at: Date.now() }
+        }
         const diff = diffBundle(this.store.snapshot(), payload, 'overwrite')
         const decision = decidePull({
           remoteHash: hash,
@@ -619,6 +633,10 @@ export class AutoSyncService {
           : plainBundle(payload, meta)
         log.info(`推送配置到同步位置：${hash.slice(0, 8)}`)
         await transport.write(serializeBundle(envelope))
+        if (config.transport === 'folder' && config.dir) {
+          const cleaned = cleanupLegacyBundles(config.dir)
+          if (cleaned > 0) log.info(`清理旧版遗留副本 ${cleaned} 个`)
+        }
         this.store.saveAutoSync({
           lastPushedHash: hash,
           lastPushedPasswordTag: passwordTag(password)
@@ -643,7 +661,13 @@ export class AutoSyncService {
           : this.describe(action, pulledCount)
     if (action !== 'idle' || trigger === 'manual') {
       // 后台空转不覆盖上一轮有意义的结果，否则状态栏永远显示「已是最新」
-      this.store.saveAutoSync({ lastSyncedAt: at, lastResult: message, lastError: undefined })
+      this.store.saveAutoSync({
+        lastSyncedAt: at,
+        lastResult: message,
+        lastError: undefined,
+        // 记下这一轮的基线：下次判断"两边都改过"靠它
+        syncMarks: buildMarks(this.store.snapshot())
+      })
       this.pending = undefined
     }
     this.emit()
@@ -746,7 +770,7 @@ export class AutoSyncService {
     const transport = this.transport ?? this.buildTransport()
     if (!transport) throw new SyncError('同步位置尚未配置完整')
     const password = this.store.syncPassword()
-    const { payload, meta } = composeLocalBundle(this.store, config.scopes)
+    const { payload, meta } = composeLocalBundle(this.store, config.scopes, config.account)
     if (!password) delete payload.credentials
     const envelope = password
       ? encryptBundle(payload, meta, password)

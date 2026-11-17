@@ -756,6 +756,32 @@ export function AutoSyncPane({ targets, onOpenImport, onClose }: Props) {
                           </button>
                         </>
                       )}
+                      {pendingKind === 'conflict' && (
+                        <>
+                          {/* 冲突不提供"一键到底"：要么逐项看，要么以某一边为准 */}
+                          <button
+                            className="btn btn-primary"
+                            disabled={autoBusy}
+                            onClick={() => onOpenImport(auto?.targetId ?? '')}
+                          >
+                            逐项合并
+                          </button>
+                          <button
+                            className="btn btn-ghost"
+                            disabled={autoBusy}
+                            onClick={() => void applyAutoPending()}
+                          >
+                            以云端为准
+                          </button>
+                          <button
+                            className="btn btn-ghost"
+                            disabled={autoBusy}
+                            onClick={() => void dismissPending()}
+                          >
+                            暂不处理
+                          </button>
+                        </>
+                      )}
                       {pendingKind === 'account' && (
                         <>
                           {/* 账号不一致没有"一键解决"：要么改账号，要么换位置，都要人决定 */}

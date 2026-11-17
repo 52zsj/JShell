@@ -76,6 +76,8 @@ export interface StoredAutoSync {
   lastPushedPasswordTag?: string
   /** 上次成功应用的远端指纹 */
   lastPulledHash?: string
+  /** 上次同步成功后的条目指纹（本机私有，用来判断"两边都改过"） */
+  syncMarks?: Record<string, string>
 }
 
 const DEFAULT_AUTO_SYNC: StoredAutoSync = {

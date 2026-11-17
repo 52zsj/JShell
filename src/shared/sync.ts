@@ -494,7 +494,7 @@ export interface AutoSyncConfig {
  * - password：云端的包是加密的，但本机口令解不开（多半是两台设备口令不一致）
  * - plaintext：云端现在是明文包，本机有口令，同步后云端会变成密文
  */
-export type AutoSyncPendingKind = 'risky' | 'password' | 'plaintext' | 'account'
+export type AutoSyncPendingKind = 'risky' | 'password' | 'plaintext' | 'account' | 'conflict'
 
 export interface AutoSyncPending {
   at: number
